@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v4.4.1</title>
+  <title>UsBudget — Спільний бюджет пари · v4.4.2</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -295,7 +295,7 @@
           <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
             UsBudget
           </h1>
-          <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400"><span id="app-subtitle">Фінансовий хаб для пари</span> · v4.4.1</p>
+          <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400"><span id="app-subtitle">Фінансовий хаб для пари</span> · v4.4.2</p>
         </div>
       </div>
       
@@ -1038,6 +1038,9 @@
             if (parsed.personalFixed) state.personalFixed = parsed.personalFixed;
             if (parsed.personalCategories) state.personalCategories = parsed.personalCategories;
             if (parsed.personalCategoryLimits) state.personalCategoryLimits = parsed.personalCategoryLimits;
+            // Усі синхронізовані колекції (зокрема внески) відновлюються з копії повністю
+            COLL.forEach(k => { if (Array.isArray(parsed[k])) state[k] = parsed[k]; });
+            OWNER_COLL.concat(BLOB_OWNER).forEach(k => { if (parsed[k] && typeof parsed[k] === 'object') state[k] = parsed[k]; });
           }
         }
       } catch (e) { console.error("Помилка читання localStorage:", e); }
@@ -1403,6 +1406,16 @@ const snapshotFlat = st => clone(flattenState(st));
       return '\ufeff' + [cols.join(';')].concat(rows.map(r => cols.map(c => cell(r[c])).join(';'))).join('\r\n');
     }
 
+// Офлайн-зміни для повторної відправки. Видалення враховуються лише для тих видів записів,
+    // які в локальній копії взагалі є: інакше відсутність виду — це неповна копія, а не видалення
+    function safePending(base, local) {
+      const d = diffFlat(base, local);
+      const prefixOf = path => { const s = path.split('/'); return OWNER_COLL.indexOf(s[0]) >= 0 ? s[0] + '/' + s[1] : s[0]; };
+      const localHas = {};
+      Object.keys(local).forEach(path => { localHas[prefixOf(path)] = true; });
+      Object.keys(d).forEach(path => { if (d[path] === null && !localHas[prefixOf(path)]) delete d[path]; });
+      return d;
+    }
 // ==== SYNC CORE END ====
 
     let lastSynced = {}, syncReady = false;
@@ -1416,7 +1429,7 @@ const snapshotFlat = st => clone(flattenState(st));
       migrateGoals();
       migrateToV4();
       migrateV41();
-      { const b = readBase(); startupPending = b ? diffFlat(b, flattenState(state)) : null; }
+      { const b = readBase(); startupPending = b ? safePending(b, flattenState(state)) : null; }
       updatePeriodUI();
       renderAll();
 
@@ -1500,7 +1513,7 @@ const snapshotFlat = st => clone(flattenState(st));
       box.innerHTML = list.length ? list.map((b, i) => `
         <div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 dark:border-slate-800/60 text-sm">
           <div><div class="font-medium">${esc(b.date)} ${esc(b.time || '')}</div><div class="text-xs text-slate-500">${esc(b.label || '')} · ${Math.round(b.data.length / 1024)} КБ</div></div>
-          <button type="button" onclick="restoreBackup(${i})" class="text-xs font-semibold px-3 py-2 rounded-xl border min-h-[40px]">Відновити</button>
+          <span class="flex gap-2"><button type="button" onclick="restoreContributionsFrom(${i})" class="text-xs font-semibold px-3 py-2 rounded-xl border min-h-[40px]">Повернути внески</button><button type="button" onclick="restoreBackup(${i})" class="text-xs font-semibold px-3 py-2 rounded-xl border min-h-[40px]">Відновити все</button></span>
         </div>`).join('') : '<p class="text-xs text-slate-500">Копій ще немає: перша з’явиться після синхронізації.</p>';
     }
     function restoreBackup(i) {
@@ -4627,7 +4640,24 @@ const snapshotFlat = st => clone(flattenState(st));
     renderAll = function () { renderAllV432(); renderAppCard(); };
 
     
-window.addEventListener('DOMContentLoaded', () => {
+// v4.4.2: повертає внески, яких зараз немає, з вибраної автокопії. Інші дані не змінюються
+    function restoreContributionsFrom(i) {
+      const b = readBackups()[i];
+      if (!b) return;
+      let data;
+      try { data = JSON.parse(b.data); } catch (e) { return; }
+      const have = new Set((state.contributions || []).map(c => c.id));
+      const missing = (data.contributions || []).filter(c => c && c.id && !have.has(c.id));
+      if (!missing.length) { showModal('Нічого повертати', 'Усі внески з цієї копії вже є в застосунку.'); return; }
+      const sum = missing.reduce((s, c) => s + (c.amount || 0), 0);
+      showConfirmModal('Повернути внески?', `З копії від ${b.date} ${b.time || ''} буде додано внесків: ${missing.length}, на ${fmtMoney(sum)}. Інші дані не зміняться.`, () => {
+        state.contributions = (state.contributions || []).concat(missing);
+        saveToCloud(); renderAll();
+        showModal('Готово', 'Внески повернуто.');
+      }, 'Повернути');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
       (document.getElementById('income-date') || {}).value = getTodayString();
       document.getElementById('exp-date').value = getTodayString();
       installUndo();

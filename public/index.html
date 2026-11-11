@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v4.6.0</title>
+  <title>UsBudget — Спільний бюджет пари · v4.7.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -246,6 +246,28 @@
     @media (min-width: 640px) { #g-fab { bottom: 28px !important; } }
     @media (prefers-reduced-motion: reduce) { .g-tab, .g-mtab, .g-sub, #g-fab { transition-property: background-color, color; } }
 
+    .g-hero-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+    .g-hero-sub { margin: 6px 0 0; font-size: 14px; color: var(--g-muted); }
+    .g-sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 8px; }
+    .g-sec-head h2 { margin: 0; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .02em; }
+    .g-link { min-height: 44px; padding: 0 4px; border: 0; background: none; font-weight: 600; font-size: 14px; color: var(--g-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .g-ltags { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+    .g-ltag { border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; color: #111111; min-width: 0; }
+    .g-ltag-ok { background: var(--g-ok); } .g-ltag-warn { background: var(--g-pop); } .g-ltag-bad { background: var(--g-bad); }
+    .g-ltag-cat { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .g-ltag-sum { font-size: 22px; line-height: 1.15; }
+    .g-ltag-note { font-size: 11px; font-weight: 500; }
+    .g-ptile { background: var(--g-card) !important; color: var(--g-ink) !important; }
+    .g-chips { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .g-chip { position: relative; }
+    .g-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+    .g-chip span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--g-line); font-size: 14px; font-weight: 600; transition: background-color 150ms ease, border-color 150ms ease, transform 160ms var(--g-ease); }
+    .g-chip input:checked + span { background: var(--g-pop); border-color: var(--g-tag-line); color: #111111; }
+    .g-chip input:focus-visible + span { outline: 3px solid var(--g-ink); outline-offset: 2px; }
+    .g-chip:active span { transform: scale(0.97); }
+    .g-more summary { min-height: 44px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; font-weight: 600; cursor: pointer; }
+    #qa-amount { font-family: 'Oswald', sans-serif; font-size: 32px !important; font-weight: 600; }
+    input[type=number] { -moz-appearance: textfield; } input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     @media (prefers-reduced-motion: reduce) {
       html:not(.g-motion) *, html:not(.g-motion) *::before, html:not(.g-motion) *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
     }
@@ -270,7 +292,7 @@
         { id: 'december', name: 'Грудень', emoji: '🎄', line: 'Святковий грудень', a: '#16503A', b: '#FFB3AB' }
       ];
       var BY_MONTH = { 0: 'january', 1: 'february', 2: 'march', 3: 'april', 4: 'may', 5: 'june', 6: 'july', 7: 'august', 8: 'september', 9: 'october', 10: 'november', 11: 'december' };
-      var BASE = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#64748b', '#f43f5e', '#06b6d4', '#84cc16'];
+      var BASE = ['#111111', '#FFD43B', '#8CCB2E', '#FF7A66', '#5B8DEF', '#A98BE8', '#8A8F98', '#2BB3A8', '#F29D38'];
       function lighten(hex, f) {
         var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
         function c(v) { return Math.round(v + (255 - v) * f); }
@@ -278,7 +300,7 @@
       }
       window.usbChartColors = function () {
         var t = current();
-        if (!t) return BASE;
+        if (!t) return document.documentElement.classList.contains('dark') ? ['#F2F2EE'].concat(BASE.slice(1)) : BASE;
         var dark = document.documentElement.classList.contains('dark');
         return [dark ? lighten(t.a, 0.3) : t.a, dark ? lighten(t.b, 0.1) : t.b].concat(BASE.slice(2));
       };
@@ -898,6 +920,8 @@
 
   <!-- JavaScript логіка -->
   <script>
+    // Мова форматування чисел і дат (етап 5.4 додасть англійську)
+    const APP_LOCALE = 'uk-UA';
     const firebaseConfig = {
       apiKey: "AIzaSyC40zPZ1sq2jNlHmG-sBCz-WySdcCPxeAE",
       authDomain: "ourbudget-73f05.firebaseapp.com",
@@ -1680,7 +1704,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const net = window.__net || 0;
       if (Math.abs(net) < 1) { showModal('Баланс врегульовано', 'Ніхто нікому не винен за цей період.'); return; }
       const from = net > 0 ? 'p1' : 'p2', to = from === 'p1' ? 'p2' : 'p1', amt = Math.round(Math.abs(net));
-      showConfirmModal('Підтвердити розрахунок?', `${slotName(from)} переказав(-ла) ${amt.toLocaleString()} ${getCurrency()} для ${slotName(to)} за період «${getPeriodRange().label}». Баланс буде обнулено.`, () => {
+      showConfirmModal('Підтвердити розрахунок?', `${slotName(from)} переказав(-ла) ${amt.toLocaleString(APP_LOCALE)} ${getCurrency()} для ${slotName(to)} за період «${getPeriodRange().label}». Баланс буде обнулено.`, () => {
         (state.settlements = state.settlements || []).push({ id: 'st_' + Date.now(), date: getTodayString(), periodKey: currentPKey(), from, to, amount: amt });
         saveToCloud(); renderAll();
       }, 'Підтвердити');
@@ -1693,7 +1717,7 @@ const snapshotFlat = st => clone(flattenState(st));
       box.innerHTML = list.length ? list.map(x => `
         <div class="flex items-center justify-between gap-3 py-2.5 border-b border-slate-100 dark:border-slate-800/60 text-sm">
           <div><div class="font-medium">${esc(slotName(x.from))} → ${esc(slotName(x.to))}</div><div class="text-xs text-slate-500">${esc(x.date)} · ${esc(String(x.periodKey).split(':')[1] || '')}</div></div>
-          <div class="flex items-center gap-3"><span class="font-semibold">${x.amount.toLocaleString()} ${curr}</span>
+          <div class="flex items-center gap-3"><span class="font-semibold">${x.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
             <button type="button" onclick="deleteSettlement('${x.id}')" class="text-rose-500 text-xs font-medium min-h-[36px] px-2">Скасувати</button></div>
         </div>`).join('') : '<p class="text-center text-slate-400 text-xs py-3">Підтверджених розрахунків ще немає</p>';
     }
@@ -1880,7 +1904,7 @@ const snapshotFlat = st => clone(flattenState(st));
             <div class="flex justify-between items-center text-xs">
               <span class="font-bold">${esc(cat)}</span>
               <div class="flex items-center gap-2">
-                <span class="text-slate-500">${spent.toLocaleString()} / ${limit.toLocaleString()} ${curr} (${pct}%)</span>
+                <span class="text-slate-500">${spent.toLocaleString(APP_LOCALE)} / ${limit.toLocaleString(APP_LOCALE)} ${curr} (${pct}%)</span>
                 <span class="px-2 py-0.5 rounded-md font-semibold ${badgeBg}">${statusText}</span>
               </div>
             </div>
@@ -1961,7 +1985,7 @@ const snapshotFlat = st => clone(flattenState(st));
               <td class="py-3 font-medium">${esc(fx.title)}${fx.endDate ? `<span class="block text-[10px] font-normal text-slate-400">до ${fx.endDate}</span>` : ''}</td>
               <td class="py-3 text-xs"><span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700">${typeLabels[fx.type] || fx.type}</span></td>
               <td class="py-3 text-xs text-slate-500">${FREQ[fx.frequency] || fx.frequency}</td>
-              <td class="py-3 font-semibold">${fx.amount.toLocaleString()} ${curr}</td>
+              <td class="py-3 font-semibold">${fx.amount.toLocaleString(APP_LOCALE)} ${curr}</td>
               <td class="py-3 text-xs">${scopeText}</td>
               <td class="py-3 text-right flex items-center justify-end gap-2">
                 <button onclick="markFixedPaid('${fx.id}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-500 text-white'}">${isPaid ? '✅ Сплачено' : '💳 Сплатити'}</button>
@@ -1986,7 +2010,7 @@ const snapshotFlat = st => clone(flattenState(st));
                 <span class="flex items-center"><button onclick="openEdit('fixed', '${fx.id}')" class="text-xs p-1" aria-label="Редагувати">✏️</button><button onclick="deleteFixedExpense('${fx.id}')" class="text-slate-400 hover:text-rose-500 text-xs p-1">✕</button></span>
               </div>
               <div class="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                <span class="font-bold text-sm">${fx.amount.toLocaleString()} ${curr}</span>
+                <span class="font-bold text-sm">${fx.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
                 <button onclick="markFixedPaid('${fx.id}')" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-500 text-white'}">${isPaid ? '✅ Сплачено' : '💳 Сплатити'}</button>
               </div>
             </div>
@@ -2032,7 +2056,7 @@ const snapshotFlat = st => clone(flattenState(st));
         const historyHtml = (g.history || []).length ? `
           <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs space-y-1">
             <span class="font-semibold text-slate-500">Останні внески:</span>
-            ${g.history.slice(-3).reverse().map(h => `<div class="flex justify-between text-slate-600 dark:text-slate-400"><span>${esc(h.partner)} (${h.date}):</span><span class="font-medium text-emerald-600">+${h.amount.toLocaleString()} ${curr}</span></div>`).join('')}
+            ${g.history.slice(-3).reverse().map(h => `<div class="flex justify-between text-slate-600 dark:text-slate-400"><span>${esc(h.partner)} (${h.date}):</span><span class="font-medium text-emerald-600">+${h.amount.toLocaleString(APP_LOCALE)} ${curr}</span></div>`).join('')}
           </div>
         ` : '';
 
@@ -2044,7 +2068,7 @@ const snapshotFlat = st => clone(flattenState(st));
                   <h4 class="font-bold text-sm sm:text-base">${esc(g.title)}</h4>
                   ${scopeBadge}
                 </div>
-                <p class="text-xs text-slate-500">${g.current.toLocaleString()} з ${g.target.toLocaleString()} ${curr} ${g.deadline ? `· До: ${g.deadline}` : ''}</p>
+                <p class="text-xs text-slate-500">${g.current.toLocaleString(APP_LOCALE)} з ${g.target.toLocaleString(APP_LOCALE)} ${curr} ${g.deadline ? `· До: ${g.deadline}` : ''}</p>
               </div>
               <span class="flex items-center"><button onclick="openEdit('goal', '${g.id}')" class="text-xs p-1" aria-label="Редагувати">✏️</button><button onclick="deleteGoal('${g.id}')" class="text-slate-400 hover:text-rose-500 text-xs p-1">✕</button></span>
             </div>
@@ -2494,7 +2518,7 @@ const snapshotFlat = st => clone(flattenState(st));
           <td class="py-3 text-xs text-slate-500">${i.date || '—'}</td>
           <td class="py-3 font-medium">${formatPartnerBadge(i.partner)}</td>
           <td class="py-3">${esc(i.source)}</td>
-          <td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString()} ${curr}</td>
+          <td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td>
           <td class="py-3 text-right whitespace-nowrap"><button onclick="openEdit('income', '${i.id}')" class="text-pink-600 text-xs font-medium mr-3">Редагувати</button><button onclick="deleteIncome('${i.id}')" class="text-rose-500 text-xs">Видалити</button></td>
         </tr>
       `).join('') : `<tr><td colspan="5" class="py-4 text-center text-slate-400 text-xs">Немає записів за період</td></tr>`;
@@ -2511,7 +2535,7 @@ const snapshotFlat = st => clone(flattenState(st));
               <span class="font-bold text-sm text-slate-900 dark:text-white">${esc(i.source)}</span>
             </div>
             <div class="text-right">
-              <span class="font-bold text-emerald-600 text-sm block">+${i.amount.toLocaleString()} ${curr}</span>
+              <span class="font-bold text-emerald-600 text-sm block">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
               <span class="block mt-1"><button onclick="openEdit('income', '${i.id}')" class="text-pink-600 text-[11px] font-medium mr-3">Редагувати</button><button onclick="deleteIncome('${i.id}')" class="text-rose-500 text-[11px]">Видалити</button></span>
             </div>
           </div>
@@ -2529,7 +2553,7 @@ const snapshotFlat = st => clone(flattenState(st));
           <td class="py-3"><span class="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-700">${esc(e.category)}</span></td>
           <td class="py-3">${formatPartnerBadge(e.payer)}</td>
           <td class="py-3 text-xs text-slate-500">${getSplitName(e.split)}</td>
-          <td class="py-3 font-semibold text-rose-600">-${e.amount.toLocaleString()} ${curr}</td>
+          <td class="py-3 font-semibold text-rose-600">-${e.amount.toLocaleString(APP_LOCALE)} ${curr}</td>
           <td class="py-3 text-right whitespace-nowrap"><button onclick="openEdit('expense', '${e.id}')" class="text-pink-600 text-xs font-medium mr-3">Редагувати</button><button onclick="deleteExpense('${e.id}')" class="text-rose-500 text-xs">Видалити</button></td>
         </tr>
       `).join('') : `<tr><td colspan="7" class="py-4 text-center text-slate-400 text-xs">Немає записів за період</td></tr>`;
@@ -2544,7 +2568,7 @@ const snapshotFlat = st => clone(flattenState(st));
                 <h4 class="font-bold text-sm mt-1 text-slate-900 dark:text-white">${esc(e.title)}</h4>
               </div>
               <div class="text-right">
-                <span class="font-bold text-rose-600 text-sm block">-${e.amount.toLocaleString()} ${curr}</span>
+                <span class="font-bold text-rose-600 text-sm block">-${e.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
                 <span class="text-[10px] text-slate-400">${e.date || ''}</span>
               </div>
             </div>
@@ -2561,9 +2585,9 @@ const snapshotFlat = st => clone(flattenState(st));
       const savings = Math.max(0, totalIncome - totalExpenses);
       const savingsRate = totalIncome > 0 ? Math.round((savings / totalIncome) * 100) : 0;
 
-      document.getElementById('kpi-income').innerText = totalIncome.toLocaleString() + ' ' + curr;
-      document.getElementById('kpi-expenses').innerText = totalExpenses.toLocaleString() + ' ' + curr;
-      document.getElementById('kpi-savings').innerText = savings.toLocaleString() + ' ' + curr;
+      document.getElementById('kpi-income').innerText = totalIncome.toLocaleString(APP_LOCALE) + ' ' + curr;
+      document.getElementById('kpi-expenses').innerText = totalExpenses.toLocaleString(APP_LOCALE) + ' ' + curr;
+      document.getElementById('kpi-savings').innerText = savings.toLocaleString(APP_LOCALE) + ' ' + curr;
       document.getElementById('kpi-savings-rate').innerText = savingsRate + '%';
 
       calculateSettlement(totalIncome, curr, periodIncomes, periodExpenses);
@@ -2611,9 +2635,9 @@ const snapshotFlat = st => clone(flattenState(st));
       if (Math.abs(p1OwesP2) < 1) {
         badge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800'; badge.innerText = 'Баланс врегульовано'; text.innerText = 'Ніхто нікому не винен'; details.innerText = 'Усі спільні витрати розподілено рівномірно.';
       } else if (p1OwesP2 > 0) {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-pink-100 text-pink-800'; badge.innerText = 'Розрахунок'; text.innerText = `${p1Avatar} ${p1} винен(-на) для ${p2Avatar} ${p2}: ${Math.round(p1OwesP2).toLocaleString()} ${curr}`; details.innerText = 'Перерахуйте цю суму для вирівнювання балансу.';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-pink-100 text-pink-800'; badge.innerText = 'Розрахунок'; text.innerText = `${p1Avatar} ${p1} винен(-на) для ${p2Avatar} ${p2}: ${Math.round(p1OwesP2).toLocaleString(APP_LOCALE)} ${curr}`; details.innerText = 'Перерахуйте цю суму для вирівнювання балансу.';
       } else {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800'; badge.innerText = 'Розрахунок'; text.innerText = `${p2Avatar} ${p2} винен(-на) для ${p1Avatar} ${p1}: ${Math.round(-p1OwesP2).toLocaleString()} ${curr}`; details.innerText = 'Перерахуйте цю суму для вирівнювання балансу.';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800'; badge.innerText = 'Розрахунок'; text.innerText = `${p2Avatar} ${p2} винен(-на) для ${p1Avatar} ${p1}: ${Math.round(-p1OwesP2).toLocaleString(APP_LOCALE)} ${curr}`; details.innerText = 'Перерахуйте цю суму для вирівнювання балансу.';
       }
     }
 
@@ -2839,7 +2863,7 @@ const snapshotFlat = st => clone(flattenState(st));
           responsive: true, maintainAspectRatio: false, cutout: '62%',
           plugins: {
             legend: { position: 'bottom', labels: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Plus Jakarta Sans', size: 11 } } },
-            tooltip: { enabled: has, callbacks: { label: c => ` ${c.label}: ${Math.round(c.parsed).toLocaleString()} ${curr} (${Math.round(c.parsed / total * 100)}%)` } }
+            tooltip: { enabled: has, callbacks: { label: c => ` ${c.label}: ${Math.round(c.parsed).toLocaleString(APP_LOCALE)} ${curr} (${Math.round(c.parsed / total * 100)}%)` } }
           }
         }
       });
@@ -2848,7 +2872,7 @@ const snapshotFlat = st => clone(flattenState(st));
     function renderPersonalTabs() {
       PALETTE = usbChartColors();
       const curr = getCurrency();
-      const f = n => Math.round(n).toLocaleString() + ' ' + curr;
+      const f = n => Math.round(n).toLocaleString(APP_LOCALE) + ' ' + curr;
       const periodExpenses = filterByPeriod(state.expenses);
       const totalExp = sumBy(periodExpenses, e => e.amount);
       const { periodKey } = getPeriodRange();
@@ -2913,7 +2937,7 @@ const snapshotFlat = st => clone(flattenState(st));
                 <div class="flex justify-between items-center text-xs">
                   <span class="font-bold">${esc(g.title)}</span>
                   <div class="flex items-center gap-2">
-                    <span class="text-slate-500">${g.current.toLocaleString()} / ${g.target.toLocaleString()} ${curr} (${pct}%)${g.deadline ? ' · до ' + g.deadline : ''}</span>
+                    <span class="text-slate-500">${g.current.toLocaleString(APP_LOCALE)} / ${g.target.toLocaleString(APP_LOCALE)} ${curr} (${pct}%)${g.deadline ? ' · до ' + g.deadline : ''}</span>
                     <button onclick="openEdit('goal', '${g.id}')" class="text-xs p-1" aria-label="Редагувати">✏️</button><button onclick="deletePersonalGoal('${k}', '${g.id}')" class="text-rose-500 hover:text-rose-700">✕</button>
                   </div>
                 </div>
@@ -2938,7 +2962,7 @@ const snapshotFlat = st => clone(flattenState(st));
               <div class="p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs">
                 <div>
                   <span class="font-bold block">${esc(fx.title)}</span>
-                  <span class="text-slate-400">${fx.amount.toLocaleString()} ${curr}</span>
+                  <span class="text-slate-400">${fx.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <button onclick="markPersonalFixedPaid('${k}', '${fx.id}')" class="px-3 py-1.5 rounded-lg font-semibold transition ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-500 text-white'}">
@@ -2992,12 +3016,12 @@ const snapshotFlat = st => clone(flattenState(st));
           if (allCats.includes(cur)) sel.value = cur;
         }
 
-        const sharedRows = d.mode === 'integrated' ? d.shared.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${i.date || '—'}</td><td class="py-3">${esc(i.source)} <span class="text-[10px] text-slate-400">спільний</span></td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString()} ${curr}</td><td></td></tr>`) : [];
-        const ownRows = d.pi.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${i.date || '—'}</td><td class="py-3">${esc(i.source)}</td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString()} ${curr}</td><td class="text-right"><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalIncomes', '${i.id}')" class="text-rose-500 text-xs">Видалити</button></td></tr>`);
+        const sharedRows = d.mode === 'integrated' ? d.shared.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${i.date || '—'}</td><td class="py-3">${esc(i.source)} <span class="text-[10px] text-slate-400">спільний</span></td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td><td></td></tr>`) : [];
+        const ownRows = d.pi.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${i.date || '—'}</td><td class="py-3">${esc(i.source)}</td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td><td class="text-right"><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalIncomes', '${i.id}')" class="text-rose-500 text-xs">Видалити</button></td></tr>`);
         const allInc = sharedRows.concat(ownRows);
         
         document.getElementById(`pp-${k}-inc-body`).innerHTML = allInc.length ? allInc.join('') : emptyMsg;
-        document.getElementById(`pp-${k}-inc-mob`).innerHTML = allInc.length ? (d.mode === 'integrated' ? d.shared.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-[10px] text-slate-400">${i.date || ''} (спільний)</span></div><span class="font-bold text-emerald-600">+${i.amount.toLocaleString()} ${curr}</span></div>`).join('') : '') + d.pi.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-[10px] text-slate-400">${i.date || ''}</span></div><div class="text-right"><span class="font-bold text-emerald-600 block">+${i.amount.toLocaleString()} ${curr}</span><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalIncomes', '${i.id}')" class="text-rose-500 text-[10px]">Видалити</button></div></div>`).join('') : emptyMsg;
+        document.getElementById(`pp-${k}-inc-mob`).innerHTML = allInc.length ? (d.mode === 'integrated' ? d.shared.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-[10px] text-slate-400">${i.date || ''} (спільний)</span></div><span class="font-bold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span></div>`).join('') : '') + d.pi.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-[10px] text-slate-400">${i.date || ''}</span></div><div class="text-right"><span class="font-bold text-emerald-600 block">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalIncomes', '${i.id}')" class="text-rose-500 text-[10px]">Видалити</button></div></div>`).join('') : emptyMsg;
 
         const pe = applyListFilter(listFilters.pexp[k], d.pe);
         toolbarSummary('pexp:' + k, pe, d.pe, curr);
@@ -3006,7 +3030,7 @@ const snapshotFlat = st => clone(flattenState(st));
             <td class="py-3 text-xs text-slate-500">${x.date || '—'}</td>
             <td class="py-3 font-medium">${esc(x.title)}</td>
             <td class="py-3"><span class="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-700">${esc(x.category)}</span></td>
-            <td class="py-3 font-semibold text-rose-600">-${x.amount.toLocaleString()} ${curr}</td>
+            <td class="py-3 font-semibold text-rose-600">-${x.amount.toLocaleString(APP_LOCALE)} ${curr}</td>
             <td class="py-3 text-right"><button onclick="openEdit('pexpense', '${x.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalExpenses', '${x.id}')" class="text-rose-500 text-xs">Видалити</button></td>
           </tr>`);
         document.getElementById(`pp-${k}-exp-body`).innerHTML = allExp.length ? allExp.join('') : emptyMsg;
@@ -3019,7 +3043,7 @@ const snapshotFlat = st => clone(flattenState(st));
               <span class="text-[10px] text-slate-400">${x.date || ''}</span>
             </div>
             <div class="text-right">
-              <span class="font-bold text-rose-600 block">-${x.amount.toLocaleString()} ${curr}</span>
+              <span class="font-bold text-rose-600 block">-${x.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
               <button onclick="openEdit('pexpense', '${x.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalExpenses', '${x.id}')" class="text-rose-500 text-[10px] mt-1">Видалити</button>
             </div>
           </div>
@@ -3416,7 +3440,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const el = document.querySelector(`[data-toolbar="${key}"] [data-k="sum"]`);
       if (!el) return;
       const sum = shown.reduce((s, x) => s + x.amount, 0);
-      el.textContent = `Показано ${shown.length} із ${all.length} · ${Math.round(sum).toLocaleString()} ${curr}`;
+      el.textContent = `Показано ${shown.length} із ${all.length} · ${Math.round(sum).toLocaleString(APP_LOCALE)} ${curr}`;
     }
 
     function buildListToolbars() {
@@ -3445,7 +3469,7 @@ const snapshotFlat = st => clone(flattenState(st));
     const nameOf = v => v === 'p1' ? getPartner1Name() : v === 'p2' ? getPartner2Name() : v === 'card' ? 'Спільна картка' : v === 'adj' ? 'Коригування' : (v || '');
     const avatarOf = v => v === 'p1' ? getPartner1Avatar() : v === 'p2' ? getPartner2Avatar() : v === 'card' ? '💳' : '⚙️';
     const payerOpts = () => [['card', '💳 Спільна картка'], ['p1', getPartner1Avatar() + ' ' + getPartner1Name() + ' (зі своїх)'], ['p2', getPartner2Avatar() + ' ' + getPartner2Name() + ' (зі своїх)']];
-    const fmtMoney = n => Math.round(n).toLocaleString() + ' ' + getCurrency();
+    const fmtMoney = n => Math.round(n).toLocaleString(APP_LOCALE) + ' ' + getCurrency();
 
     function migrateToV4() {
       if (state.settings && state.settings.modelVersion >= 4) return false;
@@ -3530,7 +3554,7 @@ const snapshotFlat = st => clone(flattenState(st));
             ${c.note ? `<div class="text-xs text-slate-500 mt-1 truncate">${esc(c.note)}</div>` : ''}
           </div>
           <div class="text-right shrink-0">
-            <div class="font-bold text-emerald-600">+${c.amount.toLocaleString()} ${curr}</div>
+            <div class="font-bold text-emerald-600">+${c.amount.toLocaleString(APP_LOCALE)} ${curr}</div>
             <div class="mt-1 text-xs"><button onclick="openEdit('contribution', '${c.id}')" class="text-pink-600 font-medium mr-3">Редагувати</button><button onclick="deleteContribution('${c.id}')" class="text-rose-500">Видалити</button></div>
           </div>
         </div>`).join('') : '<p class="text-center text-slate-400 text-xs py-4">Внесків за цей місяць немає</p>';
@@ -3839,7 +3863,7 @@ const snapshotFlat = st => clone(flattenState(st));
             <div class="text-[11px] text-slate-500">${occ} · ${FREQ[fx.frequency] || fx.frequency}${compact ? '' : ' · ' + who}${goal ? ' · в ціль «' + esc(goal.title) + '»' : ''}${rem ? ` · лишилось ${rem.count} пл. (${fmtMoney(rem.sum)})` : ''}</div>
           </div>
           <div class="text-right shrink-0">
-            <div class="font-bold">${K.sign}${fx.amount.toLocaleString()} ${curr}</div>
+            <div class="font-bold">${K.sign}${fx.amount.toLocaleString(APP_LOCALE)} ${curr}</div>
             <div class="flex items-center justify-end gap-1.5 mt-1 text-xs">
               <span class="px-2 py-0.5 rounded-md ${badge[0]}">${badge[1]}</span>
               <button onclick="payOccurrence('${fx.id}', '${occ}')" class="px-2.5 py-1 rounded-lg font-semibold ${key ? 'border text-slate-500' : 'bg-pink-500 text-white'}">${key ? 'Скасувати' : K.pay}</button>
@@ -4299,8 +4323,7 @@ const snapshotFlat = st => clone(flattenState(st));
       filterByPeriod(state.expenses).forEach(e => { if (e.payer in put) put[e.payer] += e.amount; });
       const pct1 = getPct1();
       const tile = (k, pct) => {
-        const c = partnerColor(k), t = onColor(c);
-        return `<div class="g-tile" style="background:${c};color:${t}"><div class="g-display" style="font-weight:700;font-size:12px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nameOf(k))} · ${pct}%</div><div class="g-num" style="font-size:22px;margin-top:8px">${fmtMoney(put[k])}</div><div style="font-size:12px;opacity:.85;margin-top:2px">вклад цього місяця</div></div>`;
+        return `<div class="g-tile g-ptile"><div style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;min-width:0">${mono(k)}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nameOf(k))} · ${pct}%</span></div><div class="g-num" style="font-size:22px;margin-top:8px">${fmtMoney(put[k])}</div><div style="font-size:12px;opacity:.85;margin-top:2px">вклад цього місяця</div></div>`;
       };
       const s = v4Settle(v4Balance(state));
       const strip = s.debtor
@@ -4317,19 +4340,43 @@ const snapshotFlat = st => clone(flattenState(st));
             return `<div class="flex items-center gap-3 py-2.5 border-t">
               <span class="g-chip-ic">${ICON(KI[recKindOf(r.fx)] || 'receipt', 18)}</span>
               <div class="flex-1 min-w-0"><div class="font-semibold truncate">${esc(r.fx.title)}</div><div class="text-xs ${late ? 'text-rose-600 font-semibold' : soon ? 'text-amber-700 font-semibold' : 'text-slate-500'}">${fmtDay(r.o)}${late ? ' · прострочено' : soon ? ' · скоро' : ''}</div></div>
-              <span class="g-num" style="font-size:14px">${K.sign}${r.fx.amount.toLocaleString()}</span>
+              <span class="g-num" style="font-size:14px">${K.sign}${r.fx.amount.toLocaleString(APP_LOCALE)}</span>
               <button type="button" class="g-btn-sm" style="padding:0 14px;font-size:13px" onclick="payOccurrence('${r.fx.id}', '${r.o}')">${K.pay}</button>
             </div>`;
           }).join('')}
         </div>` : '';
+      const limits = state.settings.categoryLimits || {}, hasLimits = Object.keys(limits).some(c => Number(limits[c]) > 0);
+      const heroLabel = hasLimits ? 'Можна ще витратити' : label, heroSum = hasLimits ? limitRemainder('shared') : v4Card(state);
+      const cardLine = hasLimits ? `<p class="g-hero-sub">На спільній картці: <b>${fmtMoney(v4Card(state))}</b></p>` : '';
       host.innerHTML = `
-        <div class="g-hero">${motifSvg()}
-          <div style="font-size:13px;font-weight:600;opacity:.92">${esc(label)}</div>
-          <div class="g-num" style="font-size:44px;line-height:1.05;margin-top:6px">${fmtMoney(v4Card(state))}</div>
-          <p style="margin:10px 0 0;font-size:15px;line-height:1.45;max-width:30rem">${sentence}</p>
+        <div class="g-hero">
+          <div class="g-hero-label">${esc(heroLabel)}</div>
+          <div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${fmtMoney(heroSum)}</div>
+          ${cardLine}
+          <p style="margin:8px 0 0;font-size:15px;line-height:1.45;max-width:34rem">${sentence}</p>
         </div>
+        ${limitTagsHtml()}
         <div style="display:grid;grid-template-columns:${Math.max(1, pct1)}fr ${Math.max(1, 100 - pct1)}fr;gap:8px">${tile('p1', pct1)}${tile('p2', 100 - pct1)}</div>
         ${strip}${upHtml}`;
+    }
+
+    // v5: ліміти категорій як кольорові цінники — зелений є запас, жовтий мало, червоний вичерпано
+    function limitTagsHtml() {
+      const limits = state.settings.categoryLimits || {}, spent = {};
+      filterByPeriod(state.expenses).filter(x => x.kind !== 'savings').forEach(x => { spent[x.category] = (spent[x.category] || 0) + x.amount; });
+      const rows = Object.keys(limits).filter(c => Number(limits[c]) > 0).map(c => {
+        const lim = Number(limits[c]), left = lim - (spent[c] || 0);
+        return { c, lim, left, ratio: left / lim };
+      }).sort((a, b) => a.ratio - b.ratio).slice(0, 6);
+      if (!rows.length) return '';
+      const tag = r => {
+        const st = r.left <= 0 ? 'bad' : r.ratio <= 0.2 ? 'warn' : 'ok';
+        const note = r.left < 0 ? 'понад ліміт на ' + fmtMoney(-r.left) : r.left === 0 ? 'вичерпано' : 'з ' + fmtMoney(r.lim);
+        return `<div class="g-ltag g-ltag-${st}"><span class="g-ltag-cat">${esc(r.c)}</span><span class="g-num g-ltag-sum">${fmtMoney(Math.max(0, r.left))}</span><span class="g-ltag-note">${note}</span></div>`;
+      };
+      return `<section aria-labelledby="g-limits-h">
+        <div class="g-sec-head"><h2 id="g-limits-h">Ліміти</h2><button type="button" class="g-link" onclick="switchTab('expenses')">Усі категорії</button></div>
+        <div class="g-ltags">${rows.map(tag).join('')}</div></section>`;
     }
 
     // Налаштування: ініціали чи емодзі
@@ -4712,6 +4759,7 @@ const snapshotFlat = st => clone(flattenState(st));
       let lastCat = '';
       try { lastCat = localStorage.getItem('usbudget_qa_cat') || ''; } catch (e) {}
       const opt = (v, l, sel) => `<option value="${esc(v)}"${sel ? ' selected' : ''}>${esc(l)}</option>`;
+      const orderedCats = lastCat && cats.indexOf(lastCat) >= 0 ? [lastCat].concat(cats.filter(c => c !== lastCat)) : cats.slice();
       const m = document.createElement('div');
       m.id = 'edit-modal';
       m.className = 'fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-4 bg-black/50';
@@ -4721,10 +4769,18 @@ const snapshotFlat = st => clone(flattenState(st));
           <div><label class="${lbl}" for="qa-amount">Сума, ${esc(getCurrency())}</label><input id="qa-amount" type="number" inputmode="decimal" step="any" placeholder="0" class="${inp} g-num" style="font-size:24px"></div>
           <div><label class="${lbl}" for="qa-title">Що купили</label><input id="qa-title" type="text" placeholder="Необов’язково" class="${inp}"></div>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="${lbl}" for="qa-cat">Категорія</label><select id="qa-cat" class="${inp}">${cats.map(c => opt(c, c, c === lastCat)).join('')}</select></div>
-            <div><label class="${lbl}" for="qa-payer">Хто платив</label><select id="qa-payer" class="${inp}">${payerOpts().map(o => opt(o[0], o[1], o[0] === 'card')).join('')}</select></div>
           </div>
-          <div><label class="${lbl}" for="qa-for">Для кого</label><select id="qa-for" class="${inp}">${opt('shared', 'Спільна витрата', true)}${opt('p1', 'Особисте: ' + nameOf('p1'))}${opt('p2', 'Особисте: ' + nameOf('p2'))}</select></div>
+          <fieldset class="g-chips"><legend class="${lbl}">Категорія</legend>
+            ${orderedCats.map((c, i) => `<label class="g-chip"><input type="radio" name="qa-cat-r" value="${esc(c)}"${i === 0 ? ' checked' : ''}><span>${esc(c)}</span></label>`).join('')}
+          </fieldset>
+          <input type="hidden" id="qa-cat" value="${esc(orderedCats[0] || '')}">
+          <details class="g-more">
+            <summary>Хто платив і для кого <span id="qa-more-sum" class="text-slate-500">· Спільна картка, спільна витрата</span></summary>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
+              <div><label class="${lbl}" for="qa-payer">Хто платив</label><select id="qa-payer" class="${inp}">${payerOpts().map(o => opt(o[0], o[1], o[0] === 'card')).join('')}</select></div>
+              <div><label class="${lbl}" for="qa-for">Для кого</label><select id="qa-for" class="${inp}">${opt('shared', 'Спільна витрата', true)}${opt('p1', 'Особисте: ' + nameOf('p1'))}${opt('p2', 'Особисте: ' + nameOf('p2'))}</select></div>
+            </div>
+          </details>
           <p id="qa-err" class="text-xs text-rose-500 min-h-4"></p>
           <div class="flex gap-2">
             <button type="button" id="qa-cancel" class="flex-1 py-3 rounded-xl border text-sm font-medium">Скасувати</button>
@@ -4734,6 +4790,9 @@ const snapshotFlat = st => clone(flattenState(st));
       document.body.appendChild(m);
       m.addEventListener('click', e => { if (e.target === m) closeEdit(); });
       m.querySelector('#qa-cancel').onclick = closeEdit;
+      m.querySelectorAll('input[name="qa-cat-r"]').forEach(r => { r.onchange = () => { m.querySelector('#qa-cat').value = r.value; }; });
+      const moreSum = () => { const ps = m.querySelector('#qa-payer'), fs = m.querySelector('#qa-for'); m.querySelector('#qa-more-sum').textContent = '· ' + ps.options[ps.selectedIndex].text + ', ' + fs.options[fs.selectedIndex].text.toLowerCase(); };
+      m.querySelector('#qa-payer').onchange = moreSum; m.querySelector('#qa-for').onchange = moreSum;
       m.querySelector('form').onsubmit = ev => {
         ev.preventDefault();
         const v = id => m.querySelector('#' + id).value, err = t => { m.querySelector('#qa-err').textContent = t; };

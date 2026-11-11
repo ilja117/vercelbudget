@@ -6,16 +6,17 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#111111">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v4.4.2</title>
+  <title>UsBudget — Спільний бюджет пари · v4.4.3</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js для інтерактивних графіків -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   
   <!-- Firebase SDKs (v9 Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -1006,10 +1007,13 @@
       });
     }
 
-    function getPartner1Name() { return (state.settings && state.settings.partner1 && state.settings.partner1.trim()) || 'Партнер 1'; }
-    function getPartner2Name() { return (state.settings && state.settings.partner2 && state.settings.partner2.trim()) || 'Партнер 2'; }
-    function getPartner1Avatar() { return (state.settings && state.settings.partner1Avatar) || '👩'; }
-    function getPartner2Avatar() { return (state.settings && state.settings.partner2Avatar) || '👨'; }
+    // Імена й аватари вставляються в HTML у багатьох місцях, тож прибираємо символи розмітки одразу тут.
+    // Апостроф лишається (Мар'яна): імена не потрапляють в onclick-атрибути.
+    const cleanLabel = (v, max) => Array.from(String(v || '').replace(/[<>"`]/g, '').trim()).slice(0, max).join('');
+    function getPartner1Name() { return cleanLabel(state.settings && state.settings.partner1, 40) || 'Партнер 1'; }
+    function getPartner2Name() { return cleanLabel(state.settings && state.settings.partner2, 40) || 'Партнер 2'; }
+    function getPartner1Avatar() { return cleanLabel(state.settings && state.settings.partner1Avatar, 8) || '👩'; }
+    function getPartner2Avatar() { return cleanLabel(state.settings && state.settings.partner2Avatar, 8) || '👨'; }
     function getPartner1Color() { return (state.settings && state.settings.partner1Color) || '#ec4899'; }
     function getPartner2Color() { return (state.settings && state.settings.partner2Color) || '#3b82f6'; }
     function getCurrency() { return (state.settings && state.settings.currency) || '₴'; }
@@ -2145,8 +2149,8 @@ const snapshotFlat = st => clone(flattenState(st));
       const p2Name = document.getElementById('settings-p2-name')?.value.trim() || getPartner2Name();
       document.getElementById('p1-card-avatar').innerText = p1Avatar;
       document.getElementById('p2-card-avatar').innerText = p2Avatar;
-      document.getElementById('preview-p1').innerHTML = `${p1Avatar} ${p1Name}`;
-      document.getElementById('preview-p2').innerHTML = `${p2Avatar} ${p2Name}`;
+      document.getElementById('preview-p1').textContent = `${p1Avatar} ${p1Name}`;
+      document.getElementById('preview-p2').textContent = `${p2Avatar} ${p2Name}`;
     }
 
     function populateSettingsForm() {
@@ -2166,12 +2170,26 @@ const snapshotFlat = st => clone(flattenState(st));
       renderCategoriesList();
     }
 
+    // Записи зберігають ім'я партнера текстом, тож після перейменування старі доходи й витрати
+    // «губилися» з розрахунків. Переносимо всі посилання зі старого імені на нове.
+    function renamePartnerRefs(map) {
+      const keys = Object.keys(map).filter(k => map[k] !== k);
+      if (!keys.length) return;
+      const fix = r => { if (!r || typeof r !== 'object') return; ['partner', 'payer', 'from', 'to'].forEach(f => { if (keys.indexOf(r[f]) >= 0) r[f] = map[r[f]]; }); };
+      COLL.forEach(c => (state[c] || []).forEach(r => { fix(r); (r.history || []).forEach(fix); }));
+    }
+
     function savePartnerSettings(e) {
       if (e) e.preventDefault();
-      state.settings.partner1 = document.getElementById('settings-p1-name').value.trim() || 'Партнер 1';
-      state.settings.partner2 = document.getElementById('settings-p2-name').value.trim() || 'Партнер 2';
-      state.settings.partner1Avatar = document.getElementById('settings-p1-avatar').value;
-      state.settings.partner2Avatar = document.getElementById('settings-p2-avatar').value;
+      const old1 = getPartner1Name(), old2 = getPartner2Name();
+      const new1 = cleanLabel(document.getElementById('settings-p1-name').value, 40) || 'Партнер 1';
+      const new2 = cleanLabel(document.getElementById('settings-p2-name').value, 40) || 'Партнер 2';
+      if (new1 === new2) { showModal('Однакові імена', 'Імена партнерів мають відрізнятися: за ними застосунок розрізняє, хто платив.'); return; }
+      state.settings.partner1 = new1;
+      state.settings.partner2 = new2;
+      renamePartnerRefs({ [old1]: new1, [old2]: new2 });
+      state.settings.partner1Avatar = cleanLabel(document.getElementById('settings-p1-avatar').value, 8);
+      state.settings.partner2Avatar = cleanLabel(document.getElementById('settings-p2-avatar').value, 8);
       state.settings.partner1Bday = document.getElementById('settings-p1-bday').value;
       state.settings.partner2Bday = document.getElementById('settings-p2-bday').value;
       state.settings.anniversaryDate = document.getElementById('settings-anniversary').value;

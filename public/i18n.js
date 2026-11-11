@@ -78,7 +78,7 @@
     'Останні внески:': 'Recent contributions:', 'Відпустка...': 'Holiday…', 'Ціль досягнуто!': 'Goal reached!',
     // Особисте
     'Мій дохід мінус внесок у спільне, витрати й відкладене': 'My income minus my share, spending and savings', 'Без PIN': 'No PIN', 'Захищено': 'Protected', 'Без захисту': 'Not protected',
-    'Дохід': 'Income', 'У спільне': 'To shared', 'Витрачено': 'Spent', 'Вільний залишок': 'Free balance', 'Особисті цілі': 'Personal goals', 'Скарбнички': 'Savings jars',
+    'Дохід': 'Income', 'У спільне': 'To shared', 'Витрачено': 'Spent', 'Вільний залишок': 'Free balance', 'Вільний залишок ': 'Free balance', 'Особисті цілі': 'Personal goals', 'Скарбнички': 'Savings jars',
     'Внести залишок': 'Add the remainder', 'Мої регулярні': 'My recurring', '+ Додати в «Регулярні»': '+ Add to Recurring', 'Додати власний дохід': 'Add my income',
     'Додати особисту витрату': 'Add a personal expense', 'Власні категорії та ліміти': 'My categories and limits', 'Мої доходи': 'My income', 'Мої витрати': 'My expenses',
     'Структура особистих витрат': 'Personal spending breakdown', 'Додайте витрату за період': 'Add an expense for this period', 'Назва (iPad)': 'Name (iPad)', 'Ціль ₴': 'Target ₴',

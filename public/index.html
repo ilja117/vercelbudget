@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.0.2</title>
+  <title>UsBudget — Спільний бюджет пари · v5.1.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -66,28 +66,28 @@
       --g-shell: #FFD43B; --g-on-shell: #111111; --g-tag-line: #111111; --g-ok: #C6F06A; --g-bad: #FF7A66;
       --g-ease: cubic-bezier(0.23, 1, 0.32, 1);
     }
-    html.g-seasons[data-season="january"]   { --g-hero: #1D4E89; --g-pop: #BFE3FF; --g-page: #EAF0F6; }
-    html.g-seasons[data-season="february"]  { --g-hero: #A33A5F; --g-pop: #FFC2D4; --g-page: #F8EEF2; }
-    html.g-seasons[data-season="march"]     { --g-hero: #4B6B2E; --g-pop: #F6E27A; --g-page: #F2F3EA; }
-    html.g-seasons[data-season="april"]     { --g-hero: #2F7D4F; --g-pop: #FFC8DD; --g-page: #F2F1E8; }
-    html.g-seasons[data-season="may"]       { --g-hero: #8E3B8F; --g-pop: #E9F5A9; --g-page: #F5F0F6; }
-    html.g-seasons[data-season="june"]      { --g-hero: #B35C00; --g-pop: #FFE066; --g-page: #FAF4E6; }
-    html.g-seasons[data-season="july"]      { --g-hero: #0B7477; --g-pop: #FFD23F; --g-page: #F5F0E3; }
-    html.g-seasons[data-season="august"]    { --g-hero: #1F5FA8; --g-pop: #F5C842; --g-page: #F6F1E2; }
-    html.g-seasons[data-season="september"] { --g-hero: #2E5E4E; --g-pop: #F4C95D; --g-page: #EFF2EC; }
-    html.g-seasons[data-season="october"]   { --g-hero: #A8431E; --g-pop: #F2B544; --g-page: #F4EDE6; }
-    html.g-seasons[data-season="november"]  { --g-hero: #5A4636; --g-pop: #E8C9A0; --g-page: #F3EEE8; }
-    html.g-seasons[data-season="december"]  { --g-hero: #16503A; --g-pop: #FFB3AB; --g-page: #EEF3EF; }
-    html.g-seasons[data-moment="newyear"]    { --g-hero: #14213D; --g-pop: #E9C46A; --g-page: #EDEEF3; }
-    html.g-seasons[data-moment="christmas"]  { --g-hero: #1F5C3A; --g-pop: #F2D16B; --g-page: #EEF3EF; }
-    html.g-seasons[data-moment="valentine"]  { --g-hero: #B8325A; --g-pop: #FFC2D4; --g-page: #FBEFF3; }
-    html.g-seasons[data-moment="womens"]     { --g-hero: #6E3F94; --g-pop: #F6E27A; --g-page: #F8F5E6; }
-    html.g-seasons[data-moment="easter"]     { --g-hero: #7A5A12; --g-pop: #E8F0B8; --g-page: #F7F5EA; }
-    html.g-seasons[data-moment="mother"]     { --g-hero: #A8456F; --g-pop: #FFD6E3; --g-page: #FBF0F4; }
-    html.g-seasons[data-moment="vyshyvanka"] { --g-hero: #A3222A; --g-pop: #F3E6D3; --g-page: #F7F1EA; }
-    html.g-seasons[data-moment="flag"]       { --g-hero: #0057B7; --g-pop: #FFD500; --g-page: #EEF2F7; }
-    html.g-seasons[data-moment="halloween"]  { --g-hero: #3D2A5C; --g-pop: #FF8C2B; --g-page: #F3EFF6; }
-    html.g-seasons[data-moment="party"]      { --g-hero: #B83A0C; --g-pop: #FFE066; --g-page: #FBF4E6; }
+    html.g-seasons[data-season="january"]   { --g-page: #EAF0F6; }
+    html.g-seasons[data-season="february"]  { --g-page: #F8EEF2; }
+    html.g-seasons[data-season="march"]     { --g-page: #F2F3EA; }
+    html.g-seasons[data-season="april"]     { --g-page: #F2F1E8; }
+    html.g-seasons[data-season="may"]       { --g-page: #F5F0F6; }
+    html.g-seasons[data-season="june"]      { --g-page: #FAF4E6; }
+    html.g-seasons[data-season="july"]      { --g-page: #F5F0E3; }
+    html.g-seasons[data-season="august"]    { --g-page: #F6F1E2; }
+    html.g-seasons[data-season="september"] { --g-page: #EFF2EC; }
+    html.g-seasons[data-season="october"]   { --g-page: #F4EDE6; }
+    html.g-seasons[data-season="november"]  { --g-page: #F3EEE8; }
+    html.g-seasons[data-season="december"]  { --g-page: #EEF3EF; }
+    html.g-seasons[data-moment="newyear"]    { --g-page: #EDEEF3; }
+    html.g-seasons[data-moment="christmas"]  { --g-page: #EEF3EF; }
+    html.g-seasons[data-moment="valentine"]  { --g-page: #FBEFF3; }
+    html.g-seasons[data-moment="womens"]     { --g-page: #F8F5E6; }
+    html.g-seasons[data-moment="easter"]     { --g-page: #F7F5EA; }
+    html.g-seasons[data-moment="mother"]     { --g-page: #FBF0F4; }
+    html.g-seasons[data-moment="vyshyvanka"] { --g-page: #F7F1EA; }
+    html.g-seasons[data-moment="flag"]       { --g-page: #EEF2F7; }
+    html.g-seasons[data-moment="halloween"]  { --g-page: #F3EFF6; }
+    html.g-seasons[data-moment="party"]      { --g-page: #FBF4E6; }
     html.dark, html.dark.g-seasons[data-season], html.dark.g-seasons[data-moment] {
       color-scheme: dark;
       --g-page: #121315; --g-card: #1C1D21; --g-soft: #25262B; --g-line: #34363C;
@@ -260,6 +260,8 @@
     }
     .g-icbtn { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 0; background: transparent; color: var(--g-ink); }
     .g-hero-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+    .g-kpi-line { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 2px 4px; font-size: 14px; color: var(--g-muted); }
+    .g-kpi-line b { color: var(--g-ink); font-size: 16px; margin-left: 4px; }
     .g-hero-sub { margin: 6px 0 0; font-size: 14px; color: var(--g-muted); }
     .g-sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 8px; }
     .g-sec-head h2 { margin: 0; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .02em; }
@@ -2944,7 +2946,7 @@ const snapshotFlat = st => clone(flattenState(st));
             
             ${pinOf(k)
               ? `<button onclick="lockPartner('${k}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700/60 transition">🔒 Заблокувати</button>`
-              : `<button onclick="switchTab('settings')" class="px-3 py-2 rounded-xl text-xs text-slate-500">🔓 Без PIN</button>`}
+              : `<button onclick="switchTab('settings')" class="px-3 py-2 rounded-xl text-xs text-slate-500">${ICON('unlock', 14)} Без PIN</button>`}
           </div>
         `;
 
@@ -2955,11 +2957,17 @@ const snapshotFlat = st => clone(flattenState(st));
             <p class="text-[11px] text-slate-400 mt-1">${sub}</p>
           </div>`;
         const rate = d.income > 0 ? Math.round(d.left / d.income * 100) : 0;
-        document.getElementById(`pp-${k}-kpi`).innerHTML =
-          kpi('Дохід', f(d.income), `записів: ${d.pi.length}`) +
-          kpi('У спільне', f(d.toShared), `внески ${f(d.contrib)} · зі своїх ${f(d.sharedPaid)}`) +
-          kpi('Витрачено', f(d.spentOwn), d.fromCard > 0 ? `+ з картки ${f(d.fromCard)}` : `записів: ${d.pe.length}`) +
-          kpi('Вільний залишок', f(d.left), `відкладено ${f(d.saved)}`, d.left < 0 ? 'text-rose-600' : 'text-emerald-600');
+        document.getElementById(`pp-${k}-kpi`).innerHTML = `
+          <div class="g-hero" style="grid-column:1/-1">
+            <div class="g-hero-label">Вільний залишок</div>
+            <div class="g-num ${d.left < 0 ? 'text-rose-600' : ''}" style="font-size:48px;line-height:1.05;margin-top:4px">${f(d.left)}</div>
+            <p class="g-hero-sub">відкладено ${f(d.saved)}</p>
+          </div>
+          <div class="g-kpi-line" style="grid-column:1/-1">
+            <span>Дохід <b class="g-num">${f(d.income)}</b></span>
+            <span>У спільне <b class="g-num">${f(d.toShared)}</b></span>
+            <span>Витрачено <b class="g-num">${f(d.spentOwn)}</b>${d.fromCard > 0 ? ` <span class="text-slate-500">+ з картки ${f(d.fromCard)}</span>` : ''}</span>
+          </div>`;
 
         const pGoals = state.goals.filter(g => g.scope === k);
         const goalsContainer = document.getElementById(`pp-${k}-goals-list`);

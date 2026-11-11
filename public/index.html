@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.1.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.2.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -62,38 +62,38 @@
       /* «Цінник»: жовта оболонка, сіра основа, чорне чорнило, кольорові картки-цінники */
       --g-page: #EEF0F2; --g-card: #FFFFFF; --g-soft: #F5F6F8; --g-line: #DADDE2; --g-ink: #111111; --g-muted: #4A4D52;
       --g-hero: #FFFFFF; --g-pop: #FFD43B; --g-on-hero: #111111; --g-input: #FFFFFF;
-      --g-btn: #111111; --g-btn-text: #FFD43B; --g-accent-text: #111111; --g-nav: #111111; --g-nav-text: #C9CCD1;
+      --g-btn: #111111; --g-btn-text: var(--g-pop); --g-accent-text: #111111; --g-nav: #111111; --g-nav-text: #C9CCD1;
       --g-shell: #FFD43B; --g-on-shell: #111111; --g-tag-line: #111111; --g-ok: #C6F06A; --g-bad: #FF7A66;
       --g-ease: cubic-bezier(0.23, 1, 0.32, 1);
     }
-    html.g-seasons[data-season="january"]   { --g-page: #EAF0F6; }
-    html.g-seasons[data-season="february"]  { --g-page: #F8EEF2; }
-    html.g-seasons[data-season="march"]     { --g-page: #F2F3EA; }
-    html.g-seasons[data-season="april"]     { --g-page: #F2F1E8; }
-    html.g-seasons[data-season="may"]       { --g-page: #F5F0F6; }
-    html.g-seasons[data-season="june"]      { --g-page: #FAF4E6; }
-    html.g-seasons[data-season="july"]      { --g-page: #F5F0E3; }
-    html.g-seasons[data-season="august"]    { --g-page: #F6F1E2; }
-    html.g-seasons[data-season="september"] { --g-page: #EFF2EC; }
-    html.g-seasons[data-season="october"]   { --g-page: #F4EDE6; }
-    html.g-seasons[data-season="november"]  { --g-page: #F3EEE8; }
-    html.g-seasons[data-season="december"]  { --g-page: #EEF3EF; }
-    html.g-seasons[data-moment="newyear"]    { --g-page: #EDEEF3; }
-    html.g-seasons[data-moment="christmas"]  { --g-page: #EEF3EF; }
-    html.g-seasons[data-moment="valentine"]  { --g-page: #FBEFF3; }
-    html.g-seasons[data-moment="womens"]     { --g-page: #F8F5E6; }
-    html.g-seasons[data-moment="easter"]     { --g-page: #F7F5EA; }
-    html.g-seasons[data-moment="mother"]     { --g-page: #FBF0F4; }
-    html.g-seasons[data-moment="vyshyvanka"] { --g-page: #F7F1EA; }
-    html.g-seasons[data-moment="flag"]       { --g-page: #EEF2F7; }
-    html.g-seasons[data-moment="halloween"]  { --g-page: #F3EFF6; }
-    html.g-seasons[data-moment="party"]      { --g-page: #FBF4E6; }
+    html.g-seasons[data-season="january"] { --g-page: #EAF0F6; --g-shell: #BFE3FF; --g-pop: #BFE3FF; --g-nav: #1D4E89; --g-nav-text: #F2F2EE; --g-month: #1D4E89; }
+    html.g-seasons[data-season="february"] { --g-page: #F8EEF2; --g-shell: #FFC2D4; --g-pop: #FFC2D4; --g-nav: #A33A5F; --g-nav-text: #F2F2EE; --g-month: #A33A5F; }
+    html.g-seasons[data-season="march"] { --g-page: #F2F3EA; --g-shell: #F6E27A; --g-pop: #F6E27A; --g-nav: #4B6B2E; --g-nav-text: #F2F2EE; --g-month: #4B6B2E; }
+    html.g-seasons[data-season="april"] { --g-page: #F2F1E8; --g-shell: #FFC8DD; --g-pop: #FFC8DD; --g-nav: #2F7D4F; --g-nav-text: #F2F2EE; --g-month: #2F7D4F; }
+    html.g-seasons[data-season="may"] { --g-page: #F5F0F6; --g-shell: #E9F5A9; --g-pop: #E9F5A9; --g-nav: #8E3B8F; --g-nav-text: #F2F2EE; --g-month: #8E3B8F; }
+    html.g-seasons[data-season="june"] { --g-page: #FAF4E6; --g-shell: #FFE066; --g-pop: #FFE066; --g-nav: #B35C00; --g-nav-text: #F2F2EE; --g-month: #B35C00; }
+    html.g-seasons[data-season="july"] { --g-page: #F5F0E3; --g-shell: #FFD23F; --g-pop: #FFD23F; --g-nav: #0B7477; --g-nav-text: #F2F2EE; --g-month: #0B7477; }
+    html.g-seasons[data-season="august"] { --g-page: #F6F1E2; --g-shell: #F5C842; --g-pop: #F5C842; --g-nav: #1F5FA8; --g-nav-text: #F2F2EE; --g-month: #1F5FA8; }
+    html.g-seasons[data-season="september"] { --g-page: #EFF2EC; --g-shell: #F4C95D; --g-pop: #F4C95D; --g-nav: #2E5E4E; --g-nav-text: #F2F2EE; --g-month: #2E5E4E; }
+    html.g-seasons[data-season="october"] { --g-page: #F4EDE6; --g-shell: #F2B544; --g-pop: #F2B544; --g-nav: #A8431E; --g-nav-text: #F2F2EE; --g-month: #A8431E; }
+    html.g-seasons[data-season="november"] { --g-page: #F3EEE8; --g-shell: #E8C9A0; --g-pop: #E8C9A0; --g-nav: #5A4636; --g-nav-text: #F2F2EE; --g-month: #5A4636; }
+    html.g-seasons[data-season="december"] { --g-page: #EEF3EF; --g-shell: #FFB3AB; --g-pop: #FFB3AB; --g-nav: #16503A; --g-nav-text: #F2F2EE; --g-month: #16503A; }
+    html.g-seasons[data-moment="newyear"] { --g-page: #EDEEF3; --g-shell: #E9C46A; --g-pop: #E9C46A; --g-nav: #14213D; --g-nav-text: #F2F2EE; --g-month: #14213D; }
+    html.g-seasons[data-moment="christmas"] { --g-page: #EEF3EF; --g-shell: #F2D16B; --g-pop: #F2D16B; --g-nav: #1F5C3A; --g-nav-text: #F2F2EE; --g-month: #1F5C3A; }
+    html.g-seasons[data-moment="valentine"] { --g-page: #FBEFF3; --g-shell: #FFC2D4; --g-pop: #FFC2D4; --g-nav: #B8325A; --g-nav-text: #F2F2EE; --g-month: #B8325A; }
+    html.g-seasons[data-moment="womens"] { --g-page: #F8F5E6; --g-shell: #F6E27A; --g-pop: #F6E27A; --g-nav: #6E3F94; --g-nav-text: #F2F2EE; --g-month: #6E3F94; }
+    html.g-seasons[data-moment="easter"] { --g-page: #F7F5EA; --g-shell: #E8F0B8; --g-pop: #E8F0B8; --g-nav: #7A5A12; --g-nav-text: #F2F2EE; --g-month: #7A5A12; }
+    html.g-seasons[data-moment="mother"] { --g-page: #FBF0F4; --g-shell: #FFD6E3; --g-pop: #FFD6E3; --g-nav: #A8456F; --g-nav-text: #F2F2EE; --g-month: #A8456F; }
+    html.g-seasons[data-moment="vyshyvanka"] { --g-page: #F7F1EA; --g-shell: #F3E6D3; --g-pop: #F3E6D3; --g-nav: #A3222A; --g-nav-text: #F2F2EE; --g-month: #A3222A; }
+    html.g-seasons[data-moment="flag"] { --g-page: #EEF2F7; --g-shell: #FFD500; --g-pop: #FFD500; --g-nav: #0057B7; --g-nav-text: #F2F2EE; --g-month: #0057B7; }
+    html.g-seasons[data-moment="halloween"] { --g-page: #F3EFF6; --g-shell: #FF8C2B; --g-pop: #FF8C2B; --g-nav: #3D2A5C; --g-nav-text: #F2F2EE; --g-month: #3D2A5C; }
+    html.g-seasons[data-moment="party"] { --g-page: #FBF4E6; --g-shell: #FFE066; --g-pop: #FFE066; --g-nav: #B83A0C; --g-nav-text: #F2F2EE; --g-month: #B83A0C; }
     html.dark, html.dark.g-seasons[data-season], html.dark.g-seasons[data-moment] {
       color-scheme: dark;
       --g-page: #121315; --g-card: #1C1D21; --g-soft: #25262B; --g-line: #34363C;
       --g-ink: #F2F2EE; --g-muted: #A9ABB0; --g-input: #16171A; --g-hero: #1C1D21; --g-on-hero: #F2F2EE;
       --g-btn: var(--g-pop); --g-btn-text: #111111; --g-accent-text: var(--g-pop); --g-nav: #000000;
-      --g-shell: #1C1D21; --g-on-shell: #FFD43B; --g-tag-line: #F2F2EE;
+      --g-shell: #1C1D21; --g-on-shell: var(--g-pop); --g-tag-line: #F2F2EE; --g-nav: color-mix(in srgb, var(--g-month, #000000) 35%, #000000);
     }
 
     /* Основа */
@@ -268,7 +268,7 @@
     .g-link { min-height: 44px; padding: 0 4px; border: 0; background: none; font-weight: 600; font-size: 14px; color: var(--g-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
     .g-ltags { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
     .g-ltag { border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; color: #111111; min-width: 0; }
-    .g-ltag-ok { background: var(--g-ok); } .g-ltag-warn { background: var(--g-pop); } .g-ltag-bad { background: var(--g-bad); }
+    .g-ltag-ok { background: var(--g-ok); } .g-ltag-warn { background: #FFD43B; } .g-ltag-bad { background: var(--g-bad); }
     .g-ltag-cat { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .g-ltag-sum { font-size: 22px; line-height: 1.15; }
     .g-ltag-note { font-size: 11px; font-weight: 500; }

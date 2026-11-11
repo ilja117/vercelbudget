@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.0.1</title>
+  <title>UsBudget — Спільний бюджет пари · v5.0.2</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -88,7 +88,7 @@
     html.g-seasons[data-moment="flag"]       { --g-hero: #0057B7; --g-pop: #FFD500; --g-page: #EEF2F7; }
     html.g-seasons[data-moment="halloween"]  { --g-hero: #3D2A5C; --g-pop: #FF8C2B; --g-page: #F3EFF6; }
     html.g-seasons[data-moment="party"]      { --g-hero: #B83A0C; --g-pop: #FFE066; --g-page: #FBF4E6; }
-    html.dark {
+    html.dark, html.dark.g-seasons[data-season], html.dark.g-seasons[data-moment] {
       color-scheme: dark;
       --g-page: #121315; --g-card: #1C1D21; --g-soft: #25262B; --g-line: #34363C;
       --g-ink: #F2F2EE; --g-muted: #A9ABB0; --g-input: #16171A; --g-hero: #1C1D21; --g-on-hero: #F2F2EE;
@@ -4713,6 +4713,7 @@ const snapshotFlat = st => clone(flattenState(st));
             ${btn('enablePush()', 'Увімкнути сповіщення', true)}
           </div>`);
         const sel = document.getElementById('push-owner');
+        if (sel) sel.onchange = () => { try { localStorage.setItem('usbudget_push_owner', sel.value); } catch (e) {} };
         if (sel) sel.value = owner;
       }
     }
@@ -4929,7 +4930,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const box = document.getElementById('g-subnav');
       if (!box) return;
       // Аналітику показуємо в підменю «Ми» лише коли її відкрито з налаштувань
-      const tabs = NAV_GROUPS[g].tabs.filter(t => t !== 'analytics' || tab === 'analytics');
+      const tabs = NAV_GROUPS[g].tabs;
       box.classList.toggle('hidden', tabs.length < 2);
       box.innerHTML = tabs.length < 2 ? '' : tabs.map(t =>
         `<button type="button" role="tab" class="g-sub" aria-selected="${t === tab}" onclick="switchTab('${t}')">${esc(subLabel(g, t))}</button>`).join('');

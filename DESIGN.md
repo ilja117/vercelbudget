@@ -1,0 +1,226 @@
+---
+name: UsBudget
+description: Спільний і особистий бюджет пари. Візуальний світ «Цінник».
+colors:
+  shell: "#FFD43B"
+  page: "#EEF0F2"
+  card: "#FFFFFF"
+  soft: "#F5F6F8"
+  line: "#DADDE2"
+  ink: "#111111"
+  muted: "#4A4D52"
+  nav: "#111111"
+  nav-text: "#C9CCD1"
+  tag-ok: "#C6F06A"
+  tag-warn: "#FFD43B"
+  tag-bad: "#FF7A66"
+  status-red: "#BE123C"
+  status-green: "#047857"
+  status-amber: "#B45309"
+  dark-page: "#121315"
+  dark-card: "#1C1D21"
+  dark-soft: "#25262B"
+  dark-line: "#34363C"
+  dark-ink: "#F2F2EE"
+  dark-muted: "#A9ABB0"
+typography:
+  display:
+    fontFamily: "Oswald, Inter, sans-serif"
+    fontSize: "52px"
+    fontWeight: 600
+    lineHeight: 1.05
+    letterSpacing: "0em"
+  amount:
+    fontFamily: "Oswald, Inter, sans-serif"
+    fontSize: "22px"
+    fontWeight: 600
+    lineHeight: 1.15
+    letterSpacing: "0em"
+  heading:
+    fontFamily: "Oswald, Inter, sans-serif"
+    fontSize: "20px"
+    fontWeight: 700
+    lineHeight: 1.25
+    letterSpacing: "0.02em"
+  brand:
+    fontFamily: "Oswald, sans-serif"
+    fontSize: "22px"
+    fontWeight: 700
+    lineHeight: 1
+    letterSpacing: "0.01em"
+  body:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.45
+    letterSpacing: "0em"
+  label:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "13px"
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: "0.06em"
+  small:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
+    lineHeight: 1.35
+    letterSpacing: "0em"
+rounded:
+  tag: "10px"
+  field: "14px"
+  card: "22px"
+  hero: "14px"
+  pill: "999px"
+spacing:
+  xs: "4px"
+  sm: "8px"
+  md: "12px"
+  lg: "16px"
+  xl: "24px"
+components:
+  button-primary:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.shell}"
+    rounded: "{rounded.pill}"
+    padding: "0 18px"
+    height: "44px"
+  button-add:
+    backgroundColor: "{colors.shell}"
+    textColor: "{colors.ink}"
+    rounded: "16px"
+    size: "52px"
+  tab-active:
+    backgroundColor: "{colors.shell}"
+    textColor: "{colors.ink}"
+    rounded: "12px"
+    height: "52px"
+  subtab:
+    textColor: "{colors.ink}"
+    rounded: "{rounded.pill}"
+    height: "40px"
+    padding: "0 16px"
+  subtab-selected:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.page}"
+  chip-selected:
+    backgroundColor: "{colors.shell}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.pill}"
+    height: "40px"
+  limit-tag-ok:
+    backgroundColor: "{colors.tag-ok}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.tag}"
+    padding: "10px 12px"
+  limit-tag-warn:
+    backgroundColor: "{colors.tag-warn}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.tag}"
+  limit-tag-bad:
+    backgroundColor: "{colors.tag-bad}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.tag}"
+  hero-tag:
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.hero}"
+    padding: "18px 18px 18px 46px"
+  card:
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.card}"
+  field:
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.field}"
+    height: "44px"
+---
+
+# Design System: UsBudget
+
+## Overview
+
+Гроші місяця читаються як ринковий прилавок: те, що важливо, має цінник, який видно з метра. Жовта оболонка, прохолодний сірий фон, чорне чорнило і картки-цінники. Це робочий застосунок (режим Operate), тому світ дає лише шрифт, палітру, щільність і одну фірмову деталь. Навігація, форми й кнопки лишаються звичними.
+
+Застосунок не має бути холодним, як банк, і не має бути безликим. Він також не дитячий: жодного рожевого, сердечок чи емодзі в інтерфейсі.
+
+## Colors
+
+### Primary
+- **Соняшниковий жовтий `#FFD43B`.** Оболонка (шапка), активний розділ, кнопка «+», вибраний чип, смуга «хто кому доплачує». Більше ніде.
+
+### Neutral
+- **Фон `#EEF0F2`, картки `#FFFFFF`, лінії `#DADDE2`.**
+- **Чорнило `#111111`** — текст, рамка цінника, головні кнопки, нижнє меню.
+- **Приглушений `#4A4D52`** — допоміжний текст (контраст 7:1 на фоні).
+
+### Цінники лімітів
+- **Салатовий `#C6F06A`** — є запас, **жовтий `#FFD43B`** — лишилось менше 20%, **кораловий `#FF7A66`** — вичерпано або перевищено. Текст на них завжди чорний.
+
+### Named Rules
+**Правило чорнила.** На кольоровій картці текст чорний. Білий текст допускається лише там, де контраст із фоном не менше 4.5:1; для кольорів партнерів це перевіряється кодом (`onColor`).
+
+**Правило оболонки.** Жовтий — це оболонка й дія, а не декор. Якщо жовтого на екрані більше, ніж шапка, активний розділ і одна кнопка, щось пішло не так.
+
+**Кольори партнерів — лише позначка.** Колір, обраний у профілі, живе в кружечку з ініціалом і в графіку внесків. Плитки й картки партнерів лишаються білими.
+
+## Typography
+
+- **Oswald** (600–700) — суми, заголовки розділів, назва застосунку. Вузький гротеск, як надпис маркером на цінику.
+- **Inter** (400–600) — увесь інший текст інтерфейсу.
+
+### Hierarchy
+- Головна сума — 52px Oswald 600.
+- Сума на цінику — 22px Oswald 600.
+- Заголовок розділу — 20px Oswald, на головній великими літерами.
+- Основний текст — 16px Inter.
+- Підпис над сумою — 13px Inter 600, великими літерами, розрядка 0.06em.
+- Найдрібніший текст — 12px. Менше не буває.
+- Усі суми з `font-variant-numeric: tabular-nums`, формат за мовою інтерфейсу (`uk-UA` → «8 600 ₴», `en-GB` → «8,600 ₴»).
+
+## Layout
+
+Мобільний насамперед, 390px. Бічні відступи 16px, проміжки 8/12/16/24px. Нижнє меню з 6 комірок: 5 розділів і «+» по центру. На комп'ютері розділи стоять угорі, а «+» плаває в правому нижньому куті. Усередині розділу підвкладки йдуть рядком «пігулок» під шапкою.
+
+## Elevation & Depth
+
+Тіней майже немає. Глибину дає рамка (2px чорна на цінику) і контраст білого на сірому. Тінь має лише плаваюча «+» на комп'ютері (`0 8px 20px rgba(0,0,0,.18)`).
+
+## Shapes
+
+Цінники 10px, поля 14px, картки 22px, головний цінник 14px з 2px рамкою, кнопки й чипи — пігулки.
+
+## Components
+
+### Buttons
+Головна дія — чорна пігулка з жовтим текстом, 44px заввишки. Під пальцем вона стискається до 97% за 160мс по кривій `cubic-bezier(0.23,1,0.32,1)`. Другорядна дія — підкреслене посилання або кнопка з рамкою.
+
+### Chips
+Вибір категорії у формі «+». Неактивний чип має рамку `#DADDE2`, вибраний — жовтий з чорною рамкою. Остання використана категорія стоїть першою.
+
+### Cards / Containers
+Біла картка 22px на сірому фоні. **Картка в картці заборонена:** внутрішні блоки стають рядками з тонким верхнім розділювачем.
+
+### Inputs / Fields
+44px заввишки, рамка 1.5px, фокус — рамка кольору чорнила. Стрілок у числових полях немає.
+
+### Navigation
+Чорна нижня панель. Активний розділ — жовта плитка. Підвкладки: обведені пігулки, вибрана залита чорним.
+
+### Signature: цінник
+Головна сума — біла картка з 2px рамкою і «дірочкою» (12px коло зліва вгорі). Ліміти — кольорові цінники, найтісніші першими. Новий запис одразу перераховує цінник.
+
+## Do's and Don'ts
+
+### Do:
+- Відповідайте на одне питання на екран; головне число — завжди великим Oswald.
+- Підписуйте цифри звичайними словами («Можна ще витратити», а не «Залишок лімітів»).
+- Перевіряйте контраст: на кольорових цінниках текст чорний.
+- Нові тексти додавайте і в `public/i18n.js` (англійська).
+
+### Don't:
+- Не використовуйте емодзі як іконки — лише лінійні SVG з одного набору.
+- Не кладіть картку в картку і не ставте кольорову смугу збоку картки.
+- Не робіть текст дрібніше 12px і не використовуйте градієнтний текст.
+- Не вмикайте сезонні палітри за замовчуванням — це вибір користувача в Налаштуваннях.

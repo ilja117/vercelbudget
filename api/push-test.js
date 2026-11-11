@@ -3,8 +3,8 @@ import webpush from 'web-push';
 import { verifyMember } from '../lib/firebase-server.mjs';
 
 export async function POST(request) {
-  // Лише для учасників бюджету: інакше будь-хто міг би слати пуші через наш сервер
-  if (!(await verifyMember(request).catch(() => null))) return new Response('Unauthorized', { status: 401 });
+  // З REQUIRE_AUTH=1 — лише для учасників бюджету (вмикається разом із входом у застосунку)
+  if (process.env.REQUIRE_AUTH === '1' && !(await verifyMember(request).catch(() => null))) return new Response('Unauthorized', { status: 401 });
   let body;
   try { body = await request.json(); } catch (e) { return new Response('bad json', { status: 400 }); }
   const sub = body && body.subscription;

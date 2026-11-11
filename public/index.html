@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.0.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.0.1</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -763,7 +763,7 @@
               </div>
               <div>
                 <label class="block text-xs font-medium mb-1.5">Колір</label>
-                <input type="color" id="settings-p1-color" value="#ec4899" class="w-12 h-11 rounded-xl border-0 cursor-pointer bg-transparent">
+                <input type="color" id="settings-p1-color" value="#3B5BDB" list="g-partner-colors" class="w-12 h-11 rounded-xl border-0 cursor-pointer bg-transparent">
               </div>
             </div>
 
@@ -788,7 +788,7 @@
               </div>
               <div>
                 <label class="block text-xs font-medium mb-1.5">Колір</label>
-                <input type="color" id="settings-p2-color" value="#3b82f6" class="w-12 h-11 rounded-xl border-0 cursor-pointer bg-transparent">
+                <input type="color" id="settings-p2-color" value="#8FD3FF" list="g-partner-colors" class="w-12 h-11 rounded-xl border-0 cursor-pointer bg-transparent">
               </div>
             </div>
           </div>
@@ -902,6 +902,11 @@
 
   </main>
 
+  <datalist id="g-partner-colors">
+    <option value="#3B5BDB"></option><option value="#8FD3FF"></option><option value="#0F766E"></option><option value="#7FE0C2"></option>
+    <option value="#6D28D9"></option><option value="#C4B5FD"></option><option value="#111111"></option><option value="#FF7A66"></option>
+  </datalist>
+
   <!-- Вхід: дані бачать лише двоє дозволених акаунтів (див. database.rules.json) -->
   <div id="auth-gate" class="hidden fixed inset-0 z-[48] flex items-center justify-center px-4" style="background:var(--g-page)">
     <form id="auth-form" class="w-full max-w-sm bg-white dark:bg-slate-800 p-6 rounded-2xl border space-y-4" onsubmit="authSignIn(event)">
@@ -960,8 +965,8 @@
       partner2: 'Партнер 2',
       partner1Avatar: '👩',
       partner2Avatar: '👨',
-      partner1Color: '#ec4899',
-      partner2Color: '#3b82f6',
+      partner1Color: '#3B5BDB',
+      partner2Color: '#8FD3FF',
       partner1Bday: '',
       partner2Bday: '',
       anniversaryDate: '',
@@ -1080,8 +1085,8 @@
     function getPartner2Name() { return cleanLabel(state.settings && state.settings.partner2, 40) || 'Партнер 2'; }
     function getPartner1Avatar() { return cleanLabel(state.settings && state.settings.partner1Avatar, 8) || '👩'; }
     function getPartner2Avatar() { return cleanLabel(state.settings && state.settings.partner2Avatar, 8) || '👨'; }
-    function getPartner1Color() { return (state.settings && state.settings.partner1Color) || '#ec4899'; }
-    function getPartner2Color() { return (state.settings && state.settings.partner2Color) || '#3b82f6'; }
+    function getPartner1Color() { return (state.settings && state.settings.partner1Color) || '#3B5BDB'; }
+    function getPartner2Color() { return (state.settings && state.settings.partner2Color) || '#8FD3FF'; }
     function getCurrency() { return (state.settings && state.settings.currency) || '₴'; }
     function getCategories() {
       return (state.settings && Array.isArray(state.settings.categories) && state.settings.categories.length)
@@ -1381,6 +1386,14 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
     // Перехід на єдині регулярні операції: особисті передплати переносяться в загальний список
+    // v5: старі стандартні кольори партнерів (рожевий і синій) → кольори стилю «Цінник». Обрані вручну не чіпаємо
+    function migrateColorsV5() {
+      const s = state.settings = state.settings || {}, OLD = { partner1Color: '#ec4899', partner2Color: '#3b82f6' }, NEW = { partner1Color: '#3B5BDB', partner2Color: '#8FD3FF' };
+      let changed = false;
+      Object.keys(OLD).forEach(k => { if (!s[k] || String(s[k]).toLowerCase() === OLD[k]) { if (s[k] !== NEW[k]) { s[k] = NEW[k]; changed = true; } } });
+      return changed;
+    }
+
     function migrateV41In(st) {
       const s = st.settings = st.settings || {};
       if (s.recV41) return false;
@@ -1499,6 +1512,7 @@ const snapshotFlat = st => clone(flattenState(st));
       migrateGoals();
       migrateToV4();
       migrateV41();
+      migrateColorsV5();
       { const b = readBase(); startupPending = b ? safePending(b, flattenState(state)) : null; }
       updatePeriodUI();
       renderAll();
@@ -1532,8 +1546,8 @@ const snapshotFlat = st => clone(flattenState(st));
         startupPending = null;
         syncReady = true;
         if (legacy) db.ref(DB_ROOT).set(toTree(lastSynced, true)).catch(err => console.error('Firebase err:', err));  // одноразова міграція
-        const mg = migrateGoals(), m4 = migrateToV4(), m41 = migrateV41(), nd = normalizeDates();
-        if (mg || m4 || m41 || nd || offlineMerged) saveToCloud();
+        const mg = migrateGoals(), m4 = migrateToV4(), m41 = migrateV41(), nd = normalizeDates(), mc = migrateColorsV5();
+        if (mg || m4 || m41 || nd || mc || offlineMerged) saveToCloud();
         offlineMerged = false;
         if (netOnline && pendingWrites === 0) writeBase(lastSynced);
         makeDailyBackup();
@@ -2313,8 +2327,8 @@ const snapshotFlat = st => clone(flattenState(st));
       document.getElementById('settings-p1-bday').value = s.partner1Bday || '';
       document.getElementById('settings-p2-bday').value = s.partner2Bday || '';
       document.getElementById('settings-anniversary').value = s.anniversaryDate || '';
-      document.getElementById('settings-p1-color').value = s.partner1Color || '#ec4899';
-      document.getElementById('settings-p2-color').value = s.partner2Color || '#3b82f6';
+      document.getElementById('settings-p1-color').value = s.partner1Color || '#3B5BDB';
+      document.getElementById('settings-p2-color').value = s.partner2Color || '#8FD3FF';
       document.getElementById('settings-currency').value = s.currency || '₴';
       document.getElementById('settings-default-split').value = s.defaultSplit || '50-50';
       updateSettingsPreviews();

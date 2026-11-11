@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v4.7.0</title>
+  <title>UsBudget — Спільний бюджет пари · v4.8.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -174,7 +174,7 @@
     html.g-motion #g-fab:active { transform: scale(.92); }
 
     /* v4.3.2: аватари, налаштування, анімації */
-    #settings-partners-form > .grid > div { background: var(--g-soft) !important; border-color: transparent !important; }
+    #settings-partners-form > .grid > div { background: transparent !important; border-color: transparent !important; }
     #settings-partners-form .uppercase { color: var(--g-ink) !important; font-family: 'Oswald', sans-serif; font-size: 11px !important; letter-spacing: .02em; }
     .g-switch { position: relative; display: inline-block; width: 52px; height: 32px; flex-shrink: 0; }
     .g-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
@@ -246,6 +246,15 @@
     @media (min-width: 640px) { #g-fab { bottom: 28px !important; } }
     @media (prefers-reduced-motion: reduce) { .g-tab, .g-mtab, .g-sub, #g-fab { transition-property: background-color, color; } }
 
+    html:not(.dark) :is(.text-rose-500, .text-rose-600) { color: #BE123C !important; }
+    html:not(.dark) :is(.text-emerald-500, .text-emerald-600) { color: #047857 !important; }
+    .text-\[10px\], .text-\[11px\] { font-size: 12px !important; line-height: 1.35; overflow-wrap: anywhere; }
+    p, li, .text-xs { text-wrap: pretty; }
+    /* Картка в картці → рядок із розділювачем */
+    :is(.bg-white, [class~="dark:bg-slate-800/80"]).rounded-2xl :is(.rounded-xl, .rounded-2xl):is(.border, [class*="bg-slate-50"], [class*="bg-rose-50"], [class*="bg-emerald-50"]):not(input):not(select):not(textarea):not(button):not(label):not(a) {
+      background: transparent !important; border: 0 !important; border-top: 1px solid var(--g-line) !important; border-radius: 0 !important; padding-left: 0 !important; padding-right: 0 !important; box-shadow: none !important;
+    }
+    .g-icbtn { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 0; background: transparent; color: var(--g-ink); }
     .g-hero-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
     .g-hero-sub { margin: 6px 0 0; font-size: 14px; color: var(--g-muted); }
     .g-sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 8px; }
@@ -466,8 +475,8 @@
         </div>
       </div>
 
-      <!-- Блок Контроль лімітів -->
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-3 sm:space-y-4">
+      <!-- Блок Контроль лімітів (v5: переноситься в Записи → Витрати) -->
+      <div id="g-limits-card" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-3 sm:space-y-4">
         <h3 class="font-bold text-sm sm:text-base flex items-center gap-2">
           <span>🎯</span> Контроль лімітів за категоріями (План / Факт)
         </h3>
@@ -2695,8 +2704,8 @@ const snapshotFlat = st => clone(flattenState(st));
                 <h3 class="text-sm sm:text-base font-bold flex items-center gap-2"><span>💎</span> Особисті цілі</h3>
                 <span class="text-[11px] text-slate-400">Скарбнички</span>
               </div>
-              <form onsubmit="addPersonalGoal('${k}', event)" class="flex gap-2">
-                <input type="text" id="pp-${k}-goal-title" required placeholder="Назва (iPad)" class="${inp}">
+              <form onsubmit="addPersonalGoal('${k}', event)" class="flex flex-wrap gap-2">
+                <input type="text" id="pp-${k}-goal-title" required placeholder="Назва (iPad)" class="flex-1 min-w-[10rem] ${inp}">
                 <input type="number" id="pp-${k}-goal-target" min="1" required placeholder="Ціль ₴" class="w-28 ${inp}">
                 <button type="submit" class="bg-slate-800 text-white font-medium px-4 rounded-xl text-xs shrink-0 min-h-[44px]">+ Додати</button>
               </form>
@@ -2894,7 +2903,6 @@ const snapshotFlat = st => clone(flattenState(st));
         renderLockBox(k);
         if (isLocked(k)) { const t = document.getElementById(`pp-${k}-lock-title`); if (t) t.innerText = `${avatar} ${isP1 ? getPartner1Name() : getPartner2Name()}: розділ заблоковано`; return; }
 
-        head.style.borderLeft = `4px solid ${color}`;
         head.innerHTML = `
           <div class="flex items-center gap-3.5">
             <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shrink-0" style="background:${color};color:${onColor(color)};font-family:Unbounded,sans-serif;font-weight:800">${avatarInner(isP1 ? 'p1' : 'p2', 28)}</div>
@@ -3857,18 +3865,17 @@ const snapshotFlat = st => clone(flattenState(st));
       const rem = recKindOf(fx) === 'debt' ? fxRemaining(fx) : null;
       const goal = fx.goalId && (state.goals || []).find(g => g.id === fx.goalId);
       return `
-        <div class="flex items-center justify-between gap-3 p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-sm">
-          <div class="min-w-0">
-            <div class="font-semibold truncate flex items-center gap-1.5">${emojiIcon(K.icon, 16)} ${esc(fx.title)}</div>
-            <div class="text-[11px] text-slate-500">${occ} · ${FREQ[fx.frequency] || fx.frequency}${compact ? '' : ' · ' + who}${goal ? ' · в ціль «' + esc(goal.title) + '»' : ''}${rem ? ` · лишилось ${rem.count} пл. (${fmtMoney(rem.sum)})` : ''}</div>
+        <div class="g-rec p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-sm">
+          <div class="flex items-baseline justify-between gap-3">
+            <div class="font-semibold min-w-0 flex items-center gap-1.5"><span class="shrink-0 flex">${emojiIcon(K.icon, 16)}</span><span class="truncate">${esc(fx.title)}</span></div>
+            <div class="g-num shrink-0" style="font-size:16px">${K.sign}${fx.amount.toLocaleString(APP_LOCALE)} ${curr}</div>
           </div>
-          <div class="text-right shrink-0">
-            <div class="font-bold">${K.sign}${fx.amount.toLocaleString(APP_LOCALE)} ${curr}</div>
-            <div class="flex items-center justify-end gap-1.5 mt-1 text-xs">
-              <span class="px-2 py-0.5 rounded-md ${badge[0]}">${badge[1]}</span>
-              <button onclick="payOccurrence('${fx.id}', '${occ}')" class="px-2.5 py-1 rounded-lg font-semibold ${key ? 'border text-slate-500' : 'bg-pink-500 text-white'}">${key ? 'Скасувати' : K.pay}</button>
-              ${compact ? '' : `<button onclick="openEdit('fixed', '${fx.id}')" class="p-1" aria-label="Редагувати">✏️</button><button onclick="deleteFixedExpense('${fx.id}')" class="p-1 text-rose-500" aria-label="Видалити">✕</button>`}
-            </div>
+          <div class="text-[11px] text-slate-500 mt-0.5">${fmtDay(occ)} · ${FREQ[fx.frequency] || fx.frequency}${compact ? '' : ' · ' + who}${goal ? ' · в ціль «' + esc(goal.title) + '»' : ''}${rem ? ` · лишилось ${rem.count} пл. (${fmtMoney(rem.sum)})` : ''}</div>
+          <div class="flex flex-wrap items-center gap-2 mt-2 text-xs">
+            <span class="px-2 py-1 rounded-md ${badge[0]}">${badge[1]}</span>
+            <span class="flex-1"></span>
+            ${compact ? '' : `<button onclick="openEdit('fixed', '${fx.id}')" class="g-icbtn" aria-label="Редагувати">${ICON('pencil', 18)}</button><button onclick="deleteFixedExpense('${fx.id}')" class="g-icbtn text-rose-600" aria-label="Видалити"><svg class="g-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`}
+            <button onclick="payOccurrence('${fx.id}', '${occ}')" class="min-h-[40px] px-4 rounded-full font-semibold ${key ? 'border text-slate-500' : 'bg-pink-500 text-white'}">${key ? 'Скасувати' : K.pay}</button>
           </div>
         </div>`;
     }
@@ -4214,7 +4221,10 @@ const snapshotFlat = st => clone(flattenState(st));
     const partnerColor = k => k === 'p1' ? getPartner1Color() : getPartner2Color();
     function onColor(hex) {
       const n = parseInt(String(hex || '#888888').replace('#', '').padEnd(6, '0').slice(0, 6), 16);
-      return (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255 > 0.6 ? '#111111' : '#FFFFFF';
+      const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const L = 0.2126 * lin(n >> 16 & 255) + 0.7152 * lin(n >> 8 & 255) + 0.0722 * lin(n & 255);
+      // Білий лише коли він справді читається (≥4.5:1), інакше чорний
+      return 1.05 / (L + 0.05) >= 4.5 ? '#FFFFFF' : '#111111';
     }
     function mono(k) {
       const c = partnerColor(k);
@@ -4247,7 +4257,7 @@ const snapshotFlat = st => clone(flattenState(st));
     // Емодзі в заголовках, кнопках і підписах → іконки (емодзі-аватарки лишаються, якщо їх обрано)
     function iconify() {
       const keep = state.settings.avatarMode === 'emoji' ? [state.settings.partner1Avatar, state.settings.partner2Avatar] : [];
-      document.querySelectorAll('h1, h2, h3, button, label, th, option').forEach(el => {
+      document.querySelectorAll('h1, h2, h3, button, label, th, option, span, p, .text-xs').forEach(el => {
         const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), nodes = [];
         while (walker.nextNode()) nodes.push(walker.currentNode);
         nodes.forEach(n => {
@@ -4898,11 +4908,19 @@ const snapshotFlat = st => clone(flattenState(st));
       box.innerHTML = tabs.length < 2 ? '' : tabs.map(t =>
         `<button type="button" role="tab" class="g-sub" aria-selected="${t === tab}" onclick="switchTab('${t}')">${esc(subLabel(g, t))}</button>`).join('');
     }
+    // Частина блоків малюється після заміни емодзі, тож проходимо ще раз наприкінці
+    const renderAllV5 = renderAll;
+    renderAll = function () { renderAllV5(); try { iconify(); } catch (e) {} };
     const switchTabV5 = switchTab;
-    switchTab = function (t) { switchTabV5(t); updateGroupNav(t); };
+    switchTab = function (t) { switchTabV5(t); updateGroupNav(t); try { iconify(); } catch (e) {} };
 
     document.addEventListener('DOMContentLoaded', () => {
       updateGroupNav(activeTabId || 'dashboard');
+      const lc = document.getElementById('g-limits-card'), exp = document.getElementById('tab-expenses');
+      if (lc && exp && exp.firstElementChild) exp.firstElementChild.after(lc);
+      // Невидимий заголовок h2 у кожному розділі: правильна структура для програм читання з екрана
+      const TITLES = { dashboard: 'Головна', expenses: 'Витрати', incomes: 'Внески', fixed: 'Регулярні платежі', goals: 'Цілі', p1: 'Особисте', p2: 'Особисте', settlement: 'Баланс', settings: 'Налаштування', analytics: 'Аналітика' };
+      Object.keys(TITLES).forEach(t => { const sec = document.getElementById('tab-' + t); if (sec && !sec.querySelector(':scope > h2.sr-only')) sec.insertAdjacentHTML('afterbegin', `<h2 class="sr-only">${TITLES[t]}</h2>`); });
       const set = document.getElementById('tab-settings');
       if (set && !document.getElementById('g-open-analytics')) {
         set.insertAdjacentHTML('afterbegin', `<button type="button" id="g-open-analytics" onclick="switchTab('analytics')" class="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800/80 text-left min-h-[56px]"><span><span class="block font-semibold">Аналітика за місяцями</span><span class="block text-xs text-slate-500">Графіки й підсумки</span></span><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`);

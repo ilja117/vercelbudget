@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v4.5.0</title>
+  <title>UsBudget — Спільний бюджет пари · v4.6.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -43,8 +43,7 @@
   </script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-    body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
     .pp-locked > :not(.pp-lockbox) { display: none !important; }
     .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 9999px; }
@@ -55,49 +54,53 @@
   </style>
 
   <!-- UsBudget v4.3: двигун тем та святкові банери -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Onest:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
   <style id="usbudget-graphic">
     /* UsBudget v4.3 · графічний стиль. Токени: база → місяці → свята → темна тема */
     :root {
       color-scheme: light;
-      --g-page: #F2F1EC; --g-card: #FFFFFF; --g-soft: #F2F1EC; --g-line: #E3E1D9; --g-ink: #111111; --g-muted: #5B5B55;
-      --g-hero: #2A3FD1; --g-pop: #D4F25C; --g-on-hero: #FFFFFF; --g-input: #FFFFFF;
-      --g-btn: #111111; --g-btn-text: var(--g-pop); --g-accent-text: var(--g-hero); --g-nav: #111111; --g-nav-text: #D9D8D1;
+      /* «Цінник»: жовта оболонка, сіра основа, чорне чорнило, кольорові картки-цінники */
+      --g-page: #EEF0F2; --g-card: #FFFFFF; --g-soft: #F5F6F8; --g-line: #DADDE2; --g-ink: #111111; --g-muted: #4A4D52;
+      --g-hero: #FFFFFF; --g-pop: #FFD43B; --g-on-hero: #111111; --g-input: #FFFFFF;
+      --g-btn: #111111; --g-btn-text: #FFD43B; --g-accent-text: #111111; --g-nav: #111111; --g-nav-text: #C9CCD1;
+      --g-shell: #FFD43B; --g-on-shell: #111111; --g-tag-line: #111111; --g-ok: #C6F06A; --g-bad: #FF7A66;
+      --g-ease: cubic-bezier(0.23, 1, 0.32, 1);
     }
-    html[data-season="january"]   { --g-hero: #1D4E89; --g-pop: #BFE3FF; --g-page: #EAF0F6; }
-    html[data-season="february"]  { --g-hero: #A33A5F; --g-pop: #FFC2D4; --g-page: #F8EEF2; }
-    html[data-season="march"]     { --g-hero: #4B6B2E; --g-pop: #F6E27A; --g-page: #F2F3EA; }
-    html[data-season="april"]     { --g-hero: #2F7D4F; --g-pop: #FFC8DD; --g-page: #F2F1E8; }
-    html[data-season="may"]       { --g-hero: #8E3B8F; --g-pop: #E9F5A9; --g-page: #F5F0F6; }
-    html[data-season="june"]      { --g-hero: #B35C00; --g-pop: #FFE066; --g-page: #FAF4E6; }
-    html[data-season="july"]      { --g-hero: #0B7477; --g-pop: #FFD23F; --g-page: #F5F0E3; }
-    html[data-season="august"]    { --g-hero: #1F5FA8; --g-pop: #F5C842; --g-page: #F6F1E2; }
-    html[data-season="september"] { --g-hero: #2E5E4E; --g-pop: #F4C95D; --g-page: #EFF2EC; }
-    html[data-season="october"]   { --g-hero: #A8431E; --g-pop: #F2B544; --g-page: #F4EDE6; }
-    html[data-season="november"]  { --g-hero: #5A4636; --g-pop: #E8C9A0; --g-page: #F3EEE8; }
-    html[data-season="december"]  { --g-hero: #16503A; --g-pop: #FFB3AB; --g-page: #EEF3EF; }
-    html[data-moment="newyear"]    { --g-hero: #14213D; --g-pop: #E9C46A; --g-page: #EDEEF3; }
-    html[data-moment="christmas"]  { --g-hero: #1F5C3A; --g-pop: #F2D16B; --g-page: #EEF3EF; }
-    html[data-moment="valentine"]  { --g-hero: #B8325A; --g-pop: #FFC2D4; --g-page: #FBEFF3; }
-    html[data-moment="womens"]     { --g-hero: #6E3F94; --g-pop: #F6E27A; --g-page: #F8F5E6; }
-    html[data-moment="easter"]     { --g-hero: #7A5A12; --g-pop: #E8F0B8; --g-page: #F7F5EA; }
-    html[data-moment="mother"]     { --g-hero: #A8456F; --g-pop: #FFD6E3; --g-page: #FBF0F4; }
-    html[data-moment="vyshyvanka"] { --g-hero: #A3222A; --g-pop: #F3E6D3; --g-page: #F7F1EA; }
-    html[data-moment="flag"]       { --g-hero: #0057B7; --g-pop: #FFD500; --g-page: #EEF2F7; }
-    html[data-moment="halloween"]  { --g-hero: #3D2A5C; --g-pop: #FF8C2B; --g-page: #F3EFF6; }
-    html[data-moment="party"]      { --g-hero: #B83A0C; --g-pop: #FFE066; --g-page: #FBF4E6; }
+    html.g-seasons[data-season="january"]   { --g-hero: #1D4E89; --g-pop: #BFE3FF; --g-page: #EAF0F6; }
+    html.g-seasons[data-season="february"]  { --g-hero: #A33A5F; --g-pop: #FFC2D4; --g-page: #F8EEF2; }
+    html.g-seasons[data-season="march"]     { --g-hero: #4B6B2E; --g-pop: #F6E27A; --g-page: #F2F3EA; }
+    html.g-seasons[data-season="april"]     { --g-hero: #2F7D4F; --g-pop: #FFC8DD; --g-page: #F2F1E8; }
+    html.g-seasons[data-season="may"]       { --g-hero: #8E3B8F; --g-pop: #E9F5A9; --g-page: #F5F0F6; }
+    html.g-seasons[data-season="june"]      { --g-hero: #B35C00; --g-pop: #FFE066; --g-page: #FAF4E6; }
+    html.g-seasons[data-season="july"]      { --g-hero: #0B7477; --g-pop: #FFD23F; --g-page: #F5F0E3; }
+    html.g-seasons[data-season="august"]    { --g-hero: #1F5FA8; --g-pop: #F5C842; --g-page: #F6F1E2; }
+    html.g-seasons[data-season="september"] { --g-hero: #2E5E4E; --g-pop: #F4C95D; --g-page: #EFF2EC; }
+    html.g-seasons[data-season="october"]   { --g-hero: #A8431E; --g-pop: #F2B544; --g-page: #F4EDE6; }
+    html.g-seasons[data-season="november"]  { --g-hero: #5A4636; --g-pop: #E8C9A0; --g-page: #F3EEE8; }
+    html.g-seasons[data-season="december"]  { --g-hero: #16503A; --g-pop: #FFB3AB; --g-page: #EEF3EF; }
+    html.g-seasons[data-moment="newyear"]    { --g-hero: #14213D; --g-pop: #E9C46A; --g-page: #EDEEF3; }
+    html.g-seasons[data-moment="christmas"]  { --g-hero: #1F5C3A; --g-pop: #F2D16B; --g-page: #EEF3EF; }
+    html.g-seasons[data-moment="valentine"]  { --g-hero: #B8325A; --g-pop: #FFC2D4; --g-page: #FBEFF3; }
+    html.g-seasons[data-moment="womens"]     { --g-hero: #6E3F94; --g-pop: #F6E27A; --g-page: #F8F5E6; }
+    html.g-seasons[data-moment="easter"]     { --g-hero: #7A5A12; --g-pop: #E8F0B8; --g-page: #F7F5EA; }
+    html.g-seasons[data-moment="mother"]     { --g-hero: #A8456F; --g-pop: #FFD6E3; --g-page: #FBF0F4; }
+    html.g-seasons[data-moment="vyshyvanka"] { --g-hero: #A3222A; --g-pop: #F3E6D3; --g-page: #F7F1EA; }
+    html.g-seasons[data-moment="flag"]       { --g-hero: #0057B7; --g-pop: #FFD500; --g-page: #EEF2F7; }
+    html.g-seasons[data-moment="halloween"]  { --g-hero: #3D2A5C; --g-pop: #FF8C2B; --g-page: #F3EFF6; }
+    html.g-seasons[data-moment="party"]      { --g-hero: #B83A0C; --g-pop: #FFE066; --g-page: #FBF4E6; }
     html.dark {
       color-scheme: dark;
-      --g-page: color-mix(in srgb, var(--g-hero) 9%, #0F1012); --g-card: #1A1B1F; --g-soft: #232429; --g-line: #2E2F35;
-      --g-ink: #F2F1EC; --g-muted: #A7A7A0; --g-input: #141519;
+      --g-page: #121315; --g-card: #1C1D21; --g-soft: #25262B; --g-line: #34363C;
+      --g-ink: #F2F2EE; --g-muted: #A9ABB0; --g-input: #16171A; --g-hero: #1C1D21; --g-on-hero: #F2F2EE;
       --g-btn: var(--g-pop); --g-btn-text: #111111; --g-accent-text: var(--g-pop); --g-nav: #000000;
+      --g-shell: #1C1D21; --g-on-shell: #FFD43B; --g-tag-line: #F2F2EE;
     }
 
     /* Основа */
-    body[class] { background: var(--g-page) !important; color: var(--g-ink); font-family: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif !important; }
-    h1, h2, h3, .g-display { font-family: 'Unbounded', 'Onest', sans-serif !important; letter-spacing: -0.01em; }
+    body[class] { background: var(--g-page) !important; color: var(--g-ink); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif !important; }
+    h1, h2, h3, .g-display { font-family: 'Oswald', 'Inter', sans-serif !important; letter-spacing: -0.01em; }
     h3 { font-weight: 700 !important; }
-    [class*="bg-clip-text"] { background: none !important; -webkit-text-fill-color: currentColor !important; color: var(--g-ink) !important; font-family: 'Unbounded', sans-serif !important; }
+    [class*="bg-clip-text"] { background: none !important; -webkit-text-fill-color: currentColor !important; color: var(--g-ink) !important; font-family: 'Oswald', sans-serif !important; }
     :is(.bg-white, [class~="dark:bg-slate-800/80"], [class~="dark:bg-slate-800"]):not(input):not(select):not(textarea) { background-color: var(--g-card) !important; }
     :is(.bg-white, [class~="dark:bg-slate-800/80"], [class~="dark:bg-slate-800"])[class~="rounded-2xl"] { border-radius: 22px !important; box-shadow: none !important; border-color: transparent !important; }
     :is(.bg-slate-50, [class~="dark:bg-slate-900/40"], [class~="dark:bg-slate-900/50"], [class~="dark:bg-slate-900"]):not(body):not(input):not(select):not(textarea) { background-color: var(--g-soft) !important; }
@@ -117,9 +120,14 @@
     [class*="shadow-pink-"] { box-shadow: none !important; }
 
     /* Навігація */
-    header[class] { background: color-mix(in srgb, var(--g-page) 88%, transparent) !important; border-bottom: 1px solid var(--g-line) !important; backdrop-filter: blur(14px); box-shadow: none !important; }
+    header[class].sticky { background: var(--g-shell) !important; background-color: var(--g-shell) !important; color: var(--g-on-shell); border-bottom: 2px solid var(--g-tag-line) !important; box-shadow: none !important; }
+    .g-brand { margin: 0; color: var(--g-on-shell); font-family: 'Oswald', sans-serif !important; font-weight: 700; text-transform: uppercase; font-size: 22px !important; letter-spacing: .01em; }
+    header[class].sticky button { background: color-mix(in srgb, var(--g-on-shell) 10%, transparent) !important; color: var(--g-on-shell) !important; }
+    header #app-logo, header #app-subtitle, header #app-subtitle + * { display: none !important; }
+    header p:has(#app-subtitle) { display: none; }
+    header button { background: color-mix(in srgb, var(--g-on-shell) 10%, transparent) !important; color: var(--g-on-shell) !important; }
     #app-logo { background: transparent !important; box-shadow: none !important; }
-    .tab-btn { border-radius: 999px !important; font-family: 'Unbounded', sans-serif !important; font-size: 12px !important; font-weight: 600 !important; gap: 8px; }
+    .tab-btn { border-radius: 999px !important; font-family: 'Oswald', sans-serif !important; font-size: 12px !important; font-weight: 600 !important; gap: 8px; }
     .tab-btn.bg-pink-500 { background: var(--g-pop) !important; color: #111111 !important; }
     .tab-btn:not(.bg-pink-500):hover { background: var(--g-card) !important; }
     div[class*="bg-white/95"] { background: var(--g-nav) !important; border: 0 !important; border-radius: 999px !important; left: 12px !important; right: 12px !important; bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important; width: auto !important; padding: 6px !important; box-shadow: 0 12px 30px rgba(0,0,0,.28) !important; }
@@ -149,8 +157,8 @@
 
     /* Компоненти графічного стилю */
     .g-ic { display: inline-block; vertical-align: -0.2em; flex-shrink: 0; }
-    .g-mono { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font: 700 11px/1 'Unbounded', sans-serif; flex-shrink: 0; }
-    .g-num { font-family: 'Unbounded', sans-serif; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .g-mono { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font: 700 11px/1 'Oswald', sans-serif; flex-shrink: 0; }
+    .g-num { font-family: 'Oswald', sans-serif; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
     .g-hero { position: relative; overflow: hidden; background: var(--g-hero); color: var(--g-on-hero); border-radius: 24px; padding: 20px; }
     .g-hero > *:not(.g-motif) { position: relative; }
     .g-motif { position: absolute; right: -16px; top: -16px; width: 160px; height: 160px; pointer-events: none; }
@@ -167,7 +175,7 @@
 
     /* v4.3.2: аватари, налаштування, анімації */
     #settings-partners-form > .grid > div { background: var(--g-soft) !important; border-color: transparent !important; }
-    #settings-partners-form .uppercase { color: var(--g-ink) !important; font-family: 'Unbounded', sans-serif; font-size: 11px !important; letter-spacing: .02em; }
+    #settings-partners-form .uppercase { color: var(--g-ink) !important; font-family: 'Oswald', sans-serif; font-size: 11px !important; letter-spacing: .02em; }
     .g-switch { position: relative; display: inline-block; width: 52px; height: 32px; flex-shrink: 0; }
     .g-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
     .g-switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--g-soft); border: 2px solid var(--g-muted); transition: background-color .2s, border-color .2s; }
@@ -194,10 +202,10 @@
     html:not(.g-motion) #modal-backdrop, html:not(.g-motion) #modal-box, html:not(.g-motion) #mob-more-modal, html:not(.g-motion) #mob-more-modal > div { transition: none !important; }
 
     /* v4.3.1: правки з телефона */
-    h2 { font-size: 18px !important; line-height: 1.3 !important; }
+    h2 { font-size: 20px !important; line-height: 1.25 !important; }
     h3 { font-size: 16px !important; line-height: 1.3 !important; }
     @media (max-width: 640px) { h3 { font-size: 15px !important; } }
-    #period-label { font-family: 'Unbounded', sans-serif; font-size: 14px !important; font-weight: 700; }
+    #period-label { font-family: 'Oswald', sans-serif; font-size: 14px !important; font-weight: 700; }
     .g-sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--g-muted); padding: 0 4px; cursor: default; user-select: none; }
     .g-sync i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .overflow-x-auto td, .overflow-x-auto th { white-space: nowrap; }
@@ -207,9 +215,36 @@
       table.g-rtable tr { padding: 10px 0; border-bottom: 1px solid var(--g-line); }
       table.g-rtable td { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0 !important; text-align: right; border: 0 !important; white-space: normal; }
       table.g-rtable td::before { content: attr(data-label); color: var(--g-muted); text-align: left; font-weight: 500; }
-      table.g-rtable td:first-child { font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 13px; padding-bottom: 6px !important; }
+      table.g-rtable td:first-child { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 13px; padding-bottom: 6px !important; }
       table.g-rtable td:first-child::before { content: none; }
     }
+
+    /* ===== v5 «Цінник»: навігація, підрозділи, цінник ===== */
+    .g-num { font-family: 'Oswald', sans-serif !important; font-weight: 600 !important; letter-spacing: 0 !important; font-variant-numeric: tabular-nums; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--g-muted) !important; }
+    :focus-visible { outline: 3px solid var(--g-ink); outline-offset: 2px; }
+    .g-dnav { gap: 6px; border-bottom: 2px solid var(--g-tag-line); padding-bottom: 12px; }
+    .g-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 12px; font: 600 15px/1 'Inter', sans-serif; color: var(--g-muted); text-decoration: none; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
+    .g-tab[aria-current="page"] { background: var(--g-pop); color: #111111; }
+    #g-mnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--g-nav); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); }
+    .g-mtab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; border-radius: 12px; font: 600 11px/1.1 'Inter', sans-serif; color: var(--g-nav-text); text-decoration: none; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
+    .g-mtab[aria-current="page"] { background: var(--g-pop); color: #111111; }
+    #g-mnav :focus-visible { outline-color: var(--g-pop); }
+    @media (min-width: 640px) { #g-mnav { display: none; } }
+    .g-tab:active, .g-mtab:active, .g-sub:active { transform: scale(0.97); }
+    @media (hover: hover) and (pointer: fine) { .g-tab:not([aria-current]):hover { background: var(--g-card); color: var(--g-ink); } }
+    #g-subnav { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+    #g-subnav.hidden { display: none; }
+    .g-sub { flex-shrink: 0; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--g-tag-line); background: transparent; color: var(--g-ink); font: 600 14px/1 'Inter', sans-serif; cursor: pointer; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
+    .g-sub[aria-selected="true"] { background: var(--g-ink); color: var(--g-page); }
+    /* Головна сума — білий цінник із дірочкою */
+    .g-hero { background: var(--g-card) !important; color: var(--g-ink) !important; border: 2px solid var(--g-tag-line); border-radius: 14px !important; padding: 18px 18px 18px 46px !important; }
+    .g-hero::before { content: ''; position: absolute; left: 16px; top: 24px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--g-tag-line); background: var(--g-page); }
+    .g-motif { display: none !important; }
+    #g-fab { border: 2px solid #111111 !important; border-radius: 16px !important; box-shadow: 0 8px 20px rgba(0,0,0,.18) !important; bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important; transition: transform 160ms var(--g-ease); }
+    #g-fab:active { transform: scale(0.97) !important; }
+    @media (min-width: 640px) { #g-fab { bottom: 28px !important; } }
+    @media (prefers-reduced-motion: reduce) { .g-tab, .g-mtab, .g-sub, #g-fab { transition-property: background-color, color; } }
 
     @media (prefers-reduced-motion: reduce) {
       html:not(.g-motion) *, html:not(.g-motion) *::before, html:not(.g-motion) *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
@@ -248,12 +283,13 @@
         return [dark ? lighten(t.a, 0.3) : t.a, dark ? lighten(t.b, 0.1) : t.b].concat(BASE.slice(2));
       };
 
-      function pref() { try { return localStorage.getItem(KEY) || 'auto'; } catch (e) { return 'auto'; } }
+      function pref() { try { return localStorage.getItem(KEY) || 'off'; } catch (e) { return 'off'; } }
       function find(id) { for (var i = 0; i < THEMES.length; i++) { if (THEMES[i].id === id) return THEMES[i]; } return null; }
       function byCalendar() { return find(BY_MONTH[new Date().getMonth()]); }
       function current() { var p = pref(); if (p === 'off') return null; return p === 'auto' ? byCalendar() : find(p); }
       function apply() {
         var t = current();
+        document.documentElement.classList.toggle('g-seasons', pref() !== 'off');
         if (t) document.documentElement.setAttribute('data-season', t.id);
         else document.documentElement.removeAttribute('data-season');
         var emoji = t ? t.emoji : '💕';
@@ -294,7 +330,7 @@
           💕
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 class="g-brand">
             UsBudget
           </h1>
           <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400"><span id="app-subtitle">Фінансовий хаб для пари</span> · v4.4.2</p>
@@ -303,7 +339,7 @@
       
       <div class="flex items-center space-x-2 sm:space-x-3">
         <div id="sync-status" class="text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+          <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
           <span class="hidden sm:inline">Підключення...</span>
         </div>
         <button onclick="toggleDarkMode()" aria-label="Світла або темна тема" title="Світла / темна тема" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition" title="Змінити тему">
@@ -316,65 +352,28 @@
     </div>
   </header>
 
-  <!-- Навігація вкладок (Десктоп / Планшет) -->
-  <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6 w-full hidden sm:block">
-    <div class="flex space-x-2 border-b border-slate-200 dark:border-slate-700/60 pb-3 overflow-x-auto custom-scrollbar">
-      <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 bg-pink-500 text-white shadow-md shadow-pink-500/20">
-        <span>📊</span> Дашборд
-      </button>
-      <button onclick="switchTab('incomes')" id="btn-incomes" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-        <span>💰</span> Доходи
-      </button>
-      <button onclick="switchTab('expenses')" id="btn-expenses" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-        <span>🛒</span> Витрати та Ліміти
-      </button>
-      <button onclick="switchTab('fixed')" id="btn-fixed" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-        <span>🔄</span> Регулярні
-      </button>
-      <button onclick="switchTab('settlement')" id="btn-settlement" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-        <span>⚖️</span> Взаєморозрахунки
-      </button>
-      <button onclick="switchTab('p1')" id="btn-p1" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">👩 Партнер 1</button>
-      <button onclick="switchTab('p2')" id="btn-p2" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">👨 Партнер 2</button>
-      <button onclick="switchTab('analytics')" id="btn-analytics" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"><span>📊</span> Аналітика</button>
-      <button onclick="switchTab('goals')" id="btn-goals" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-        <span>🎯</span> Цілі
-      </button>
-      <button onclick="switchTab('settings')" id="btn-settings" class="tab-btn shrink-0 whitespace-nowrap px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-        <span>⚙️</span> Налаштування
-      </button>
-    </div>
+  <!-- Навігація v5: 5 розділів (Головна · Записи · План · Особисте · Ми) -->
+  <nav aria-label="Розділи" class="g-dnav max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6 w-full hidden sm:flex">
+      <a href="#dashboard" onclick="event.preventDefault(); openGroup('home')" data-group="home" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Головна</span></a>
+      <a href="#expenses" onclick="event.preventDefault(); openGroup('rec')" data-group="rec" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Записи</span></a>
+      <a href="#fixed" onclick="event.preventDefault(); openGroup('plan')" data-group="plan" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>План</span></a>
+      <a href="#p1" onclick="event.preventDefault(); openGroup('me')" data-group="me" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>Особисте</span></a>
+      <a href="#settlement" onclick="event.preventDefault(); openGroup('us')" data-group="us" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.5"/><circle cx="16" cy="10" r="3"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.5 0 4.5 1.3 5.5 4.5"/></svg><span>Ми</span></a>
   </nav>
 
-  <!-- Мобільна нижня панель навігації (Bottom Bar v4.3) -->
-  <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700/60 px-2 py-1.5 sm:hidden flex justify-around items-center shadow-lg">
-    <button onclick="switchTab('dashboard')" id="mob-btn-dashboard" class="mobile-tab-btn flex flex-col items-center justify-center py-1 px-2 text-pink-500">
-      <span class="text-xl">📊</span>
-      <span class="text-[10px] font-semibold mt-0.5">Дашборд</span>
-    </button>
-    <button onclick="switchTab('incomes')" id="mob-btn-incomes" class="mobile-tab-btn flex flex-col items-center justify-center py-1 px-2 text-slate-500 dark:text-slate-400">
-      <span class="text-xl">💰</span>
-      <span class="text-[10px] font-medium mt-0.5">Доходи</span>
-    </button>
-    <button onclick="switchTab('expenses')" id="mob-btn-expenses" class="mobile-tab-btn flex flex-col items-center justify-center py-1 px-2 text-slate-500 dark:text-slate-400">
-      <span class="text-xl">🛒</span>
-      <span class="text-[10px] font-medium mt-0.5">Витрати</span>
-    </button>
-    <button onclick="switchTab('goals')" id="mob-btn-goals" class="mobile-tab-btn flex flex-col items-center justify-center py-1 px-2 text-slate-500 dark:text-slate-400">
-      <span class="text-xl">🎯</span>
-      <span class="text-[10px] font-medium mt-0.5">Цілі</span>
-    </button>
-    <button onclick="openMoreMenu()" id="mob-btn-more" class="mobile-tab-btn flex flex-col items-center justify-center py-1 px-2 text-slate-500 dark:text-slate-400">
-      <span class="text-xl">📑</span>
-      <span class="text-[10px] font-medium mt-0.5">Меню</span>
-    </button>
-  </div>
+  <nav aria-label="Розділи" id="g-mnav" class="sm:hidden">
+    <a href="#dashboard" onclick="event.preventDefault(); openGroup('home')" data-group="home" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Головна</span></a>
+    <a href="#expenses" onclick="event.preventDefault(); openGroup('rec')" data-group="rec" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Записи</span></a>
+    <a href="#fixed" onclick="event.preventDefault(); openGroup('plan')" data-group="plan" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>План</span></a>
+    <a href="#p1" onclick="event.preventDefault(); openGroup('me')" data-group="me" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>Особисте</span></a>
+    <a href="#settlement" onclick="event.preventDefault(); openGroup('us')" data-group="us" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.5"/><circle cx="16" cy="10" r="3"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.5 0 4.5 1.3 5.5 4.5"/></svg><span>Ми</span></a>
+  </nav>
 
   <!-- Модальне меню "Ще" для мобільних -->
   <div id="mob-more-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-end justify-center hidden opacity-0 transition-opacity duration-200 sm:hidden">
     <div class="bg-white dark:bg-slate-800 p-5 rounded-t-3xl border-t border-slate-200 dark:border-slate-700 w-full max-w-lg space-y-3 transform translate-y-full transition-transform duration-200" id="mob-more-box">
       <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
-        <h3 class="font-bold text-base">Всі розділи</h3>
+        <h2 class="font-bold text-base">Всі розділи</h2>
         <button onclick="closeMoreMenu()" class="text-slate-400 p-1 text-lg">✕</button>
       </div>
       <div class="grid grid-cols-2 gap-2.5 py-2">
@@ -390,6 +389,8 @@
 
   <!-- Основний контент -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-6">
+
+    <div id="g-subnav" role="tablist" aria-label="Підрозділи" class="hidden"></div>
 
     <!-- Святковий банер (v4.3) -->
     <div id="holiday-banner-container"></div>
@@ -2452,12 +2453,13 @@ const snapshotFlat = st => clone(flattenState(st));
     function checkHolidaysAndAnniversaries() {
       const root = document.documentElement, box = document.getElementById('holiday-banner-container');
       const mom = getMoment(new Date());
-      let pref = 'auto'; try { pref = localStorage.getItem('usbudget_theme') || 'auto'; } catch (e) {}
+      let pref = 'off'; try { pref = localStorage.getItem('usbudget_theme') || 'off'; } catch (e) {}
       // Палітра моменту діє лише при автоматичній темі
       if (mom && mom.pal && pref === 'auto') root.setAttribute('data-moment', mom.pal); else root.removeAttribute('data-moment');
       const logo = document.getElementById('app-logo');
       
       if (!box) return;
+      if (pref === 'off') { box.innerHTML = ''; return; }
       let dismissed = ''; try { dismissed = localStorage.getItem('usbudget_banner_dismissed') || ''; } catch (e) {}
       const key = mom ? mom.id + '-' + new Date().getFullYear() : '';
       if (!mom || dismissed === key) { box.innerHTML = ''; return; }
@@ -4531,13 +4533,13 @@ const snapshotFlat = st => clone(flattenState(st));
     }
     function themeChartConfig(cfg) {
       const t = chartTokens(), o = cfg.options = cfg.options || {}, pl = o.plugins = o.plugins || {};
-      const font = (size, weight, family) => ({ family: family || "'Onest', system-ui, sans-serif", size, weight });
+      const font = (size, weight, family) => ({ family: family || "'Inter', system-ui, sans-serif", size, weight });
       const round = cfg.type === 'doughnut' || cfg.type === 'pie';
       pl.legend = Object.assign({}, pl.legend);
       pl.legend.labels = Object.assign({}, pl.legend.labels, { color: t.muted, font: font(12, '600'), usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: 14 });
       const userCb = (pl.tooltip && pl.tooltip.callbacks) || {};
       pl.tooltip = Object.assign({}, pl.tooltip, {
-        backgroundColor: t.pop, titleColor: '#111111', bodyColor: '#111111', titleFont: font(12, '700', "'Unbounded', sans-serif"), bodyFont: font(13, '600'),
+        backgroundColor: t.pop, titleColor: '#111111', bodyColor: '#111111', titleFont: font(12, '700', "'Oswald', sans-serif"), bodyFont: font(13, '600'),
         padding: 12, cornerRadius: 14, caretSize: 6, displayColors: true, usePointStyle: true, boxPadding: 6, borderWidth: 0,
         callbacks: Object.assign({ label: ctx => { const v = typeof ctx.parsed === 'number' ? ctx.parsed : (ctx.parsed && ctx.parsed.y); return ' ' + (round ? ctx.label : (ctx.dataset.label || ctx.label || '')) + ': ' + fmtMoney(v || 0); } }, userCb)
       });
@@ -4559,7 +4561,7 @@ const snapshotFlat = st => clone(flattenState(st));
     (function installChartTheme() {
       if (!window.Chart || window.Chart.__gThemed) return;
       const Orig = window.Chart;
-      try { Orig.defaults.font.family = "'Onest', system-ui, sans-serif"; } catch (e) {}
+      try { Orig.defaults.font.family = "'Inter', system-ui, sans-serif"; } catch (e) {}
       window.Chart = new Proxy(Orig, { construct(T, args) { try { if (args[1]) themeChartConfig(args[1]); } catch (e) {} return Reflect.construct(T, args); } });
       try { Orig.__gThemed = true; } catch (e) {}
     })();
@@ -4801,6 +4803,51 @@ const snapshotFlat = st => clone(flattenState(st));
       setupGraphicDashboard();
       initPrivacy();
       initAuthGate();
+    });
+  </script>
+  <script id="usbudget-nav-v5">
+    // v5: 5 розділів; кожен пам'ятає останній підрозділ
+    const NAV_GROUPS = {
+      home: { tabs: ['dashboard'] },
+      rec: { tabs: ['expenses', 'incomes'], labels: { expenses: 'Витрати', incomes: 'Внески' } },
+      plan: { tabs: ['fixed', 'goals'], labels: { fixed: 'Регулярні', goals: 'Цілі' } },
+      me: { tabs: ['p1', 'p2'] },
+      us: { tabs: ['settlement', 'settings', 'analytics'], labels: { settlement: 'Баланс', settings: 'Налаштування', analytics: 'Аналітика' } }
+    };
+    const navLast = {};
+    const groupOf = tab => Object.keys(NAV_GROUPS).find(g => NAV_GROUPS[g].tabs.indexOf(tab) >= 0) || 'home';
+    function subLabel(g, t) {
+      if (g === 'me') return t === 'p1' ? getPartner1Name() : getPartner2Name();
+      return NAV_GROUPS[g].labels[t];
+    }
+    function openGroup(g) {
+      let t = navLast[g];
+      if (!t && g === 'me') { try { t = localStorage.getItem('usbudget_push_owner') || ''; } catch (e) {} }
+      switchTab(NAV_GROUPS[g].tabs.indexOf(t) >= 0 ? t : NAV_GROUPS[g].tabs[0]);
+    }
+    function updateGroupNav(tab) {
+      const g = groupOf(tab);
+      navLast[g] = tab;
+      document.querySelectorAll('.g-tab, .g-mtab').forEach(a => {
+        if (a.dataset.group === g) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+      });
+      const box = document.getElementById('g-subnav');
+      if (!box) return;
+      // Аналітику показуємо в підменю «Ми» лише коли її відкрито з налаштувань
+      const tabs = NAV_GROUPS[g].tabs.filter(t => t !== 'analytics' || tab === 'analytics');
+      box.classList.toggle('hidden', tabs.length < 2);
+      box.innerHTML = tabs.length < 2 ? '' : tabs.map(t =>
+        `<button type="button" role="tab" class="g-sub" aria-selected="${t === tab}" onclick="switchTab('${t}')">${esc(subLabel(g, t))}</button>`).join('');
+    }
+    const switchTabV5 = switchTab;
+    switchTab = function (t) { switchTabV5(t); updateGroupNav(t); };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateGroupNav(activeTabId || 'dashboard');
+      const set = document.getElementById('tab-settings');
+      if (set && !document.getElementById('g-open-analytics')) {
+        set.insertAdjacentHTML('afterbegin', `<button type="button" id="g-open-analytics" onclick="switchTab('analytics')" class="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800/80 text-left min-h-[56px]"><span><span class="block font-semibold">Аналітика за місяцями</span><span class="block text-xs text-slate-500">Графіки й підсумки</span></span><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`);
+      }
     });
   </script>
 </body>

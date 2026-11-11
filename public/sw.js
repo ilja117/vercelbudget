@@ -1,5 +1,5 @@
 // UsBudget service worker: робота без інтернету та сповіщення
-const CACHE = 'usbudget-v4.4.3';
+const CACHE = 'usbudget-v4.5.0';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/badge-96.png'];
 
 self.addEventListener('install', e => {
@@ -15,7 +15,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   // Живі дані й серверні функції завжди з мережі
-  if (url.hostname.endsWith('firebaseio.com') || url.hostname.endsWith('firebasedatabase.app') || url.pathname.startsWith('/api/')) return;
+  if (url.hostname.endsWith('firebaseio.com') || url.hostname.endsWith('firebasedatabase.app') || url.hostname.endsWith('googleapis.com') || url.pathname.startsWith('/api/')) return;
   // Сама сторінка: спершу мережа (щоб оновлення приходили одразу), без мережі — збережена копія
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then(res => {

@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v4.4.3</title>
+  <title>UsBudget — Спільний бюджет пари · v4.5.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,6 +21,7 @@
   <!-- Firebase SDKs (v9 Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <script>
     tailwind.config = {
@@ -829,6 +830,12 @@
         <div id="theme-picker" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5"></div>
       </div>
 
+      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-3">
+        <h3 class="text-base sm:text-lg font-bold flex items-center gap-2"><span>👤</span> Акаунт</h3>
+        <p class="text-sm text-slate-500">Ви увійшли як <b id="auth-email">—</b></p>
+        <button type="button" onclick="authSignOut()" class="px-4 py-2.5 rounded-xl border text-sm font-semibold min-h-[44px]">Вийти з акаунта</button>
+      </div>
+
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
         <div>
           <h3 class="text-base sm:text-lg font-bold flex items-center gap-2"><span>🔒</span> PIN-захист особистих вкладок</h3>
@@ -856,6 +863,25 @@
     </section>
 
   </main>
+
+  <!-- Вхід: дані бачать лише двоє дозволених акаунтів (див. database.rules.json) -->
+  <div id="auth-gate" class="hidden fixed inset-0 z-[48] flex items-center justify-center px-4" style="background:var(--g-page)">
+    <form id="auth-form" class="w-full max-w-sm bg-white dark:bg-slate-800 p-6 rounded-2xl border space-y-4" onsubmit="authSignIn(event)">
+      <div>
+        <h2 class="text-xl font-bold">UsBudget</h2>
+        <p class="text-sm text-slate-500 mt-1">Увійдіть, щоб побачити спільний бюджет.</p>
+      </div>
+      <label class="block text-sm font-medium">Email
+        <input id="auth-email-input" type="email" autocomplete="username" required class="mt-1 w-full p-3 rounded-xl border bg-white dark:bg-slate-900 text-sm">
+      </label>
+      <label class="block text-sm font-medium">Пароль
+        <input id="auth-pass-input" type="password" autocomplete="current-password" required minlength="6" class="mt-1 w-full p-3 rounded-xl border bg-white dark:bg-slate-900 text-sm">
+      </label>
+      <p id="auth-error" class="hidden text-sm text-rose-600" role="alert"></p>
+      <button id="auth-submit" type="submit" class="w-full bg-pink-500 text-white font-semibold py-3 rounded-xl text-sm min-h-[48px]">Увійти</button>
+      <button type="button" onclick="authResetPassword()" class="w-full text-sm text-slate-500 underline underline-offset-2 min-h-[40px]">Забули пароль?</button>
+    </form>
+  </div>
 
   <!-- Модальне вікно -->
   <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200 px-4">
@@ -1475,7 +1501,86 @@ const snapshotFlat = st => clone(flattenState(st));
         updatePeriodUI();
         renderAll();
         updateSyncBadge(true);
-      }, (error) => { updateSyncBadge(false); });
+      }, (error) => {
+        updateSyncBadge(false);
+        if (/permission/i.test(String((error && (error.code || error.message)) || ''))) showAccessDenied();
+      });
+    }
+
+    // ==== AUTH ====
+    // Синхронізація стартує лише після входу. Без Firebase Auth (наприклад, SDK не завантажився) працюємо з локальною копією.
+    const authApi = () => (window.firebase && firebase.auth) ? firebase.auth() : null;
+    function initAuthGate() {
+      const auth = db && authApi();
+      if (!auth) { initSync(); return; }
+      let started = false;
+      auth.onAuthStateChanged(user => {
+        const gate = document.getElementById('auth-gate');
+        if (user) {
+          if (gate) gate.classList.add('hidden');
+          const em = document.getElementById('auth-email'); if (em) em.textContent = user.email || user.uid;
+          if (!started) { started = true; initSync(); }
+        } else {
+          if (started) { location.reload(); return; }
+          if (gate) gate.classList.remove('hidden');
+          setTimeout(() => { const i = document.getElementById('auth-email-input'); if (i) i.focus(); }, 50);
+        }
+      });
+    }
+
+    const AUTH_ERRORS = {
+      'auth/invalid-email': 'Неправильний формат email.',
+      'auth/user-not-found': 'Невірний email або пароль.',
+      'auth/wrong-password': 'Невірний email або пароль.',
+      'auth/invalid-credential': 'Невірний email або пароль.',
+      'auth/invalid-login-credentials': 'Невірний email або пароль.',
+      'auth/too-many-requests': 'Забагато спроб. Зачекайте кілька хвилин.',
+      'auth/network-request-failed': 'Немає інтернету. Для першого входу потрібна мережа.',
+      'auth/user-disabled': 'Цей акаунт вимкнено.'
+    };
+    function authError(msg) { const el = document.getElementById('auth-error'); if (!el) return; el.textContent = msg; el.classList.toggle('hidden', !msg); }
+
+    async function authSignIn(e) {
+      if (e) e.preventDefault();
+      const auth = authApi(), btn = document.getElementById('auth-submit');
+      if (!auth) return;
+      authError(''); if (btn) btn.disabled = true;
+      try {
+        await auth.signInWithEmailAndPassword(document.getElementById('auth-email-input').value.trim(), document.getElementById('auth-pass-input').value);
+        document.getElementById('auth-pass-input').value = '';
+      } catch (err) {
+        authError(AUTH_ERRORS[err && err.code] || 'Не вдалося увійти. Спробуйте ще раз.');
+      } finally { if (btn) btn.disabled = false; }
+    }
+
+    async function authResetPassword() {
+      const auth = authApi(), email = document.getElementById('auth-email-input').value.trim();
+      if (!auth) return;
+      if (!email) { authError('Введіть email, і ми надішлемо посилання для зміни пароля.'); return; }
+      try { await auth.sendPasswordResetEmail(email); } catch (e) {}
+      authError('');
+      showModal('Перевірте пошту', 'Якщо такий акаунт існує, на нього надіслано посилання для зміни пароля.');
+    }
+
+    function authSignOut() {
+      const unsynced = !syncReady || pendingWrites > 0 || !netOnline;
+      showConfirmModal('Вийти з акаунта?', (unsynced ? 'Частина змін ще не дійшла до бази й буде втрачена. ' : '') + 'Локальна копія даних на цьому пристрої буде видалена.', async () => {
+        ['usbudget_state', 'usbudget_base'].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+        try { sessionStorage.removeItem('usbudget_unlocked'); } catch (e) {}
+        try { await authApi().signOut(); } catch (e) {}
+        location.reload();
+      }, 'Вийти', true);
+    }
+
+    function showAccessDenied() {
+      const u = authApi() && authApi().currentUser;
+      showModal('Немає доступу до бази', 'Цей акаунт ще не додано до списку дозволених. У Firebase Console → Realtime Database → Data створіть запис members/' + (u ? u.uid : '<UID>') + ' зі значенням true.');
+    }
+
+    async function authHeader() {
+      const u = authApi() && authApi().currentUser;
+      if (!u) return {};
+      try { return { Authorization: 'Bearer ' + await u.getIdToken() }; } catch (e) { return {}; }
     }
 
     function saveToCloud() {
@@ -4555,7 +4660,7 @@ const snapshotFlat = st => clone(flattenState(st));
     async function sendTestPush(sub) {
       try {
         if (!sub) { const reg = await navigator.serviceWorker.ready; sub = await reg.pushManager.getSubscription(); }
-        const r = await fetch('/api/push-test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subscription: sub }) });
+        const r = await fetch('/api/push-test', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, await authHeader()), body: JSON.stringify({ subscription: sub }) });
         if (!r.ok) throw new Error('status ' + r.status);
         showModal('Надіслано', 'Тестове сповіщення має з’явитися за кілька секунд.');
       } catch (e) {
@@ -4695,7 +4800,7 @@ const snapshotFlat = st => clone(flattenState(st));
       setTimeout(localDailyReminder, 4000);
       setupGraphicDashboard();
       initPrivacy();
-      initSync();
+      initAuthGate();
     });
   </script>
 </body>

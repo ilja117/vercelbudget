@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v4.8.0</title>
+  <title>UsBudget — Спільний бюджет пари · v4.9.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -236,7 +236,7 @@
     #g-subnav { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
     #g-subnav.hidden { display: none; }
     .g-sub { flex-shrink: 0; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--g-tag-line); background: transparent; color: var(--g-ink); font: 600 14px/1 'Inter', sans-serif; cursor: pointer; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
-    .g-sub[aria-selected="true"] { background: var(--g-ink); color: var(--g-page); }
+    .g-sub[aria-pressed="true"], .g-sub[aria-selected="true"] { background: var(--g-ink); color: var(--g-page); }
     /* Головна сума — білий цінник із дірочкою */
     .g-hero { background: var(--g-card) !important; color: var(--g-ink) !important; border: 2px solid var(--g-tag-line); border-radius: 14px !important; padding: 18px 18px 18px 46px !important; }
     .g-hero::before { content: ''; position: absolute; left: 16px; top: 24px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--g-tag-line); background: var(--g-page); }
@@ -282,6 +282,7 @@
     }
   </style>
 
+  <script src="i18n.js"></script>
   <script id="usbudget-theme-engine-js">
     (function () {
       'use strict';
@@ -930,7 +931,7 @@
   <!-- JavaScript логіка -->
   <script>
     // Мова форматування чисел і дат (етап 5.4 додасть англійську)
-    const APP_LOCALE = 'uk-UA';
+    const APP_LOCALE = window.USB_LOCALE || 'uk-UA';
     const firebaseConfig = {
       apiKey: "AIzaSyC40zPZ1sq2jNlHmG-sBCz-WySdcCPxeAE",
       authDomain: "ourbudget-73f05.firebaseapp.com",
@@ -1012,7 +1013,7 @@
         start = new Date(y, m, 1);
         end = new Date(y, m + 1, 0, 23, 59, 59);
         periodKey = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`;
-        label = start.toLocaleDateString('uk-UA', { month: 'long', year: 'numeric' });
+        label = start.toLocaleDateString(APP_LOCALE, { month: 'long', year: 'numeric' });
         label = label.charAt(0).toUpperCase() + label.slice(1);
       } else {
         const day = now.getDay();
@@ -1024,7 +1025,7 @@
         end.setHours(23, 59, 59, 999);
         periodKey = toLocalISO(start);
         const opts = { day: 'numeric', month: 'short' };
-        label = `${start.toLocaleDateString('uk-UA', opts)} — ${end.toLocaleDateString('uk-UA', { ...opts, year: 'numeric' })}`;
+        label = `${start.toLocaleDateString(APP_LOCALE, opts)} — ${end.toLocaleDateString(APP_LOCALE, { ...opts, year: 'numeric' })}`;
       }
       return { start, end, label, periodKey };
     }
@@ -4922,6 +4923,10 @@ const snapshotFlat = st => clone(flattenState(st));
       const TITLES = { dashboard: 'Головна', expenses: 'Витрати', incomes: 'Внески', fixed: 'Регулярні платежі', goals: 'Цілі', p1: 'Особисте', p2: 'Особисте', settlement: 'Баланс', settings: 'Налаштування', analytics: 'Аналітика' };
       Object.keys(TITLES).forEach(t => { const sec = document.getElementById('tab-' + t); if (sec && !sec.querySelector(':scope > h2.sr-only')) sec.insertAdjacentHTML('afterbegin', `<h2 class="sr-only">${TITLES[t]}</h2>`); });
       const set = document.getElementById('tab-settings');
+      if (set && !document.getElementById('g-lang')) {
+        const cur = window.USB_LANG || 'uk';
+        set.insertAdjacentHTML('afterbegin', `<div id="g-lang" class="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800/80"><span class="font-semibold" id="g-lang-label">Мова інтерфейсу</span><span class="flex gap-2" role="group" aria-labelledby="g-lang-label">${[['uk', 'Українська'], ['en', 'English']].map(([v, l]) => `<button type="button" class="g-sub" aria-pressed="${cur === v}" onclick="setAppLanguage('${v}')" lang="${v}">${l}</button>`).join('')}</span></div>`);
+      }
       if (set && !document.getElementById('g-open-analytics')) {
         set.insertAdjacentHTML('afterbegin', `<button type="button" id="g-open-analytics" onclick="switchTab('analytics')" class="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800/80 text-left min-h-[56px]"><span><span class="block font-semibold">Аналітика за місяцями</span><span class="block text-xs text-slate-500">Графіки й підсумки</span></span><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`);
       }

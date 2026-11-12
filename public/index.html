@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.2.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.3.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -193,7 +193,21 @@
     html.g-motion .tab-content:not(.hidden) > *:nth-child(4) { animation-delay: .15s; }
     html.g-motion .tab-content:not(.hidden) > *:nth-child(5) { animation-delay: .2s; }
     html.g-motion .tab-content:not(.hidden) > *:nth-child(n+6) { animation-delay: .25s; }
-    html.g-motion #edit-modal > form { animation: g-sheet .34s cubic-bezier(.2,0,0,1) both; }
+    html.g-motion #edit-modal > form { animation: g-drawer .42s cubic-bezier(0.32, 0.72, 0, 1) both; }
+    html.g-motion #edit-modal { animation: g-fade .3s ease both; }
+    @keyframes g-drawer { from { transform: translateY(100%); } to { transform: none; } }
+    @keyframes g-fade { from { background-color: transparent; } }
+    /* v5.3 «Цінник»: цінник гойдається на дірочці, ліміт перештамповується, бігунок у меню */
+    .g-hero { transform-origin: 22px 30px; }
+    html.g-motion .g-hero.g-swing { animation: g-swing .9s cubic-bezier(0.23, 1, 0.32, 1); }
+    @keyframes g-swing { 0% { transform: rotate(0); } 18% { transform: rotate(-3.2deg); } 40% { transform: rotate(2deg); } 62% { transform: rotate(-0.9deg); } 82% { transform: rotate(0.35deg); } 100% { transform: rotate(0); } }
+    html.g-motion .g-ltag.g-restamp { animation: g-restamp .5s cubic-bezier(0.23, 1, 0.32, 1); }
+    @keyframes g-restamp { 0% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-6px) rotate(-2.5deg) scale(1.03); } 100% { transform: none; } }
+    #g-mnav { isolation: isolate; }
+    .g-mnav-ind { position: absolute; top: 8px; left: 0; height: 52px; border-radius: 12px; background: var(--g-pop); z-index: -1; pointer-events: none; opacity: 0; }
+    html.g-motion .g-mnav-ind { transition: transform .38s cubic-bezier(0.32, 0.72, 0, 1), width .38s cubic-bezier(0.32, 0.72, 0, 1), opacity .2s ease; }
+    #g-mnav.g-has-ind .g-mtab[aria-current="page"] { background: transparent; }
+    @media (prefers-reduced-motion: reduce) { .g-hero.g-swing, .g-ltag.g-restamp, #edit-modal > form, #edit-modal { animation: none !important; } .g-mnav-ind { transition: none !important; } }
     html.g-motion #undo-toast { animation: g-rise .3s cubic-bezier(.2,0,0,1) both; }
     html.g-motion #modal-box { transition: transform .3s cubic-bezier(.2,0,0,1) !important; }
     html.g-motion :is(button, .tab-btn, .mobile-tab-btn) { transition: transform .12s ease, background-color .25s ease, color .25s ease, filter .2s ease; }
@@ -4939,13 +4953,49 @@ const snapshotFlat = st => clone(flattenState(st));
       if (!box) return;
       // Аналітику показуємо в підменю «Ми» лише коли її відкрито з налаштувань
       const tabs = NAV_GROUPS[g].tabs;
+      requestAnimationFrame(moveNavIndicator);
       box.classList.toggle('hidden', tabs.length < 2);
       box.innerHTML = tabs.length < 2 ? '' : tabs.map(t =>
         `<button type="button" role="tab" class="g-sub" aria-selected="${t === tab}" onclick="switchTab('${t}')">${esc(subLabel(g, t))}</button>`).join('');
     }
     // Частина блоків малюється після заміни емодзі, тож проходимо ще раз наприкінці
     const renderAllV5 = renderAll;
-    renderAll = function () { renderAllV5(); try { iconify(); } catch (e) {} };
+    renderAll = function () { renderAllV5(); try { iconify(); } catch (e) {} try { animateMoney(); } catch (e) {} };
+
+    // Головна сума перелічується від старого значення, цінник гойдається; змінені ліміти перештамповуються
+    let heroPrev = null; const tagPrev = {};
+    const motionOnV5 = () => document.documentElement.classList.contains('g-motion') && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function animateMoney() {
+      const hero = document.querySelector('#g-hero .g-hero'), num = hero && hero.querySelector('.g-num');
+      if (num) {
+        const txt = num.textContent, to = Number(txt.replace(/[^\d-]/g, '')) || 0, from = heroPrev;
+        heroPrev = to;
+        if (from !== null && from !== to && motionOnV5()) {
+          const suffix = ' ' + getCurrency(), t0 = performance.now(), D = 650;
+          hero.classList.remove('g-swing'); void hero.offsetWidth; hero.classList.add('g-swing');
+          const step = now => {
+            const k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 4);
+            num.textContent = Math.round(from + (to - from) * e).toLocaleString(APP_LOCALE) + suffix;
+            if (k < 1 && num.isConnected) requestAnimationFrame(step); else num.textContent = txt;
+          };
+          requestAnimationFrame(step);
+        }
+      }
+      document.querySelectorAll('#g-hero .g-ltag').forEach(tg => {
+        const cat = tg.querySelector('.g-ltag-cat').textContent, val = tg.querySelector('.g-ltag-sum').textContent;
+        if (tagPrev[cat] !== undefined && tagPrev[cat] !== val && motionOnV5()) { tg.classList.add('g-restamp'); }
+        tagPrev[cat] = val;
+      });
+    }
+    // Бігунок під активним розділом у нижньому меню
+    function moveNavIndicator() {
+      const nav = document.getElementById('g-mnav'); if (!nav) return;
+      let ind = nav.querySelector('.g-mnav-ind');
+      if (!ind) { ind = document.createElement('span'); ind.className = 'g-mnav-ind'; ind.setAttribute('aria-hidden', 'true'); nav.prepend(ind); nav.classList.add('g-has-ind'); }
+      const a = nav.querySelector('.g-mtab[aria-current="page"]'); if (!a) { ind.style.opacity = 0; return; }
+      ind.style.width = a.offsetWidth + 'px'; ind.style.transform = `translateX(${a.offsetLeft}px)`; ind.style.opacity = 1;
+    }
+    addEventListener('resize', moveNavIndicator);
     const switchTabV5 = switchTab;
     switchTab = function (t) { switchTabV5(t); updateGroupNav(t); try { iconify(); } catch (e) {} };
 

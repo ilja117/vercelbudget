@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.6.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.6.1</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -667,6 +667,19 @@
 
     <!-- TAB: ВЗАЄМОРОЗРАХУНКИ -->
     <section id="tab-settlement" class="tab-content hidden space-y-4 sm:space-y-6">
+      <details class="g-more bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
+        <summary>Як записувати, щоб не плутатись</summary>
+        <p class="text-sm text-slate-600 dark:text-slate-300 pt-2">Три різні числа: <b>Можна ще витратити</b> — внески місяця мінус усі спільні витрати; <b>На спільній картці</b> — реальні гроші на картці; <b>Хто кому доплачує</b> — борг за частками.</p>
+        <ul class="text-sm mt-2">
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Скинули гроші на спільну картку</b><span class="text-slate-600 dark:text-slate-300">Записи → Внески: хто і скільки. З внесків складається бюджет місяця.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили спільною карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">Витрата, хто платив: «Спільна картка». Зменшує бюджет і гроші на картці, борг не змінює.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили своєю карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">Витрата, хто платив: ви «зі своїх», для кого: «Спільна». Ділиться за частками — партнер винен вам свою частину.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Купили собі спільною карткою</b><span class="text-slate-600 dark:text-slate-300">Витрата, хто платив: «Спільна картка», для кого: «Особисте». Зменшує бюджет і повністю рахується на вас.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Купили собі своєю карткою</b><span class="text-slate-600 dark:text-slate-300">Лише в розділі «Особисте» або взагалі не записувати. На спільний бюджет і борг не впливає.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Віддали партнерові борг</b><span class="text-slate-600 dark:text-slate-300">Ми → Баланс → кнопка «Переказ для…». Не записуйте це як витрату чи внесок.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Переказ між своїми картками, повернення покупки</b><span class="text-slate-600 dark:text-slate-300">Не записувати. Імпорт з банку такі операції вимикає сам.</span></li>
+        </ul>
+      </details>
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
         <h3 class="text-base sm:text-lg font-bold mb-1">⚖️ Баланс між партнерами</h3>
         <p class="text-xs sm:text-sm text-slate-500 mb-4">Рахується накопичувально: внески на картку плюс спільні витрати, оплачені зі своїх, порівнюються з вашими частками. Витрати з картки цей баланс не змінюють, бо картку ви наповнюєте у своїх частках; вони зменшують баланс картки.</p>

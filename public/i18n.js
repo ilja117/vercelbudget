@@ -21,6 +21,16 @@
   var monthOf = function (w, list) { var i = list.indexOf(String(w).toLowerCase()); return i < 0 ? null : i; };
 
   var D = {
+    // шпаргалка в Балансі (v5.6.1)
+    'Як записувати, щоб не плутатись': 'How to record things without getting confused', 'Три різні числа:': 'Three different numbers:', 'Можна ще витратити': 'Still available to spend',
+    '— внески місяця мінус усі спільні витрати;': '— this month’s contributions minus all shared spending;', 'На спільній картці': 'On the shared card', '— реальні гроші на картці;': '— the real money on the card;', 'Хто кому доплачує': 'Who owes whom', '— борг за частками.': '— the balance by shares.',
+    'Скинули гроші на спільну картку': 'Put money on the shared card', 'Записи → Внески: хто і скільки. З внесків складається бюджет місяця.': 'Records → Contributions: who and how much. Contributions make up the monthly budget.',
+    'Заплатили спільною карткою за спільне': 'Paid for something shared with the shared card', 'Витрата, хто платив: «Спільна картка». Зменшує бюджет і гроші на картці, борг не змінює.': 'Expense, who paid: “Shared card”. Lowers the budget and the card money, does not change who owes whom.',
+    'Заплатили своєю карткою за спільне': 'Paid for something shared with your own card', 'Витрата, хто платив: ви «зі своїх», для кого: «Спільна». Ділиться за частками — партнер винен вам свою частину.': 'Expense, who paid: you (own money), for whom: “Shared”. Split by shares — your partner owes you their part.',
+    'Купили собі спільною карткою': 'Bought something for yourself with the shared card', 'Витрата, хто платив: «Спільна картка», для кого: «Особисте». Зменшує бюджет і повністю рахується на вас.': 'Expense, who paid: “Shared card”, for whom: “Personal”. Lowers the budget and counts fully against you.',
+    'Купили собі своєю карткою': 'Bought something for yourself with your own card', 'Лише в розділі «Особисте» або взагалі не записувати. На спільний бюджет і борг не впливає.': 'Only under “Personal”, or don’t record it at all. It does not affect the shared budget or the balance.',
+    'Віддали партнерові борг': 'Paid your partner back', 'Ми → Баланс → кнопка «Переказ для…». Не записуйте це як витрату чи внесок.': 'Us → Balance → the “Transfer to…” button. Don’t record it as an expense or a contribution.',
+    'Переказ між своїми картками, повернення покупки': 'Transfer between your own cards, a refund', 'Не записувати. Імпорт з банку такі операції вимикає сам.': 'Don’t record it. Bank import switches these off by itself.',
     // бюджет місяця (v5.6)
     'Бюджет місяця': 'Monthly budget', 'Перевитрата бюджету': 'Over budget by', 'Внесено цього місяця:': 'Put in this month:', 'витрачено:': 'spent:', 'Запишіть внесок на картку — з нього складається бюджет місяця.': 'Record a contribution to the card — it makes up the monthly budget.',
     // імпорт з банку (v5.5)

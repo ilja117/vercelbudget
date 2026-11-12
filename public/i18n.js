@@ -113,6 +113,8 @@
     'Категорії: цей місяць проти минулого': 'Categories: this month vs last', 'Зміна': 'Change', 'Підсумки за місяцями': 'Monthly totals', 'Спільні витрати': 'Shared spending',
     'Картка': 'Card', 'Особисті підсумки': 'Personal totals', 'Норма': 'Rate', 'Експорт і звіт': 'Export and report', 'Звіт для друку / PDF': 'Printable report / PDF',
     'Особисті дані заблокованих розділів не потрапляють ні в експорт, ні у звіт.': 'Personal data from locked sections is left out of both the export and the report.',
+    'Куди пішли гроші': 'Where the money went', 'Темп місяця': 'Monthly pace', 'Решта': 'Other', 'Частки категорій': 'Category shares', 'Спільних витрат за цей період ще немає.': 'No shared expenses in this period yet.',
+    'Місяць завершено': 'Month finished', 'У середньому за день': 'Average per day', 'Якщо так і далі, до кінця місяця вийде': 'At this pace, by the end of the month you will reach',
     // Діалоги
     "Баланс врегульовано": "Balance settled",
     "Вимкнено": "Turned off",
@@ -202,7 +204,7 @@
     [/^мав (\d+)% = (.+)$/, 'share $1% = $2'], [/^Облік з (.+)$/, 'Tracking since $1'], [/^частки (.+)$/, 'shares $1'], [/^картка: (.+)$/, 'card: $1'],
     [/^Переказ для (.+): (.+)$/, 'Transfer to $1: $2'], [/^Доплата на картку: (.+)$/, 'Top up the card: $1'], [/^(\d+) КБ$/, '$1 KB'], [/^Додано: (.+) — (.+)$/, function (m, a, b) { return 'Added: ' + (tr(a) || a) + ' — ' + b; }],
     [/^Сума, (.+)$/, 'Amount, $1'], [/^(.+): розділ заблоковано$/, '$1: section locked'], [/^в ціль «(.+)»$/, 'to goal “$1”'], [/^лишилось (\d+) пл\. \((.+)\)$/, '$1 payments left ($2)'],
-    [/^(.+) \(регулярний\)$/, '$1 (recurring)'], [/^Цей акаунт ще не додано до списку дозволених\. У Firebase Console → Realtime Database → Data створіть запис members\/(.+) зі значенням true\.$/, 'This account is not on the allowed list yet. In Firebase Console → Realtime Database → Data, create members/$1 with the value true.'], [/^Внесок до цілі: (.+)$/, 'Goal contribution: $1']
+    [/^(.+) \(регулярний\)$/, '$1 (recurring)'], [/^День (\d+) з (\d+)$/, 'Day $1 of $2'], [/^, це на (.+) більше за ліміти\.$/, ', $1 over the limits.'], [/^, у межах лімітів \((.+)\)\.$/, ', within the limits ($1).'], [/^Цей акаунт ще не додано до списку дозволених\. У Firebase Console → Realtime Database → Data створіть запис members\/(.+) зі значенням true\.$/, 'This account is not on the allowed list yet. In Firebase Console → Realtime Database → Data, create members/$1 with the value true.'], [/^Внесок до цілі: (.+)$/, 'Goal contribution: $1']
   ];
 
   function tr(t) {

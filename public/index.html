@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.3.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.4.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -180,7 +180,8 @@
     .g-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
     .g-switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--g-soft); border: 2px solid var(--g-muted); transition: background-color .2s, border-color .2s; }
     .g-switch span::after { content: ''; position: absolute; top: 50%; left: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--g-muted); transform: translateY(-50%); transition: all .22s cubic-bezier(.2,0,0,1); }
-    .g-switch input:checked + span { background: var(--g-hero); border-color: var(--g-hero); }
+    .g-switch input:checked + span { background: var(--g-pop); border-color: var(--g-tag-line); }
+    .g-switch input:checked + span::after { background: #111111 !important; }
     .g-switch input:checked + span::after { left: 23px; width: 24px; height: 24px; background: #FFFFFF; }
     .g-switch input:focus-visible + span { outline: 3px solid color-mix(in srgb, var(--g-hero) 35%, transparent); outline-offset: 2px; }
     .g-ripple { position: absolute; border-radius: 50%; pointer-events: none; background: currentColor; opacity: .22; transform: scale(0); animation: g-ripple .6s cubic-bezier(.2,0,0,1) forwards; }
@@ -274,6 +275,25 @@
     }
     .g-icbtn { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 0; background: transparent; color: var(--g-ink); }
     .g-hero-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+    .g-ins-bar { display: flex; gap: 3px; height: 14px; border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
+    .g-ins-bar span { min-width: 4px; }
+    .g-ins-list { list-style: none; margin: 0; padding: 0; }
+    .g-ins-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--g-line); font-size: 15px; }
+    .g-ins-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .g-ins-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+    .g-ins-pct { color: var(--g-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .g-ins-sum { font-size: 18px; min-width: 88px; text-align: right; }
+    .g-ins-track { position: relative; height: 10px; border-radius: 99px; background: var(--g-soft); border: 1px solid var(--g-line); }
+    .g-ins-fill { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--g-pop); }
+    .g-ins-today { position: absolute; top: -5px; width: 4px; height: 20px; margin-left: -2px; border-radius: 2px; background: var(--g-ink); }
+    .g-ins-days { margin-top: 8px; font-size: 13px; color: var(--g-muted); }
+    .g-ins-kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 0; }
+    .g-ins-kv dt { font-size: 13px; color: var(--g-muted); }
+    .g-ins-kv dd { margin: 2px 0 0; font-size: 24px; }
+    .g-ins-forecast { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--g-line); font-size: 15px; line-height: 1.45; }
+    .g-ins-forecast b { font-size: 18px; }
+    .g-ins-forecast.is-over b { color: #BE123C; }
+    html.dark .g-ins-forecast.is-over b { color: #FDA4AF; }
     .g-kpi-line { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 2px 4px; font-size: 14px; color: var(--g-muted); }
     .g-kpi-line b { color: var(--g-ink); font-size: 16px; margin-left: 4px; }
     .g-hero-sub { margin: 6px 0 0; font-size: 14px; color: var(--g-muted); }
@@ -505,25 +525,9 @@
         <div id="dashboard-limits-container" class="space-y-2.5 sm:space-y-3"></div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
-          <h3 class="font-bold text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2">
-            <span>🍰</span> Спільні витрати за категоріями
-          </h3>
-          <div class="relative h-56 sm:h-64 flex items-center justify-center">
-            <canvas id="expenseCategoryChart"></canvas>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
-          <h3 class="font-bold text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2">
-            <span>👥</span> Вклад партнерів за місяць
-          </h3>
-          <div class="relative h-56 sm:h-64 flex items-center justify-center">
-            <canvas id="partnerContributionChart"></canvas>
-          </div>
-        </div>
-      </div>
+      <!-- v5.4: замість кругової діаграми й «Вкладу партнерів» — дві картки-підсумки (renderInsights) -->
+      <div id="g-insights" class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6"></div>
+      <div hidden aria-hidden="true"><canvas id="expenseCategoryChart"></canvas><canvas id="partnerContributionChart"></canvas></div>
     </section>
 
     <!-- TAB 2: ДОХОДИ -->
@@ -4960,7 +4964,38 @@ const snapshotFlat = st => clone(flattenState(st));
     }
     // Частина блоків малюється після заміни емодзі, тож проходимо ще раз наприкінці
     const renderAllV5 = renderAll;
-    renderAll = function () { renderAllV5(); try { iconify(); } catch (e) {} try { animateMoney(); } catch (e) {} };
+    renderAll = function () { renderAllV5(); try { renderInsights(); } catch (e) {} try { iconify(); } catch (e) {} try { animateMoney(); } catch (e) {} };
+
+    const INS_COL = ['var(--g-ink)', 'var(--g-month, #3B5BDB)', '#8FD3FF', '#C6F06A', '#FF7A66', '#B8B2A7'];
+    function renderInsights() {
+      const host = document.getElementById('g-insights'); if (!host) return;
+      const exp = filterByPeriod(state.expenses || []).filter(e => e.kind !== 'savings');
+      const by = {}; exp.forEach(e => { const c = e.category || 'Інше'; by[c] = (by[c] || 0) + (Number(e.amount) || 0); });
+      const total = Object.values(by).reduce((a, b) => a + b, 0);
+      let rows = Object.keys(by).map(c => ({ c, v: by[c] })).sort((a, b) => b.v - a.v);
+      if (rows.length > 6) { const rest = rows.slice(5).reduce((a, r) => a + r.v, 0); rows = rows.slice(0, 5).concat([{ c: 'Решта', v: rest }]); }
+      const pct = v => total ? Math.round(v / total * 100) : 0;
+      const where = total ? `
+        <div class="g-ins-bar" role="img" aria-label="Частки категорій">${rows.map((r, i) => `<span style="flex:${r.v} 1 0;background:${INS_COL[i % INS_COL.length]}"></span>`).join('')}</div>
+        <ul class="g-ins-list">${rows.map((r, i) => `<li><span class="g-ins-dot" style="background:${INS_COL[i % INS_COL.length]}"></span><span class="g-ins-name">${esc(r.c)}</span><span class="g-ins-pct">${pct(r.v)}%</span><span class="g-num g-ins-sum">${fmtMoney(r.v)}</span></li>`).join('')}</ul>`
+        : '<p class="text-sm text-slate-500">Спільних витрат за цей період ще немає.</p>';
+      // Темп: лише для поточного місяця
+      const { start, end } = getPeriodRange(), now = new Date(), cur = now >= start && now <= end && currentPeriod.type === 'month';
+      const days = end.getDate(), day = cur ? now.getDate() : days, perDay = day ? total / day : 0, forecast = Math.round(perDay * days);
+      const limits = state.settings.categoryLimits || {}, limTotal = Object.keys(limits).reduce((a, c) => a + (Number(limits[c]) || 0), 0);
+      const over = limTotal && forecast > limTotal;
+      const pace = `
+        <div class="g-ins-track" aria-hidden="true"><span class="g-ins-fill" style="width:${Math.round(day / days * 100)}%"></span>${cur ? `<span class="g-ins-today" style="left:${Math.round(day / days * 100)}%"></span>` : ''}</div>
+        <div class="g-ins-days">${cur ? `День ${day} з ${days}` : `Місяць завершено`}</div>
+        <dl class="g-ins-kv">
+          <div><dt>Витрачено</dt><dd class="g-num">${fmtMoney(total)}</dd></div>
+          <div><dt>У середньому за день</dt><dd class="g-num">${fmtMoney(perDay)}</dd></div>
+        </dl>
+        ${cur ? `<p class="g-ins-forecast ${over ? 'is-over' : ''}">Якщо так і далі, до кінця місяця вийде <b class="g-num">≈ ${fmtMoney(forecast)}</b>${limTotal ? (over ? `, це на ${fmtMoney(forecast - limTotal)} більше за ліміти.` : `, у межах лімітів (${fmtMoney(limTotal)}).`) : '.'}</p>` : ''}`;
+      host.innerHTML = `
+        <section class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl" aria-labelledby="g-ins-where"><h3 id="g-ins-where" class="mb-3">Куди пішли гроші</h3>${where}</section>
+        <section class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl" aria-labelledby="g-ins-pace"><h3 id="g-ins-pace" class="mb-3">Темп місяця</h3>${pace}</section>`;
+    }
 
     // Головна сума перелічується від старого значення, цінник гойдається; змінені ліміти перештамповуються
     let heroPrev = null; const tagPrev = {};

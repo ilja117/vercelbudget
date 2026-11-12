@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.5.1</title>
+  <title>UsBudget — Спільний бюджет пари · v5.6.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -4412,9 +4412,13 @@ const snapshotFlat = st => clone(flattenState(st));
             </div>`;
           }).join('')}
         </div>` : '';
-      const limits = state.settings.categoryLimits || {}, hasLimits = Object.keys(limits).some(c => Number(limits[c]) > 0);
-      const heroLabel = hasLimits ? 'Можна ще витратити' : label, heroSum = hasLimits ? limitRemainder('shared') : v4Card(state);
-      const cardLine = hasLimits ? `<p class="g-hero-sub">На спільній картці: <b>${fmtMoney(v4Card(state))}</b></p>` : '';
+      // v5.6: бюджет місяця = внески на картку за місяць; витрати — усі спільні (з картки й зі своїх) плюс особисті з картки
+      const sum = (a, f) => a.reduce((t, x) => t + (Number(x.amount) || 0), 0);
+      const budget = sum(filterByPeriod(state.contributions || [])), spentAll = sum(filterByPeriod(state.expenses)) + sum(filterByPeriod(state.personalExpenses || []).filter(e => e.fromCard));
+      const left = budget - spentAll;
+      const heroLabel = !budget ? 'Бюджет місяця' : left >= 0 ? 'Можна ще витратити' : 'Перевитрата бюджету', heroSum = budget ? Math.abs(left) : 0;
+      const cardLine = `<p class="g-hero-sub">${budget ? `<span>Внесено цього місяця:</span> <b>${fmtMoney(budget)}</b> · <span>витрачено:</span> <b>${fmtMoney(spentAll)}</b>` : '<span>Запишіть внесок на картку — з нього складається бюджет місяця.</span>'}</p>
+          <p class="g-hero-sub">На спільній картці: <b>${fmtMoney(v4Card(state))}</b></p>`;
       host.innerHTML = `
         <div class="g-hero">
           <div class="g-hero-label">${esc(heroLabel)}</div>
@@ -4628,17 +4632,6 @@ const snapshotFlat = st => clone(flattenState(st));
       }
       if (!window.__gRipple) { document.addEventListener('pointerdown', ripple, { passive: true }); window.__gRipple = true; }
     }
-    let heroShown = null;
-    function animateHeroNumber() {
-      const el = document.querySelector('#g-hero .g-num'), target = v4Card(state);
-      if (!el) return;
-      if (heroShown === null || heroShown === target || !document.documentElement.classList.contains('g-motion')) { heroShown = target; return; }
-      const from = heroShown, t0 = performance.now();
-      heroShown = target;
-      el.textContent = fmtMoney(from);
-      const step = now => { const p = Math.min(1, (now - t0) / 700), k = 1 - Math.pow(1 - p, 3); el.textContent = fmtMoney(from + (target - from) * k); if (p < 1) requestAnimationFrame(step); };
-      requestAnimationFrame(step);
-    }
 
     // --- графіки у стилі застосунку: шрифти, кольори, підказки ---
     function chartTokens() {
@@ -4680,8 +4673,6 @@ const snapshotFlat = st => clone(flattenState(st));
       try { Orig.__gThemed = true; } catch (e) {}
     })();
 
-    const renderAllV431 = renderAll;
-    renderAll = function () { renderAllV431(); animateHeroNumber(); };
 
     
 // ===== v4.4: застосунок на телефоні, сповіщення, швидка витрата =====

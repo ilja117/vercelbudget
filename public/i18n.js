@@ -21,6 +21,8 @@
   var monthOf = function (w, list) { var i = list.indexOf(String(w).toLowerCase()); return i < 0 ? null : i; };
 
   var D = {
+    // бюджет місяця (v5.6)
+    'Бюджет місяця': 'Monthly budget', 'Перевитрата бюджету': 'Over budget by', 'Внесено цього місяця:': 'Put in this month:', 'витрачено:': 'spent:', 'Запишіть внесок на картку — з нього складається бюджет місяця.': 'Record a contribution to the card — it makes up the monthly budget.',
     // імпорт з банку (v5.5)
     'Імпорт з банку': 'Bank import', 'Виписка CSV або XLSX: перевірте й оберіть, що додати в бюджет.': 'A CSV or XLSX statement: review it and pick what goes into the budget.',
     'Завантажити виписку': 'Upload statement', 'Закрити': 'Close', 'Чия картка у виписці': 'Whose card is this statement for', 'Файл виписки (CSV або XLSX)': 'Statement file (CSV or XLSX)',

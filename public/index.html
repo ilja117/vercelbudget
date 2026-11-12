@@ -11,13 +11,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.7.1</title>
-  
+  <title>UsBudget — Спільний бюджет пари · v5.7.2</title>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  
+
   <!-- Firebase SDKs (v9 Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -214,7 +214,7 @@
     html.g-motion :is(button, .tab-btn, .mobile-tab-btn) { transition: transform .12s ease, background-color .25s ease, color .25s ease, filter .2s ease; }
     html.g-motion button:active { transform: scale(.97); }
     html.g-motion .g-hero, html.g-motion body[class], html.g-motion .g-pop, html.g-motion .g-tile { transition: background-color .45s ease, color .45s ease; }
-    html:not(.g-motion) #modal-backdrop, html:not(.g-motion) #modal-box, html:not(.g-motion) #mob-more-modal, html:not(.g-motion) #mob-more-modal > div { transition: none !important; }
+    html:not(.g-motion) #modal-backdrop, html:not(.g-motion) #modal-box { transition: none !important; }
 
     /* v4.3.1: правки з телефона */
     h2 { font-size: 20px !important; line-height: 1.25 !important; }
@@ -423,7 +423,7 @@
           <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400"><span id="app-subtitle">Фінансовий хаб для пари</span> · v4.4.2</p>
         </div>
       </div>
-      
+
       <div class="flex items-center space-x-2 sm:space-x-3">
         <div id="sync-status" class="text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
@@ -456,24 +456,6 @@
     <a href="#p1" onclick="event.preventDefault(); openGroup('me')" data-group="me" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>Особисте</span></a>
     <a href="#settlement" onclick="event.preventDefault(); openGroup('us')" data-group="us" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.5"/><circle cx="16" cy="10" r="3"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.5 0 4.5 1.3 5.5 4.5"/></svg><span>Ми</span></a>
   </nav>
-
-  <!-- Модальне меню "Ще" для мобільних -->
-  <div id="mob-more-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-end justify-center hidden opacity-0 transition-opacity duration-200 sm:hidden">
-    <div class="bg-white dark:bg-slate-800 p-5 rounded-t-3xl border-t border-slate-200 dark:border-slate-700 w-full max-w-lg space-y-3 transform translate-y-full transition-transform duration-200" id="mob-more-box">
-      <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
-        <h2 class="font-bold text-base">Всі розділи</h2>
-        <button onclick="closeMoreMenu()" class="text-slate-400 p-1 text-lg">✕</button>
-      </div>
-      <div class="grid grid-cols-2 gap-2.5 py-2">
-        <button onclick="closeMoreMenu(); switchTab('fixed')" class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-left text-xs font-semibold flex items-center gap-2.5"><span>🔄</span> Регулярні платежі</button>
-        <button onclick="closeMoreMenu(); switchTab('settlement')" class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-left text-xs font-semibold flex items-center gap-2.5"><span>⚖️</span> Взаєморозрахунки</button>
-        <button onclick="closeMoreMenu(); switchTab('analytics')" class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-left text-xs font-semibold flex items-center gap-2.5">📊 Аналітика</button>
-        <button onclick="closeMoreMenu(); switchTab('p1')" id="mob-more-p1" class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-left text-xs font-semibold flex items-center gap-2.5">👩 Партнер 1</button>
-        <button onclick="closeMoreMenu(); switchTab('p2')" id="mob-more-p2" class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-left text-xs font-semibold flex items-center gap-2.5">👨 Партнер 2</button>
-        <button onclick="closeMoreMenu(); switchTab('settings')" class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-left text-xs font-semibold flex items-center gap-2.5 col-span-2"><span>⚙️</span> Налаштування</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Основний контент -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-6">
@@ -944,7 +926,7 @@
             <input type="file" id="import-json-file" accept=".json" onchange="importDataFromJson(event)" class="hidden">
             <div class="text-xl mb-1">📤</div><div class="font-semibold text-sm">Імпорт з JSON</div>
           </label>
-          
+
           <button onclick="confirmClearAllData()" class="p-4 rounded-xl border border-rose-200 hover:border-rose-500 bg-rose-50/30 text-left transition min-h-[56px]">
             <div class="text-xl mb-1">🗑️</div><div class="font-semibold text-sm text-rose-600">Очистити все</div>
           </button>
@@ -1105,22 +1087,6 @@
       renderAll();
     }
 
-    function updatePeriodUI() {
-      const btnM = document.getElementById('period-btn-month');
-      const btnW = document.getElementById('period-btn-week');
-      const lbl = document.getElementById('period-label');
-
-      if (currentPeriod.type === 'month') {
-        btnM.className = 'flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-xl text-xs font-semibold transition bg-pink-500 text-white shadow-sm min-h-[40px]';
-        btnW.className = 'flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-xl text-xs font-semibold transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 min-h-[40px]';
-      } else {
-        btnW.className = 'flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-xl text-xs font-semibold transition bg-pink-500 text-white shadow-sm min-h-[40px]';
-        btnM.className = 'flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-xl text-xs font-semibold transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 min-h-[40px]';
-      }
-      const { label } = getPeriodRange();
-      if (lbl) lbl.innerText = label;
-    }
-
     function filterByPeriod(items) {
       const { start, end } = getPeriodRange();
       return (items || []).filter(item => {
@@ -1135,8 +1101,7 @@
     const cleanLabel = (v, max) => Array.from(String(v || '').replace(/[<>"`]/g, '').trim()).slice(0, max).join('');
     function getPartner1Name() { return cleanLabel(state.settings && state.settings.partner1, 40) || 'Партнер 1'; }
     function getPartner2Name() { return cleanLabel(state.settings && state.settings.partner2, 40) || 'Партнер 2'; }
-    function getPartner1Avatar() { return cleanLabel(state.settings && state.settings.partner1Avatar, 8) || '👩'; }
-    function getPartner2Avatar() { return cleanLabel(state.settings && state.settings.partner2Avatar, 8) || '👨'; }
+
     function getPartner1Color() { return (state.settings && state.settings.partner1Color) || '#3B5BDB'; }
     function getPartner2Color() { return (state.settings && state.settings.partner2Color) || '#8FD3FF'; }
     function getCurrency() { return (state.settings && state.settings.currency) || '₴'; }
@@ -1262,10 +1227,7 @@
     const clone = v => JSON.parse(JSON.stringify(v));
 
     // Підтверджені розрахунки зменшують борг за період, для якого їх зроблено
-    function applySettlements(net, list, pk) {
-      (list || []).forEach(x => { if (x.periodKey === pk) net += x.from === 'p1' ? -x.amount : x.amount; });
-      return net;
-    }
+
 const snapshotFlat = st => clone(flattenState(st));
 
     function migrateGoalsIn(st) {
@@ -1786,17 +1748,9 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
     // --- v4.3: підтверджені взаєморозрахунки ---
-    function currentPKey() { return currentPeriod.type + ':' + getPeriodRange().periodKey; }
+
     const slotName = k => k === 'p1' ? getPartner1Name() : getPartner2Name();
-    function confirmSettlement() {
-      const net = window.__net || 0;
-      if (Math.abs(net) < 1) { showModal('Баланс врегульовано', 'Ніхто нікому не винен за цей період.'); return; }
-      const from = net > 0 ? 'p1' : 'p2', to = from === 'p1' ? 'p2' : 'p1', amt = Math.round(Math.abs(net));
-      showConfirmModal('Підтвердити розрахунок?', `${slotName(from)} переказав(-ла) ${amt.toLocaleString(APP_LOCALE)} ${getCurrency()} для ${slotName(to)} за період «${getPeriodRange().label}». Баланс буде обнулено.`, () => {
-        (state.settlements = state.settlements || []).push({ id: 'st_' + Date.now(), date: getTodayString(), periodKey: currentPKey(), from, to, amount: amt });
-        saveToCloud(); renderAll();
-      }, 'Підтвердити');
-    }
+
     function deleteSettlement(id) { state.settlements = (state.settlements || []).filter(x => x.id !== id); saveToCloud(); renderAll(); }
     function renderSettlementHistory() {
       const box = document.getElementById('settlement-history');
@@ -1824,19 +1778,6 @@ const snapshotFlat = st => clone(flattenState(st));
       }
     }, true);
 
-
-    function updateSyncBadge(isOk) {
-      const el = document.getElementById('sync-status');
-      if (!el) return;
-      if (isOk) {
-        el.className = 'text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 flex items-center gap-1.5';
-        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span><span class="hidden sm:inline">Синхронізовано</span>';
-      } else {
-        el.className = 'text-[11px] sm:text-xs px-2.5 py-1.5 rounded-full font-medium bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 flex items-center gap-1.5';
-        el.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span><span class="hidden sm:inline">Помилка мережі</span>';
-      }
-    }
-
     function toggleDarkMode() {
       const html = document.documentElement;
       if (html.classList.contains('dark')) {
@@ -1854,22 +1795,6 @@ const snapshotFlat = st => clone(flattenState(st));
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark');
       document.getElementById('theme-icon').innerHTML = '<svg class="g-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
-    }
-
-    function openMoreMenu() {
-      const modal = document.getElementById('mob-more-modal');
-      const box = document.getElementById('mob-more-box');
-      if (!modal || !box) return;
-      modal.classList.remove('hidden');
-      setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('translate-y-full'); }, 10);
-    }
-    function closeMoreMenu() {
-      const modal = document.getElementById('mob-more-modal');
-      const box = document.getElementById('mob-more-box');
-      if (!modal || !box) return;
-      modal.classList.add('opacity-0');
-      box.classList.add('translate-y-full');
-      setTimeout(() => { modal.classList.add('hidden'); }, 200);
     }
 
     function switchTab(tabId) {
@@ -2004,107 +1929,9 @@ const snapshotFlat = st => clone(flattenState(st));
       }).join('');
     }
 
-    function addFixedExpense(e) {
-      e.preventDefault();
-      const p1 = getPartner1Name(), p2 = getPartner2Name();
-      const fx = {
-        id: 'fx_' + Date.now(),
-        title: document.getElementById('fx-title').value.trim(),
-        amount: parseFloat(document.getElementById('fx-amount').value) || 0,
-        frequency: document.getElementById('fx-frequency').value,
-        type: document.getElementById('fx-type').value,
-        category: document.getElementById('fx-category').value,
-        scope: document.getElementById('fx-scope').value,
-        payer: (document.getElementById('fx-payer') && document.getElementById('fx-scope').value === 'shared') ? document.getElementById('fx-payer').value : (document.getElementById('fx-scope').value === 'p2' ? p2 : p1),
-        split: state.settings.defaultSplit || '50-50',
-        endDate: document.getElementById('fx-end-date').value || '',
-        paidPeriods: []
-      };
-      state.fixedExpenses = state.fixedExpenses || [];
-      state.fixedExpenses.push(fx);
-      saveToCloud(); renderAll(); renderFixedExpenses();
-      document.getElementById('fixed-expense-form').reset();
-    }
-
     function deleteFixedExpense(id) {
       state.fixedExpenses = (state.fixedExpenses || []).filter(x => x.id !== id);
       saveToCloud(); renderAll(); renderFixedExpenses();
-    }
-
-    function markFixedPaid(id) {
-      const { periodKey } = getPeriodRange(), fx = (state.fixedExpenses || []).find(x => x.id === id);
-      if (!fx) return;
-      if (!fx.paidPeriods) fx.paidPeriods = [];
-      if (fx.paidPeriods.includes(periodKey)) {
-        showConfirmModal('Скасувати оплату?', `Платіж «${fx.title}» за цей період буде прибрано з витрат.`, () => {
-          fx.paidPeriods = fx.paidPeriods.filter(p => p !== periodKey);
-          const eid = (fx.scope === 'shared' ? 'exp_fx_' : 'pexp_fx_') + id + '_' + periodKey;
-          state.expenses = state.expenses.filter(e => e.id !== eid);
-          state.personalExpenses = (state.personalExpenses || []).filter(e => e.id !== eid);
-          saveToCloud(); renderAll(); renderFixedExpenses();
-        }, 'Скасувати оплату', true);
-        return;
-      }
-      fx.paidPeriods.push(periodKey);
-      const today = dateInPeriod();
-      if (fx.scope === 'shared') {
-        state.expenses.push({ id: 'exp_fx_' + id + '_' + periodKey, date: today, title: fx.title + ' (регулярний)', amount: fx.amount, category: fx.category, payer: fx.payer, split: fx.split, kind: fx.type });
-      } else {
-        state.personalExpenses = state.personalExpenses || [];
-        state.personalExpenses.push({ id: 'pexp_fx_' + id + '_' + periodKey, owner: fx.scope, date: today, title: fx.title + ' (регулярний)', amount: fx.amount, category: fx.category });
-      }
-      saveToCloud(); renderAll(); renderFixedExpenses();
-      showModal('Успіх', `Платіж «${fx.title}» проведено!`);
-    }
-
-    function renderFixedExpenses() {
-      const tbody = document.getElementById('fixed-expenses-table-body');
-      const mobileList = document.getElementById('fixed-mobile-list');
-      const curr = getCurrency(), { periodKey } = getPeriodRange(), p1 = getPartner1Name(), p2 = getPartner2Name();
-      const typeLabels = { expense: '📉 Витрата', savings: '💎 Накопичення', debt: '💳 Борг' };
-      const items = state.fixedExpenses || [];
-
-      if (tbody) {
-        tbody.innerHTML = items.length ? items.map(fx => {
-          const isPaid = (fx.paidPeriods || []).includes(periodKey);
-          const scopeText = fx.scope === 'shared' ? '👥 Спільний' : (fx.scope === 'p1' ? `👩 ${p1}` : `👨 ${p2}`);
-          return `
-            <tr class="border-b border-slate-100 dark:border-slate-800/60">
-              <td class="py-3 font-medium">${esc(fx.title)}${fx.endDate ? `<span class="block text-[10px] font-normal text-slate-400">до ${fx.endDate}</span>` : ''}</td>
-              <td class="py-3 text-xs"><span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700">${typeLabels[fx.type] || fx.type}</span></td>
-              <td class="py-3 text-xs text-slate-500">${FREQ[fx.frequency] || fx.frequency}</td>
-              <td class="py-3 font-semibold">${fx.amount.toLocaleString(APP_LOCALE)} ${curr}</td>
-              <td class="py-3 text-xs">${scopeText}</td>
-              <td class="py-3 text-right flex items-center justify-end gap-2">
-                <button onclick="markFixedPaid('${fx.id}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-500 text-white'}">${isPaid ? '✅ Сплачено' : '💳 Сплатити'}</button>
-                <button onclick="openEdit('fixed', '${fx.id}')" class="text-xs p-1" aria-label="Редагувати">✏️</button><button onclick="deleteFixedExpense('${fx.id}')" class="text-rose-500 text-xs p-1">✕</button>
-              </td>
-            </tr>
-          `;
-        }).join('') : `<tr><td colspan="6" class="py-4 text-center text-slate-400 text-xs">Немає регулярних платежів</td></tr>`;
-      }
-
-      if (mobileList) {
-        mobileList.innerHTML = items.length ? items.map(fx => {
-          const isPaid = (fx.paidPeriods || []).includes(periodKey);
-          const scopeText = fx.scope === 'shared' ? '👥 Спільний' : (fx.scope === 'p1' ? `👩 ${p1}` : `👨 ${p2}`);
-          return `
-            <div class="p-3.5 rounded-2xl border bg-slate-50 dark:bg-slate-900/40 space-y-2">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h4 class="font-bold text-sm">${esc(fx.title)}</h4>
-                  <p class="text-[11px] text-slate-500">${typeLabels[fx.type] || fx.type} · ${FREQ[fx.frequency] || fx.frequency} · ${scopeText}</p>
-                </div>
-                <span class="flex items-center"><button onclick="openEdit('fixed', '${fx.id}')" class="text-xs p-1" aria-label="Редагувати">✏️</button><button onclick="deleteFixedExpense('${fx.id}')" class="text-slate-400 hover:text-rose-500 text-xs p-1">✕</button></span>
-              </div>
-              <div class="flex justify-between items-center pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                <span class="font-bold text-sm">${fx.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
-                <button onclick="markFixedPaid('${fx.id}')" class="px-3.5 py-2 rounded-xl text-xs font-semibold transition ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-pink-500 text-white'}">${isPaid ? '✅ Сплачено' : '💳 Сплатити'}</button>
-              </div>
-            </div>
-          `;
-        }).join('') : `<p class="text-center text-slate-400 text-xs py-4">Немає регулярних платежів</p>`;
-      }
     }
 
     function addGoal(e) {
@@ -2177,13 +2004,6 @@ const snapshotFlat = st => clone(flattenState(st));
       }).join('') : `<div class="col-span-full text-center text-slate-400 text-sm py-6">Цілі відсутні</div>`;
     }
 
-    function togglePersonalMode(k) {
-      state.personalModes = state.personalModes || { p1: 'integrated', p2: 'integrated' };
-      state.personalModes[k] = state.personalModes[k] === 'autonomous' ? 'integrated' : 'autonomous';
-      saveToCloud();
-      renderPersonalTabs();
-    }
-
     function addPersonalCategory(k, e) {
       e.preventDefault();
       const input = document.getElementById(`pp-${k}-new-cat`);
@@ -2244,17 +2064,6 @@ const snapshotFlat = st => clone(flattenState(st));
       showModal('Успіх', 'Залишок внесено до цілі та списано з вільного балансу.');
     }
 
-    function addPersonalFixed(k, e) {
-      e.preventDefault();
-      const title = document.getElementById(`pp-${k}-fx-title`).value.trim();
-      const amount = parseFloat(document.getElementById(`pp-${k}-fx-amount`).value) || 0;
-      if (!state.personalFixed) state.personalFixed = { p1: [], p2: [] };
-      if (!state.personalFixed[k]) state.personalFixed[k] = [];
-      state.personalFixed[k].push({ id: 'pfx_' + Date.now(), title, amount, paidPeriods: [] });
-      saveToCloud(); renderPersonalTabs();
-      e.target.reset();
-    }
-
     function markPersonalFixedPaid(k, fxId) {
       const { periodKey } = getPeriodRange();
       const list = state.personalFixed[k] || [];
@@ -2270,7 +2079,7 @@ const snapshotFlat = st => clone(flattenState(st));
         return;
       }
       fx.paidPeriods.push(periodKey);
-      
+
       state.personalExpenses = state.personalExpenses || [];
       state.personalExpenses.push({
         id: 'pexp_fx_' + fxId + '_' + periodKey,
@@ -2332,44 +2141,9 @@ const snapshotFlat = st => clone(flattenState(st));
       updateSettingsPreviews();
     }
 
-    function formatPartnerBadge(name) {
-      const p1 = getPartner1Name(), p2 = getPartner2Name(), p1Avatar = getPartner1Avatar(), p2Avatar = getPartner2Avatar();
-      if (name === p1 || name === 'Партнер 1') return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-semibold bg-pink-50 text-pink-700 border"><span>${p1Avatar}</span><span>${p1}</span></span>`;
-      if (name === p2 || name === 'Партнер 2') return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border"><span>${p2Avatar}</span><span>${p2}</span></span>`;
-      if (name === 'Спільно') return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 border"><span>👥</span><span>Спільно</span></span>`;
-      return `<span class="font-medium">${name}</span>`;
-    }
-
-    function addIncome(e) {
-      e.preventDefault();
-      state.incomes.push({ id: Date.now().toString(), date: document.getElementById('income-date').value || getTodayString(), partner: document.getElementById('income-partner').value, source: document.getElementById('income-source').value.trim(), amount: parseFloat(document.getElementById('income-amount').value) || 0 });
-      saveToCloud(); renderAll();
-      document.getElementById('income-form').reset();
-      (document.getElementById('income-date') || {}).value = getTodayString();
-    }
     function deleteIncome(id) { state.incomes = state.incomes.filter(i => i.id !== id); saveToCloud(); renderAll(); }
 
-    function addExpense(e) {
-      e.preventDefault();
-      state.expenses.push({ id: Date.now().toString(), date: document.getElementById('exp-date').value || getTodayString(), title: document.getElementById('exp-title').value.trim(), amount: parseFloat(document.getElementById('exp-amount').value) || 0, category: document.getElementById('exp-category').value, payer: document.getElementById('exp-payer').value, split: document.getElementById('exp-split').value });
-      saveToCloud(); renderAll();
-      document.getElementById('expense-form').reset();
-      document.getElementById('exp-date').value = getTodayString();
-    }
     function deleteExpense(id) { state.expenses = state.expenses.filter(e => e.id !== id); unmarkPaid(id); saveToCloud(); renderAll(); }
-
-    
-
-    function updateSettingsPreviews() {
-      const p1Avatar = document.getElementById('settings-p1-avatar')?.value || getPartner1Avatar();
-      const p2Avatar = document.getElementById('settings-p2-avatar')?.value || getPartner2Avatar();
-      const p1Name = document.getElementById('settings-p1-name')?.value.trim() || getPartner1Name();
-      const p2Name = document.getElementById('settings-p2-name')?.value.trim() || getPartner2Name();
-      document.getElementById('p1-card-avatar').innerText = p1Avatar;
-      document.getElementById('p2-card-avatar').innerText = p2Avatar;
-      document.getElementById('preview-p1').textContent = `${p1Avatar} ${p1Name}`;
-      document.getElementById('preview-p2').textContent = `${p2Avatar} ${p2Name}`;
-    }
 
     function populateSettingsForm() {
       const s = state.settings || defaultSettings;
@@ -2415,14 +2189,6 @@ const snapshotFlat = st => clone(flattenState(st));
       state.settings.partner2Color = document.getElementById('settings-p2-color').value;
       saveToCloud(); renderAll();
       showModal('Збережено', 'Профілі та дати оновлено!');
-    }
-
-    function saveFinanceSettings(e) {
-      if (e) e.preventDefault();
-      state.settings.currency = document.getElementById('settings-currency').value;
-      state.settings.defaultSplit = document.getElementById('settings-default-split').value;
-      saveToCloud(); renderAll();
-      showModal('Збережено', 'Параметри збережено!');
     }
 
     function renderCategoriesList() {
@@ -2490,6 +2256,7 @@ const snapshotFlat = st => clone(flattenState(st));
       reader.readAsText(file);
     }
 
+    // Кнопки в інтерфейсі немає; демо-дані завантажує tools/preview/fakefb.js
     function confirmResetToDemo() {
       showConfirmModal('Демо-дані', 'Завантажити демо-записи?', () => {
         const t = getTodayString();
@@ -2569,7 +2336,7 @@ const snapshotFlat = st => clone(flattenState(st));
       // Палітра моменту діє лише при автоматичній темі
       if (mom && mom.pal && pref === 'auto') root.setAttribute('data-moment', mom.pal); else root.removeAttribute('data-moment');
       const logo = document.getElementById('app-logo');
-      
+
       if (!box) return;
       if (pref === 'off') { box.innerHTML = ''; return; }
       let dismissed = ''; try { dismissed = localStorage.getItem('usbudget_banner_dismissed') || ''; } catch (e) {}
@@ -2600,7 +2367,7 @@ const snapshotFlat = st => clone(flattenState(st));
       // Доходи (таблиця та мобільні картки)
       const incTable = document.getElementById('incomes-table-body');
       const incMob = document.getElementById('incomes-mobile-list');
-      
+
       const incHtml = listInc.length ? listInc.map(i => `
         <tr class="border-b border-slate-100 dark:border-slate-800/60">
           <td class="py-3 text-xs text-slate-500">${i.date || '—'}</td>
@@ -2686,77 +2453,6 @@ const snapshotFlat = st => clone(flattenState(st));
       renderDashboardLimits();
       renderCategoryLimitsEditor();
       renderGoals();
-    }
-
-    function getSplitName(code) {
-      const p1 = getPartner1Name(), p2 = getPartner2Name();
-      switch(code) {
-        case '50-50': return '50 / 50';
-        case 'proportional': return 'Пропорційно';
-        case '100-p1': return `100% ${p1}`;
-        case '100-p2': return `100% ${p2}`;
-        default: return code;
-      }
-    }
-
-    function calculateSettlement(totalInc, curr, periodIncomes, periodExpenses) {
-      const p1 = getPartner1Name(), p2 = getPartner2Name(), p1Avatar = getPartner1Avatar(), p2Avatar = getPartner2Avatar();
-      if (!curr) curr = getCurrency();
-      let p1Inc = periodIncomes.filter(i => i.partner === p1 || i.partner === 'Партнер 1').reduce((s, i) => s + i.amount, 0);
-      let p2Inc = periodIncomes.filter(i => i.partner === p2 || i.partner === 'Партнер 2').reduce((s, i) => s + i.amount, 0);
-      let p1Ratio = totalInc > 0 ? (p1Inc / totalInc) : 0.5, p1OwesP2 = 0;
-
-      periodExpenses.forEach(e => {
-        let p1Share = 0, p2Share = 0;
-        if (e.split === '50-50') { p1Share = e.amount * 0.5; p2Share = e.amount * 0.5; }
-        else if (e.split === 'proportional') { p1Share = e.amount * p1Ratio; p2Share = e.amount * (1 - p1Ratio); }
-        else if (e.split === '100-p1') p1Share = e.amount;
-        else if (e.split === '100-p2') p2Share = e.amount;
-        if (e.payer === p1 || e.payer === 'Партнер 1') p1OwesP2 -= p2Share;
-        else if (e.payer === p2 || e.payer === 'Партнер 2') p1OwesP2 += p1Share;
-      });
-
-      p1OwesP2 = applySettlements(p1OwesP2, state.settlements, currentPKey());
-      window.__net = p1OwesP2;
-      renderSettlementHistory();
-      const badge = document.getElementById('settlement-badge'), text = document.getElementById('settlement-text'), details = document.getElementById('settlement-details');
-      if (Math.abs(p1OwesP2) < 1) {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800'; badge.innerText = 'Баланс врегульовано'; text.innerText = 'Ніхто нікому не винен'; details.innerText = 'Усі спільні витрати розподілено рівномірно.';
-      } else if (p1OwesP2 > 0) {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-pink-100 text-pink-800'; badge.innerText = 'Розрахунок'; text.innerText = `${p1Avatar} ${p1} винен(-на) для ${p2Avatar} ${p2}: ${Math.round(p1OwesP2).toLocaleString(APP_LOCALE)} ${curr}`; details.innerText = 'Перерахуйте цю суму для вирівнювання балансу.';
-      } else {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800'; badge.innerText = 'Розрахунок'; text.innerText = `${p2Avatar} ${p2} винен(-на) для ${p1Avatar} ${p1}: ${Math.round(-p1OwesP2).toLocaleString(APP_LOCALE)} ${curr}`; details.innerText = 'Перерахуйте цю суму для вирівнювання балансу.';
-      }
-    }
-
-    function renderCharts(curr) {
-      if (!curr) curr = getCurrency();
-      const isDark = document.documentElement.classList.contains('dark'), textColor = isDark ? '#94a3b8' : '#64748b';
-      const p1 = getPartner1Name(), p2 = getPartner2Name(), p1Color = getPartner1Color(), p2Color = getPartner2Color();
-      const periodIncomes = filterByPeriod(state.incomes), periodExpenses = filterByPeriod(state.expenses);
-
-      const catMap = {}; periodExpenses.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
-      const catCanvas = document.getElementById('expenseCategoryChart');
-      if (catCanvas) {
-        if (expenseCategoryChartInstance) expenseCategoryChartInstance.destroy();
-        expenseCategoryChartInstance = new Chart(catCanvas.getContext('2d'), {
-          type: 'doughnut',
-          data: { labels: Object.keys(catMap).length ? Object.keys(catMap) : ['Без витрат'], datasets: [{ data: Object.values(catMap).length ? Object.values(catMap) : [1], backgroundColor: usbChartColors(), borderWidth: 0 }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 } } } } }
-        });
-      }
-
-      const partnerMap = { [p1]: 0, [p2]: 0 };
-      periodIncomes.forEach(i => { let key = (i.partner === 'Партнер 1' || i.partner === p1) ? p1 : p2; partnerMap[key] = (partnerMap[key] || 0) + i.amount; });
-      const partCanvas = document.getElementById('partnerContributionChart');
-      if (partCanvas) {
-        if (partnerContributionChartInstance) partnerContributionChartInstance.destroy();
-        partnerContributionChartInstance = new Chart(partCanvas.getContext('2d'), {
-          type: 'bar',
-          data: { labels: Object.keys(partnerMap), datasets: [{ data: Object.values(partnerMap), backgroundColor: [p1Color, p2Color], borderRadius: 10 }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor, font: { size: 11 } }, grid: { display: false } }, y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: isDark ? '#334155' : '#f1f5f9' } } } }
-        });
-      }
     }
 
     const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -2869,37 +2565,6 @@ const snapshotFlat = st => clone(flattenState(st));
       });
     }
 
-    function personalOf(k) {
-      const isP1 = k === 'p1', n1 = getPartner1Name(), n2 = getPartner2Name();
-      const mode = (state.personalModes && state.personalModes[k]) || 'integrated';
-      const periodIncomes = filterByPeriod(state.incomes);
-      const periodExpenses = filterByPeriod(state.expenses);
-
-      const is1 = i => i.partner === n1 || i.partner === 'Партнер 1';
-      const is2 = i => i.partner === n2 || i.partner === 'Партнер 2';
-      const inc1 = sumBy(periodIncomes.filter(is1), i => i.amount);
-      const inc2 = sumBy(periodIncomes.filter(is2), i => i.amount);
-      const tot = inc1 + inc2;
-      const ratio = tot > 0 ? (isP1 ? inc1 : inc2) / tot : 0.5;
-
-      let share = 0;
-      if (mode === 'integrated') {
-        periodExpenses.forEach(e => {
-          if (e.split === '50-50') share += e.amount * 0.5;
-          else if (e.split === 'proportional') share += e.amount * ratio;
-          else if (e.split === (isP1 ? '100-p1' : '100-p2')) share += e.amount;
-        });
-      }
-
-      const shared = periodIncomes.filter(isP1 ? is1 : is2);
-      const pi = filterByPeriod((state.personalIncomes || []).filter(x => x.owner === k));
-      const pe = filterByPeriod((state.personalExpenses || []).filter(x => x.owner === k));
-      const extra = sumBy(pi, x => x.amount);
-      const income = (mode === 'autonomous' ? 0 : sumBy(shared, i => i.amount)) + extra;
-      const spent = sumBy(pe, x => x.amount);
-      return { shared, pi, pe, extra, income, share, spent, left: income - share - spent, mode };
-    }
-
     function addPersonalIncome(k, e) {
       e.preventDefault();
       state.personalIncomes = state.personalIncomes || [];
@@ -2978,7 +2643,6 @@ const snapshotFlat = st => clone(flattenState(st));
 
         const tabBtn = document.getElementById('btn-' + k);
         if (tabBtn) tabBtn.innerHTML = `<span>${avatar}</span> ${name}`;
-        const mm = document.getElementById('mob-more-' + k); if (mm) mm.innerHTML = `<span>${avatar}</span> ${name}`;
         renderLockBox(k);
         if (isLocked(k)) { const t = document.getElementById(`pp-${k}-lock-title`); if (t) t.innerText = `${avatar} ${isP1 ? getPartner1Name() : getPartner2Name()}: розділ заблоковано`; return; }
 
@@ -2988,13 +2652,13 @@ const snapshotFlat = st => clone(flattenState(st));
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <h2 class="text-base sm:text-xl font-bold text-slate-900 dark:text-white">${name}</h2>
-                
+
               </div>
               <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Мій дохід мінус внесок у спільне, витрати й відкладене</p>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0 flex-wrap">
-            
+
             ${pinOf(k)
               ? `<button onclick="lockPartner('${k}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700/60 transition">🔒 Заблокувати</button>`
               : `<button onclick="switchTab('settings')" class="px-3 py-2 rounded-xl text-xs text-slate-500">${ICON('unlock', 14)} Без PIN</button>`}
@@ -3112,7 +2776,7 @@ const snapshotFlat = st => clone(flattenState(st));
         const sharedRows = d.mode === 'integrated' ? d.shared.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${i.date || '—'}</td><td class="py-3">${esc(i.source)} <span class="text-[10px] text-slate-400">спільний</span></td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td><td></td></tr>`) : [];
         const ownRows = d.pi.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${i.date || '—'}</td><td class="py-3">${esc(i.source)}</td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td><td class="text-right"><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalIncomes', '${i.id}')" class="text-rose-500 text-xs">Видалити</button></td></tr>`);
         const allInc = sharedRows.concat(ownRows);
-        
+
         document.getElementById(`pp-${k}-inc-body`).innerHTML = allInc.length ? allInc.join('') : emptyMsg;
         document.getElementById(`pp-${k}-inc-mob`).innerHTML = allInc.length ? (d.mode === 'integrated' ? d.shared.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-[10px] text-slate-400">${i.date || ''} (спільний)</span></div><span class="font-bold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span></div>`).join('') : '') + d.pi.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-[10px] text-slate-400">${i.date || ''}</span></div><div class="text-right"><span class="font-bold text-emerald-600 block">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalIncomes', '${i.id}')" class="text-rose-500 text-[10px]">Видалити</button></div></div>`).join('') : emptyMsg;
 
@@ -3127,7 +2791,7 @@ const snapshotFlat = st => clone(flattenState(st));
             <td class="py-3 text-right"><button onclick="openEdit('pexpense', '${x.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalExpenses', '${x.id}')" class="text-rose-500 text-xs">Видалити</button></td>
           </tr>`);
         document.getElementById(`pp-${k}-exp-body`).innerHTML = allExp.length ? allExp.join('') : emptyMsg;
-        
+
         document.getElementById(`pp-${k}-exp-mob`).innerHTML = pe.length ? pe.map(x => `
           <div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs">
             <div>
@@ -3257,12 +2921,6 @@ const snapshotFlat = st => clone(flattenState(st));
       return changed;
     }
 
-    function unmarkPaid(eid) {
-      const strip = fx => { fx.paidPeriods = (fx.paidPeriods || []).filter(p => eid !== 'exp_fx_' + fx.id + '_' + p && eid !== 'pexp_fx_' + fx.id + '_' + p); };
-      (state.fixedExpenses || []).forEach(strip);
-      ['p1', 'p2'].forEach(k => ((state.personalFixed || {})[k] || []).forEach(strip));
-    }
-
     function stripLocked(src) {
       const c = JSON.parse(JSON.stringify(src));
       ['p1', 'p2'].filter(isLocked).forEach(k => {
@@ -3335,27 +2993,11 @@ const snapshotFlat = st => clone(flattenState(st));
       }, 'Видалити й скинути', true);
     }
 
-    function contributeGoal(id, k) {
-      const g = state.goals.find(x => x.id === id), inp = document.getElementById('gc-amt-' + id);
-      const amt = inp ? parseFloat(inp.value) : 0;
-      if (!g || !(amt > 0)) { showModal('Увага', 'Введіть суму внеску.'); return; }
-      g.current = Math.min(g.target, g.current + amt);
-      (g.history = g.history || []).push({ date: getTodayString(), partner: k === 'p1' ? getPartner1Name() : getPartner2Name(), amount: amt });
-      saveToCloud(); renderAll();
-    }
-
     function buildFixedPayerField() {
       const sc = document.getElementById('fx-scope');
       if (!sc || document.getElementById('fx-payer')) return;
       const host = (sc.parentElement && sc.parentElement.querySelector('label')) ? sc.parentElement : sc;
       host.insertAdjacentHTML('afterend', '<div><label class="block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300">Платить (для спільних)</label><select id="fx-payer" class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm"></select></div>');
-    }
-    function updateFixedPayerOptions() {
-      const sel = document.getElementById('fx-payer');
-      if (!sel) return;
-      const cur = sel.value, p1 = getPartner1Name(), p2 = getPartner2Name();
-      sel.innerHTML = `<option value="${esc(p1)}">${getPartner1Avatar()} ${esc(p1)}</option><option value="${esc(p2)}">${getPartner2Avatar()} ${esc(p2)}</option>`;
-      sel.value = (cur === p1 || cur === p2) ? cur : p1;
     }
 
     // --- v4.3: редагування записів, пошук і фільтри, єдина модель цілей ---
@@ -3536,16 +3178,6 @@ const snapshotFlat = st => clone(flattenState(st));
       el.textContent = `Показано ${shown.length} із ${all.length} · ${Math.round(sum).toLocaleString(APP_LOCALE)} ${curr}`;
     }
 
-    function buildListToolbars() {
-      const put = (tbodyId, kind, slot) => {
-        const tb = document.getElementById(tbodyId), table = tb && tb.closest('table'), host = table && table.parentElement;
-        if (host) host.insertAdjacentElement('beforebegin', makeToolbar(kind, slot));
-      };
-      put('incomes-table-body', 'incomes');
-      put('expenses-table-body', 'expenses');
-      ['p1', 'p2'].forEach(k => put(`pp-${k}-exp-body`, 'pexp', k));
-    }
-
     // Єдина модель цілей: усі цілі в state.goals, особисті мають scope 'p1' або 'p2'
     function unifyGoalForm() {
       const sc = document.getElementById('goal-scope');
@@ -3555,7 +3187,6 @@ const snapshotFlat = st => clone(flattenState(st));
       (host && host.querySelector('label') ? host : sc).classList.add('hidden');
     }
 
-    
 // ===== v4.3: модель внесків, спільна картка, накопичувальний баланс =====
     currentPeriod = { type: 'month', offset: 0 };   // тижневий перегляд прибрано
     const getPct1 = () => clampPct(state.settings.p1Pct);
@@ -3576,16 +3207,6 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
     function getSplitName() { const p = getPct1(); return `${p}/${100 - p}`; }
-
-    function formatPartnerBadge(v) {
-      const p = slotFrom(v, getPartner1Name(), getPartner2Name());
-      const base = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-semibold border';
-      if (p === 'p1') return `<span class="${base} bg-pink-50 text-pink-700">${getPartner1Avatar()} ${esc(getPartner1Name())}</span>`;
-      if (p === 'p2') return `<span class="${base} bg-blue-50 text-blue-700">${getPartner2Avatar()} ${esc(getPartner2Name())}</span>`;
-      if (p === 'card') return `<span class="${base} bg-purple-50 text-purple-700">💳 Картка</span>`;
-      if (p === 'adj') return `<span class="${base} bg-slate-50 text-slate-600">⚙️ Коригування</span>`;
-      return `<span class="font-medium">${esc(v || '')}</span>`;
-    }
 
     function fillSelect(id, opts, fallback) {
       const sel = document.getElementById(id);
@@ -3631,7 +3252,6 @@ const snapshotFlat = st => clone(flattenState(st));
       e.target.reset();
       document.getElementById('contrib-date').value = getTodayString();
     }
-    function deleteContribution(id) { state.contributions = (state.contributions || []).filter(x => x.id !== id); saveToCloud(); renderAll(); }
 
     function renderContributions() {
       const box = document.getElementById('contrib-list');
@@ -3853,7 +3473,6 @@ const snapshotFlat = st => clone(flattenState(st));
       renderContributions();
     };
 
-    
 // ===== v4.3: регулярні операції, плани цілей, залишки лімітів =====
     const migrateV41 = () => migrateV41In(state);
     const REC_KIND = {
@@ -4117,7 +3736,6 @@ const snapshotFlat = st => clone(flattenState(st));
       checkGoalsReached();
     };
 
-    
 // ===== v4.3: аналітика, експорт і звіт =====
     const MONTHS_SHORT = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
     const MONTHS_LONG = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
@@ -4125,47 +3743,6 @@ const snapshotFlat = st => clone(flattenState(st));
     const mLabelLong = key => MONTHS_LONG[Number(key.slice(5, 7)) - 1] + ' ' + key.slice(0, 4);
     const lockedSlots = () => ['p1', 'p2'].filter(isLocked);
     const anCharts = {};
-
-    function renderAnalytics() {
-      const sec = document.getElementById('tab-analytics');
-      if (!sec || sec.classList.contains('hidden')) return;
-      const n = Number((document.getElementById('an-range') || {}).value || 6), last = monthRange().key;
-      const keys = monthKeys(last, n), rows = monthlySummary(state, keys), labels = keys.map(mLabel);
-      const isDark = document.documentElement.classList.contains('dark'), tc = isDark ? '#94a3b8' : '#64748b', col = usbChartColors();
-      const chart = (id, cfg) => {
-        const c = document.getElementById(id);
-        if (!c) return;
-        if (anCharts[id]) anCharts[id].destroy();
-        anCharts[id] = new Chart(c.getContext('2d'), cfg);
-      };
-      const axes = { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } };
-      chart('an-trend', { type: 'bar', data: { labels, datasets: [
-        { type: 'bar', label: 'Спільні витрати', data: rows.map(r => r.shared), backgroundColor: col[0], borderRadius: 8 },
-        { type: 'line', label: 'Внески на картку', data: rows.map(r => r.contrib.p1 + r.contrib.p2), borderColor: col[1], backgroundColor: col[1], tension: 0.3 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc } } }, scales: axes } });
-      chart('an-card', { type: 'line', data: { labels, datasets: [{ label: 'Картка', data: rows.map(r => r.cardEnd), borderColor: col[2], backgroundColor: col[2], tension: 0.3, fill: false }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: axes } });
-
-      const prev = monthKeys(last, 2)[0], growth = categoryGrowth(state, last, prev).slice(0, 8);
-      const g = document.getElementById('an-growth');
-      if (g) g.innerHTML = growth.length ? `<table class="w-full text-sm"><thead><tr class="text-slate-500 text-xs border-b"><th class="text-left py-2">Категорія</th><th class="text-right">${mLabel(prev)}</th><th class="text-right">${mLabel(last)}</th><th class="text-right">Зміна</th></tr></thead><tbody>${growth.map(r => `
-          <tr class="border-b border-slate-100 dark:border-slate-800/60"><td class="py-2">${esc(r.cat)}</td><td class="text-right">${fmtMoney(r.prev)}</td><td class="text-right">${fmtMoney(r.cur)}</td>
-          <td class="text-right font-semibold ${r.delta > 0 ? 'text-rose-600' : r.delta < 0 ? 'text-emerald-600' : ''}">${r.delta > 0 ? '+' : ''}${fmtMoney(r.delta)}${r.pct !== null ? ` (${r.pct > 0 ? '+' : ''}${r.pct}%)` : ''}</td></tr>`).join('')}</tbody></table>`
-        : '<p class="text-xs text-slate-400 py-3 text-center">Немає спільних витрат за ці два місяці</p>';
-
-      const t = document.getElementById('an-table');
-      if (t) t.innerHTML = `<thead><tr class="text-slate-500 text-xs border-b"><th class="text-left py-2">Місяць</th><th class="text-right">${esc(getPartner1Name())}</th><th class="text-right">${esc(getPartner2Name())}</th><th class="text-right">Спільні витрати</th><th class="text-right">Відкладено</th><th class="text-right">Картка</th></tr></thead>
-        <tbody>${rows.slice().reverse().map(r => `<tr class="border-b border-slate-100 dark:border-slate-800/60"><td class="py-2 whitespace-nowrap">${mLabelLong(r.key)}</td><td class="text-right">${fmtMoney(r.contrib.p1)}</td><td class="text-right">${fmtMoney(r.contrib.p2)}</td><td class="text-right">${fmtMoney(r.shared)}</td><td class="text-right">${fmtMoney(r.saved)}</td><td class="text-right">${fmtMoney(r.cardEnd)}</td></tr>`).join('')}</tbody>`;
-
-      const pBox = document.getElementById('an-personal');
-      if (pBox) pBox.innerHTML = ['p1', 'p2'].map(k => {
-        const head = `<div class="font-semibold text-sm mb-2">${avatarOf(k)} ${esc(nameOf(k))}</div>`;
-        if (isLocked(k)) return `<div>${head}<p class="text-xs text-slate-400">🔒 Розділ заблоковано</p></div>`;
-        const pr = keys.slice(-6).map(key => personalForMonth(state, k, key)).reverse();
-        return `<div class="overflow-x-auto">${head}<table class="w-full text-xs"><thead><tr class="text-slate-500 border-b"><th class="text-left py-1.5">Місяць</th><th class="text-right">Дохід</th><th class="text-right">У спільне</th><th class="text-right">Витрачено</th><th class="text-right">Відкладено</th><th class="text-right">Норма</th></tr></thead><tbody>${pr.map(r => `
-          <tr class="border-b border-slate-100 dark:border-slate-800/60"><td class="py-1.5 whitespace-nowrap">${mLabel(r.key)}</td><td class="text-right">${fmtMoney(r.income)}</td><td class="text-right">${fmtMoney(r.toShared)}</td><td class="text-right">${fmtMoney(r.spent)}</td><td class="text-right">${fmtMoney(r.saved)}</td><td class="text-right font-semibold">${r.rate === null ? '—' : r.rate + '%'}</td></tr>`).join('')}</tbody></table></div>`;
-      }).join('');
-    }
 
     // --- експорт ---
     function exportRange() {
@@ -4255,7 +3832,6 @@ const snapshotFlat = st => clone(flattenState(st));
     const renderAllV41 = renderAll;
     renderAll = function () { renderAllV41(); renderAnalytics(); };
 
-    
 // ===== v4.3: графічний стиль — іконки, ініціали, головний екран =====
     const ICON_PATHS = {
       home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
@@ -4301,8 +3877,7 @@ const snapshotFlat = st => clone(flattenState(st));
     function emojiIcon(e, size) { return ICON(EMOJI_ICON[String(e || '').replace('\uFE0F', '')], size || 16); }
 
     // Ініціали партнерів (або емодзі, якщо так обрано в налаштуваннях)
-    function getPartner1Avatar() { return state.settings.avatarMode === 'emoji' ? (state.settings.partner1Avatar || '👩') : ''; }
-    function getPartner2Avatar() { return state.settings.avatarMode === 'emoji' ? (state.settings.partner2Avatar || '👨') : ''; }
+
     const partnerColor = k => k === 'p1' ? getPartner1Color() : getPartner2Color();
     function onColor(hex) {
       const n = parseInt(String(hex || '#888888').replace('#', '').padEnd(6, '0').slice(0, 6), 16);
@@ -4311,11 +3886,7 @@ const snapshotFlat = st => clone(flattenState(st));
       // Білий лише коли він справді читається (≥4.5:1), інакше чорний
       return 1.05 / (L + 0.05) >= 4.5 ? '#FFFFFF' : '#111111';
     }
-    function mono(k) {
-      const c = partnerColor(k);
-      if (state.settings.avatarMode === 'emoji') return `<span class="g-mono" style="background:${c}33">${esc(k === 'p1' ? getPartner1Avatar() : getPartner2Avatar())}</span>`;
-      return `<span class="g-mono" style="background:${c};color:${onColor(c)}">${esc((nameOf(k) || '?').trim().charAt(0).toUpperCase())}</span>`;
-    }
+
     function formatPartnerBadge(v) {
       const p = slotFrom(v, getPartner1Name(), getPartner2Name()), wrap = (ic, label) => `<span class="inline-flex items-center gap-1.5 text-xs font-semibold">${ic}${esc(label)}</span>`;
       if (p === 'p1' || p === 'p2') return wrap(mono(p), nameOf(p));
@@ -4330,7 +3901,7 @@ const snapshotFlat = st => clone(flattenState(st));
       document.querySelectorAll('[onclick*="switchTab("]').forEach(b => {
         const code = b.getAttribute('onclick') || '', m = code.match(/switchTab\('(\w+)'\)/);
         if (!m || m[1] === 'p1' || m[1] === 'p2' || b.dataset.gNav) return;
-        if (!(b.classList.contains('tab-btn') || b.classList.contains('mobile-tab-btn') || /closeMoreMenu/.test(code))) return;
+        if (!(b.classList.contains('tab-btn') || b.classList.contains('mobile-tab-btn'))) return;
         const label = b.textContent.replace(EMOJI_RE, '').trim();
         b.innerHTML = ICON(TAB_ICON[m[1]] || 'more', 18) + `<span>${esc(label)}</span>`;
         b.dataset.gNav = '1';
@@ -4387,11 +3958,7 @@ const snapshotFlat = st => clone(flattenState(st));
       pumpkin: `<ellipse cx="80" cy="85" rx="44" ry="36" ${POP}></ellipse><path d="M80 50c0-12 6-18 14-20" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".7"></path>`,
       confetti: `<g ${POP}><rect x="40" y="30" width="14" height="22" rx="3" transform="rotate(-20 47 41)"></rect><rect x="100" y="40" width="14" height="22" rx="3" transform="rotate(25 107 51)"></rect><circle cx="70" cy="95" r="9"></circle><circle cx="120" cy="100" r="7"></circle></g><circle cx="88" cy="62" r="6" ${WHITE} opacity=".7"></circle>`
     };
-    function motifSvg() {
-      const root = document.documentElement, mom = root.getAttribute('data-moment'), season = root.getAttribute('data-season');
-      const key = mom ? (MOTIF_OF_MOMENT[mom] || 'base') : (SEASON_OF[season] || 'base');
-      return `<svg class="g-motif" viewBox="0 0 150 150" aria-hidden="true">${MOTIFS[key]}</svg>`;
-    }
+
     const fmtDay = iso => Number(iso.slice(8, 10)) + ' ' + MONTHS_SHORT[Number(iso.slice(5, 7)) - 1];
 
     function setupGraphicDashboard() {
@@ -4479,21 +4046,13 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
     // Налаштування: ініціали чи емодзі
-    function setupAvatarToggle() {
-      const picker = document.getElementById('theme-picker');
-      if (!picker || document.getElementById('avatar-mode')) return;
-      picker.insertAdjacentHTML('afterend', `<div class="flex items-center justify-between gap-3 pt-3"><label for="avatar-mode" class="text-sm font-medium">Позначки партнерів</label><select id="avatar-mode" class="p-2.5 rounded-xl border text-sm"><option value="mono">Ініціали</option><option value="emoji">Емодзі</option></select></div>`);
-      const sel = document.getElementById('avatar-mode');
-      sel.value = state.settings.avatarMode === 'emoji' ? 'emoji' : 'mono';
-      sel.onchange = () => { state.settings.avatarMode = sel.value; saveToCloud(); renderAll(); };
-    }
 
     const renderPersonalTabsV42 = renderPersonalTabs;
     renderPersonalTabs = function () {
       renderPersonalTabsV42();
       ['p1', 'p2'].forEach(k => {
         const html = mono(k) + `<span>${esc(nameOf(k))}</span>`;
-        ['btn-' + k, 'mob-more-' + k].forEach(id => { const b = document.getElementById(id); if (b) b.innerHTML = html; });
+        ['btn-' + k].forEach(id => { const b = document.getElementById(id); if (b) b.innerHTML = html; });
       });
     };
 
@@ -4508,7 +4067,6 @@ const snapshotFlat = st => clone(flattenState(st));
       iconify();
     };
 
-    
 // ===== v4.3.1: правки вигляду з телефона =====
     // Індикатор синхронізації: короткий статус, а не «перемикач»
     function updateSyncBadge(isOk) {
@@ -4558,7 +4116,6 @@ const snapshotFlat = st => clone(flattenState(st));
       }).join('');
     }
 
-    
 // ===== v4.3.2: іконки-аватари, анімації Material, стиль графіків =====
     const AVATAR_ICONS = {
       flower: ['Квітка', '<circle cx="12" cy="12" r="2.4"/><path d="M12 9.6a3 3 0 1 1 0-6 3 3 0 1 1 0 6zM12 14.4a3 3 0 1 0 0 6 3 3 0 1 0 0-6zM9.6 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0zM14.4 12a3 3 0 1 0 6 0 3 3 0 1 0-6 0z"/>'],
@@ -4701,8 +4258,6 @@ const snapshotFlat = st => clone(flattenState(st));
       try { Orig.__gThemed = true; } catch (e) {}
     })();
 
-
-    
 // ===== v4.4: застосунок на телефоні, сповіщення, швидка витрата =====
     const VAPID_PUBLIC = 'BOKE6Wwd6IKXGEjd0ShUHboBLR9l3lnTmb-ck0i0ihr5XC2tkLrTk26vyHixmGov1ziCzH1Ylr7fh4xt5PC1UPg';
     const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -4910,7 +4465,6 @@ const snapshotFlat = st => clone(flattenState(st));
     const renderAllV432 = renderAll;
     renderAll = function () { renderAllV432(); renderAppCard(); };
 
-    
 // v4.4.2: повертає внески, яких зараз немає, з вибраної автокопії. Інші дані не змінюються
     function restoreContributionsFrom(i) {
       const b = readBackups()[i];

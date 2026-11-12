@@ -6,12 +6,18 @@
 - Відповідати українською, коротко.
 
 ## Структура
-- `public/index.html` — весь застосунок (~5000 рядків). НЕ читати цілком: шукати `grep -n` і читати `sed -n 'A,Bp'`.
-  Код шарами v3→v5: `renderAll`/`switchTab` перевизначаються обгортками; нова логіка — в останньому скрипті `#usbudget-nav-v5` (обгортки `renderAllV5`, `switchTabV5`).
+- `public/index.html` — весь застосунок (~5000 рядків, v5.7). НЕ читати цілком: шукати `grep -n` і читати `sed -n 'A,Bp'`.
+  Код шарами v3→v5: `renderAll`/`switchTab` перевизначаються обгортками; нова логіка — в останніх скриптах: `#usbudget-nav-v5` (навігація, обгортки `renderAllV5`, `switchTabV5`), `#usbudget-import` (імпорт виписок), `#usbudget-fold` (згортання блоків).
+  `confirmResetToDemo` у застосунку не викликається, але потрібна `tools/preview/fakefb.js` — не видаляти.
 - `public/i18n.js` — англійська поверх сторінки: словник `D` + шаблони `P`. Новий текст інтерфейсу → додати переклад.
 - `public/sw.js` — офлайн-кеш. При кожному релізі піднімати версію в `CACHE` і в `<title>` index.html.
 - `api/`, `lib/` — функції Vercel (нагадування, тестовий push), `tests/` — `npm test`.
 - `PRODUCT.md` — для кого і навіщо; `DESIGN.md` — дизайн-система «Цінник» (кольори, шрифти, правила); `.impeccable/` — контракт напрямку.
+
+## Підрахунки (не ламати)
+- «Можна ще витратити» = внески на картку за місяць − усі спільні витрати (з картки й зі своїх) − особисті з картки (`renderGraphicHero`).
+- Баланс і картка (`v4Balance`, `v4Card`) — накопичувально, записи з `date` або `paidOn` ≥ `settings.modelStart` («Облік з»).
+- Імпорт: поле `bank` на записі — захист від дублів; правила в `settings.importRules` (масив).
 
 ## Дизайн (коротко, деталі в DESIGN.md)
 - Токени в `:root` блоку `#usbudget-graphic`: `--g-shell`, `--g-pop`, `--g-nav`, `--g-ink`, `--g-page`… Сезонні палітри `html.g-seasons[data-season]` міняють shell/pop/nav/page.
@@ -21,3 +27,4 @@
 ## Перевірка без CDN і живої бази
 `tools/preview/build.sh` (перший раз — `cd tools/preview && npm i`), сервер на :8766, `node tools/preview/shot.cjs [tab…]`.
 Firebase у перегляді — заглушка `fakefb.js` (демо-дані завантажуються самі). Скріншоти дивитись вибірково: вони дорогі.
+Бібліотеку xlsx у перегляді підставляти через Playwright (`page.route`, контекст із `serviceWorkers: 'block'`). Для великих чисток — порівнювати `innerText` усіх вкладок до/після.

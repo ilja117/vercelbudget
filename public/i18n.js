@@ -21,6 +21,16 @@
   var monthOf = function (w, list) { var i = list.indexOf(String(w).toLowerCase()); return i < 0 ? null : i; };
 
   var D = {
+    // імпорт з банку (v5.5)
+    'Імпорт з банку': 'Bank import', 'Виписка CSV або XLSX: перевірте й оберіть, що додати в бюджет.': 'A CSV or XLSX statement: review it and pick what goes into the budget.',
+    'Завантажити виписку': 'Upload statement', 'Закрити': 'Close', 'Чия картка у виписці': 'Whose card is this statement for', 'Файл виписки (CSV або XLSX)': 'Statement file (CSV or XLSX)',
+    'Монобанк, ПриватБанк та інші виписки з колонками «Дата» і «Сума». Файл читається на цьому пристрої.': 'Monobank, PrivatBank and other statements with Date and Amount columns. The file is read on this device.',
+    'Запамʼятати мої зміни як правила': 'Remember my changes as rules', 'Оберіть файл': 'Choose a file', 'Нічого не вибрано': 'Nothing selected', 'Частини більші за суму покупки': 'Parts exceed the purchase amount',
+    'Розділити': 'Split', 'Спільне': 'Shared', 'Моє': 'Mine', '— не враховувати': '— leave out', 'Прибрати частину': 'Remove part', 'Сума частини': 'Part amount', 'Категорія частини': 'Part category',
+    'Розділити на дві категорії': 'Split into two categories', 'Частина має бути меншою за суму витрати.': 'The part must be smaller than the expense.',
+    'Усі операції з цього файлу вже є в застосунку.': 'Every transaction in this file is already in the app.', 'У файлі не знайшлося операцій.': 'No transactions found in the file.',
+    'Забути правила імпорту?': 'Forget import rules?', 'Забути': 'Forget', 'Не знайшов рядок із заголовками (Дата, Сума…).': 'Could not find the header row (Date, Amount…).',
+    'У файлі немає стовпців дати або суми.': 'The file has no date or amount columns.', 'Не вдалося прочитати файл. Потрібен інтернет для першого відкриття Excel.': 'Could not read the file. Opening Excel the first time needs internet.',
     // Оболонка, меню, вхід
     'Бюджет для двох': 'Budget for two', 'Головна': 'Home', 'Записи': 'Records', 'План': 'Plan', 'Особисте': 'Personal', 'Ми': 'Us',
     'Розділи': 'Sections', 'Підрозділи': 'Subsections', 'Світла або темна тема': 'Light or dark theme', 'Світла / темна тема': 'Light / dark theme',
@@ -184,6 +194,12 @@
   };
 
   var P = [
+    [/^(\d{2}\.\d{2}) · (.+)$/, function (m, d, a) { var N = { 'між своїми картками': 'between your own cards', 'надходження — вирішіть': 'incoming — your call', 'переказ — вирішіть': 'transfer — your call', 'може бути змішано': 'may be mixed', 'ваше правило': 'your rule', 'гроші на спільну картку додайте як внесок': 'add money on the shared card as a contribution' }; var parts = a.split(' · ').map(function (x) { return N[x]; }); return parts.indexOf(undefined) >= 0 ? null : d + ' · ' + parts.join(' · '); }],
+    [/^Додати (\d+) · витрати (.+?)( · доходи (.+))?$/, function (m, n, a, x, b) { return 'Add ' + n + ' · spending ' + a + (b ? ' · income ' + b : ''); }],
+    [/^(.+) · операцій: (\d+)(.*)$/, function (m, b, n, rest) { return b.replace('Монобанк', 'Monobank').replace('ПриватБанк', 'PrivatBank').replace(/^Банк$/, 'Bank') + ' · transactions: ' + n + rest.replace('уже імпортовано раніше', 'already imported'); }],
+    [/^Решта (.+) → (.+)$/, function (m, a, c) { return 'Remaining ' + a + ' → ' + (tr(c) || c); }], [/^Дохід: (.+)$/, 'Income: $1'], [/^Забути правила \((\d+)\)$/, 'Forget rules ($1)'],
+    [/^Імпортовано записів: (\d+)$/, 'Imported entries: $1'], [/^Розділено: (.+) → (.+)$/, function (m, a, c) { return 'Split: ' + a + ' → ' + (tr(c) || c); }],
+    [/^Збережених правил: (\d+)\. Наступний імпорт знову запропонує категорії автоматично\.$/, 'Saved rules: $1. The next import will suggest categories automatically again.'],
     [/^(\S+) (\d{4}) р\.$/, function (m, a, y) { var i = monthOf(a, M_NOM); return i === null ? null : MONTHS[i] + ' ' + y; }],
     [/^(\S+) (\d{4})$/, function (m, a, y) { var i = monthOf(a, M_NOM); return i === null ? null : MONTHS[i] + ' ' + y; }],
     [/^(\S+) (\d{2})$/, function (m, a, y) { var i = monthOf(a, M_SHORT); return i === null ? null : MONTHS[i].slice(0, 3) + ' ' + y; }],

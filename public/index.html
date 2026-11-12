@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.4.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.5.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -565,6 +565,10 @@
 
     <!-- TAB 3: ВИТРАТИ ТА ЛІМІТИ -->
     <section id="tab-expenses" class="tab-content hidden space-y-4 sm:space-y-6">
+      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div><h3 class="text-base sm:text-lg font-bold">Імпорт з банку</h3><p class="text-xs text-slate-500">Виписка CSV або XLSX: перевірте й оберіть, що додати в бюджет.</p></div>
+        <button type="button" onclick="openBankImport()" class="px-4 py-2.5 rounded-xl text-sm font-semibold min-h-[44px] border">Завантажити виписку</button>
+      </div>
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
         <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Додати витрату</h3>
         <form id="expense-form" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -5050,6 +5054,297 @@ const snapshotFlat = st => clone(flattenState(st));
         set.insertAdjacentHTML('afterbegin', `<button type="button" id="g-open-analytics" onclick="switchTab('analytics')" class="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800/80 text-left min-h-[56px]"><span><span class="block font-semibold">Аналітика за місяцями</span><span class="block text-xs text-slate-500">Графіки й підсумки</span></span><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`);
       }
     });
+  </script>
+  <script id="usbudget-import">
+    // v5.5: імпорт виписок банку (CSV/XLSX). Нічого не додається без перевірки на екрані «Імпорт з банку»
+    const IMP_MCC = [
+      [/^(5411|5422|5441|5451|5462|5499)$/, 'Продукти'],
+      [/^(5811|5812|5813|5814)$/, 'Ресторани'],
+      [/^(4111|4112|4121|4131|4784|4789|5541|5542|5172|7523)$/, 'Транспорт'],
+      [/^(5912|5122|5977|8011|8021|8031|8041|8042|8043|8049|8050|8062|8071|8099)$/, 'Здоровʼя'],
+      [/^(4899|5815|5816|5817|5818|7832|7841|7922|7929|7991|7996|7997|7999)$/, 'Розваги'],
+      [/^(4900|4814)$/, 'Комунальні']
+    ];
+    const IMP_BANKCAT = [[/супермаркет|продукт/i, 'Продукти'], [/ресторан|кафе|бар/i, 'Ресторани'], [/таксі|транспорт|азс|пальне|паркув/i, 'Транспорт'],
+      [/аптек|краса|медиц|здоров/i, 'Здоровʼя'], [/розваг|кіно|театр/i, 'Розваги'], [/комунал|мобільн|інтернет/i, 'Комунальні']];
+    // Назва торгівця важливіша за MCC: «KAFE…» банк часто подає як магазин продуктів
+    const IMP_WORDS = [[/kafe|cafe|coffee|кафе|кав.?ярн|pizza|піц|ресторан|bochka/i, 'Ресторани'], [/uklon|bolt|uber|metro|kyivtr|метро|wog|okko|socar/i, 'Транспорт'],
+      [/apteka|аптек|pharm/i, 'Здоровʼя'], [/^атб|^atb|сільпо|silpo|novus|fozzy|varus/i, 'Продукти']];
+    const IMP_MIXED = /сільпо|silpo|епіцентр|epicentr|rozetka|розетка|ашан|auchan|novus|аврора|aurora/i;
+    const IMP_OWN = /^(from|to)\b|^з картки|^на картку|white card|black card|між своїми/i;
+    const IMP_P2P_MCC = /^(4829|6010|6011|6012|6538|6540)$/;
+    const SKIP = '__skip';
+    let imp = null;
+
+    function impNum(v) { if (typeof v === 'number') return v; const n = Number(String(v || '').replace(/[\s ]/g, '').replace(',', '.')); return isFinite(n) ? n : NaN; }
+    function impDate(v) {
+      if (typeof v === 'number') return toLocalISO(new Date(Math.round((v - 25569) * 864e5) + new Date().getTimezoneOffset() * 6e4));
+      let m = String(v).match(/(\d{2})\.(\d{2})\.(\d{4})/); if (m) return m[3] + '-' + m[2] + '-' + m[1];
+      m = String(v).match(/(\d{4})-(\d{2})-(\d{2})/); return m ? m[0] : '';
+    }
+    // UTF-8, прочитаний як Windows-1251 («РњiР№» → «Мiй»), повертаємо як було
+    let cp1251Map = null;
+    function impFixText(s) {
+      s = String(s || '').trim();
+      const rs = (s.match(/[РС]/g) || []).length, cyr = (s.match(/[Ѐ-ӿ]/g) || []).length;
+      if (!cyr || rs / cyr < 0.35) return s;
+      if (!cp1251Map) { cp1251Map = {}; const d = new TextDecoder('windows-1251'); for (let b = 128; b < 256; b++) cp1251Map[d.decode(new Uint8Array([b]))] = b; }
+      const bytes = [];
+      for (const ch of s) { const c = ch.charCodeAt(0); if (c < 128) bytes.push(c); else if (cp1251Map[ch] !== undefined) bytes.push(cp1251Map[ch]); else return s; }
+      try { return new TextDecoder('utf-8', { fatal: true }).decode(new Uint8Array(bytes)); } catch (e) { return s; }
+    }
+    const impKey = s => s.toLowerCase().replace(/[\d*#№.,:;/\\'"()«»\-]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40);
+
+    // Рядки таблиці → операції. Стовпці шукаємо за назвами, тож підходять і українські, і англійські заголовки
+    function impParseRows(rows) {
+      const hi = rows.slice(0, 20).findIndex(r => r.some(c => /^(date|дата)/i.test(String(c).trim())));
+      if (hi < 0) throw new Error('Не знайшов рядок із заголовками (Дата, Сума…).');
+      const H = rows[hi].map(h => String(h || '').trim()), col = re => H.findIndex(h => re.test(h));
+      const c = { date: col(/^(date|дата)/i), desc: col(/descr|опис|деталі|призначення|контрагент/i), mcc: col(/^mcc$/i), cat: col(/^(категорія|category)$/i) };
+      c.amt = col(/card currency amount|сума в валюті картки/i); if (c.amt < 0) c.amt = col(/^(сума|amount)/i);
+      if (c.date < 0 || c.amt < 0) throw new Error('У файлі немає стовпців дати або суми.');
+      const bank = c.mcc >= 0 ? 'Монобанк' : c.cat >= 0 ? 'ПриватБанк' : 'Банк';
+      const out = [];
+      rows.slice(hi + 1).forEach(r => {
+        const amount = impNum(r[c.amt]), date = impDate(r[c.date]);
+        if (!date || !isFinite(amount) || !amount) return;
+        const title = impFixText(c.desc >= 0 ? r[c.desc] : '') || 'Операція';
+        out.push({ bank: bank + '|' + String(r[c.date]).trim() + '|' + amount + '|' + title.slice(0, 60), date, title, amount: Math.abs(amount), isIn: amount > 0,
+          mcc: c.mcc >= 0 ? String(r[c.mcc]).trim() : '', bcat: c.cat >= 0 ? String(r[c.cat] || '').trim() : '' });
+      });
+      return { bank, items: out };
+    }
+    function impReadFile(file) {
+      return Promise.all([loadXLSX(), file.arrayBuffer()]).then(([X, buf]) => {
+        let wb;
+        if (/\.(csv|txt)$/i.test(file.name || '') || /csv|text/.test(file.type || '')) {
+          let text; try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { text = new TextDecoder('windows-1251').decode(buf); }
+          wb = X.read(text.replace(/^﻿/, ''), { type: 'string', raw: true });
+        } else wb = X.read(new Uint8Array(buf), { type: 'array' });
+        return impParseRows(X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: '' }));
+      });
+    }
+
+    function impCatName(guess, list) {
+      if (guess && list.indexOf(guess) >= 0) return guess;
+      const g = (guess || '').toLowerCase().slice(0, 5), hit = g && list.find(x => x.toLowerCase().indexOf(g) === 0);
+      return hit || (list.indexOf('Інше') >= 0 ? 'Інше' : list[0] || 'Інше');
+    }
+    function impGuess(t) {
+      for (const [re, c] of IMP_WORDS) if (re.test(t.title)) return c;
+      for (const [re, c] of IMP_MCC) if (re.test(t.mcc)) return c;
+      for (const [re, c] of IMP_BANKCAT) if (re.test(t.bcat)) return c;
+      return 'Інше';
+    }
+    const impCats = forWhom => forWhom === 'shared' ? (state.settings.categories || []) : (((state.personalCategories || {})[forWhom] || []).concat(['Інше']));
+    const impRules = () => state.settings.importRules || [];
+
+    function impClassify(t, owner) {
+      const own = IMP_OWN.test(t.title), p2p = !own && (IMP_P2P_MCC.test(t.mcc) || /переказ/i.test(t.bcat));
+      const salary = t.isIn && /зарплат|salary|заробітн/i.test(t.title + ' ' + t.bcat);
+      const def = { on: t.isIn ? salary && owner !== 'card' : !own && !p2p, cat: impCatName(impGuess(t), impCats('shared')), for: 'shared' };
+      const notes = [];
+      if (own) notes.push('між своїми картками');
+      else if (p2p) notes.push(t.isIn ? 'надходження — вирішіть' : 'переказ — вирішіть');
+      if (t.isIn && owner === 'card') notes.push('гроші на спільну картку додайте як внесок');
+      if (!t.isIn && IMP_MIXED.test(t.title)) notes.push('може бути змішано');
+      const it = Object.assign({}, t, { key: impKey(t.title), def, on: def.on, cat: def.cat, for: def.for, parts: [], notes });
+      const rule = impRules().find(r => r.k === it.key);
+      if (rule) {
+        it.on = !rule.skip && !(t.isIn && owner === 'card');
+        if (rule.for && (rule.for === 'shared' || owner === 'card' || rule.for === owner)) it.for = rule.for;
+        if (rule.cat && impCats(it.for).indexOf(rule.cat) >= 0) it.cat = rule.cat;
+        it.notes.push('ваше правило');
+      }
+      return it;
+    }
+
+    function openBankImport(fromShare) {
+      closeEdit();
+      let owner = 'p1'; try { owner = localStorage.getItem('usbudget_push_owner') || 'p1'; } catch (e) {}
+      imp = { owner, bank: '', items: [], dups: 0, remember: true };
+      const m = document.createElement('div');
+      m.id = 'edit-modal';
+      m.className = 'fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-4 bg-black/50';
+      m.innerHTML = `
+        <div class="bg-white dark:bg-slate-800 w-full sm:max-w-2xl rounded-t-3xl sm:rounded-2xl flex flex-col max-h-[94vh]">
+          <div class="p-5 pb-3 space-y-3 border-b border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between gap-3"><h3>Імпорт з банку</h3><button type="button" id="imp-close" class="px-3 py-2 rounded-xl border text-sm min-h-[44px]">Закрити</button></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="block"><span class="block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300">Чия картка у виписці</span>
+                <select id="imp-owner" class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm">${[['p1', nameOf('p1')], ['p2', nameOf('p2')], ['card', 'Спільна картка']].map(o => `<option value="${o[0]}"${o[0] === owner ? ' selected' : ''}>${esc(o[1])}</option>`).join('')}</select></label>
+              <label class="block"><span class="block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300">Файл виписки (CSV або XLSX)</span>
+                <input id="imp-file" type="file" accept=".csv,.xlsx,.xls,text/csv" class="w-full text-sm py-2"></label>
+            </div>
+            <p id="imp-info" class="text-xs text-slate-500">Монобанк, ПриватБанк та інші виписки з колонками «Дата» і «Сума». Файл читається на цьому пристрої.</p>
+          </div>
+          <div id="imp-list" class="flex-1 overflow-y-auto px-5"></div>
+          <div class="p-5 pt-3 border-t border-slate-200 dark:border-slate-700 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2"><label class="flex items-center gap-2 text-sm min-h-[40px]"><input type="checkbox" id="imp-remember" checked> <span>Запамʼятати мої зміни як правила</span></label>
+              ${impRules().length ? `<button type="button" id="imp-forget" class="text-sm underline min-h-[40px]">Забути правила (${impRules().length})</button>` : ''}</div>
+            <p id="imp-err" class="text-xs text-rose-500 min-h-4"></p>
+            <button type="button" id="imp-go" class="w-full py-3 rounded-xl bg-pink-500 text-white text-sm font-semibold" disabled>Оберіть файл</button>
+          </div>
+        </div>`;
+      document.body.appendChild(m);
+      m.addEventListener('click', e => { if (e.target === m) closeEdit(); });
+      m.querySelector('#imp-close').onclick = closeEdit;
+      m.querySelector('#imp-owner').onchange = e => { imp.owner = e.target.value; if (imp.raw) impLoad(imp.raw); };
+      m.querySelector('#imp-file').onchange = e => { const f = e.target.files[0]; if (f) impOpenFile(f); };
+      m.querySelector('#imp-remember').onchange = e => { imp.remember = e.target.checked; };
+      m.querySelector('#imp-go').onclick = impCommit;
+      if (m.querySelector('#imp-forget')) m.querySelector('#imp-forget').onclick = forgetImportRules;
+      const list = m.querySelector('#imp-list');
+      list.addEventListener('change', impOnChange);
+      list.addEventListener('click', impOnClick);
+      if (fromShare && 'caches' in window) caches.open('usbudget-share').then(c => c.match('./shared-file').then(r => {
+        if (!r) return;
+        c.delete('./shared-file');
+        return r.blob().then(b => impOpenFile(new File([b], decodeURIComponent(r.headers.get('x-name') || 'file'), { type: b.type })));
+      })).catch(() => {});
+    }
+    function impOpenFile(f) {
+      const err = document.getElementById('imp-err');
+      err.textContent = '';
+      impReadFile(f).then(p => { imp.raw = p; impLoad(p); }).catch(e => { err.textContent = (e && e.message && !/load/.test(e.message)) ? e.message : 'Не вдалося прочитати файл. Потрібен інтернет для першого відкриття Excel.'; });
+    }
+    function impLoad(p) {
+      const seen = new Set([].concat(state.expenses || [], state.personalExpenses || [], state.personalIncomes || []).map(r => r.bank).filter(Boolean));
+      imp.bank = p.bank;
+      imp.items = p.items.filter(t => !seen.has(t.bank)).map(t => impClassify(t, imp.owner));
+      imp.dups = p.items.length - imp.items.length;
+      const dates = p.items.map(t => t.date).sort();
+      document.getElementById('imp-info').textContent = `${p.bank} · операцій: ${p.items.length}` + (dates.length ? ` · ${fmtD(dates[0])}–${fmtD(dates[dates.length - 1])}` : '') + (imp.dups ? ` · уже імпортовано раніше: ${imp.dups}` : '');
+      impRender();
+    }
+    const fmtD = d => d.slice(8, 10) + '.' + d.slice(5, 7);
+    const r2 = n => Math.round(n * 100) / 100;
+    const impRest = it => r2(it.amount - it.parts.reduce((s, p) => s + (Number(p.amount) || 0), 0));
+    const impForOpts = () => imp.owner === 'card' ? [['shared', 'Спільне'], ['p1', 'Особисте: ' + nameOf('p1')], ['p2', 'Особисте: ' + nameOf('p2')]] : [['shared', 'Спільне'], [imp.owner, 'Моє']];
+    const impSel = (attr, opts, cur) => `<select ${attr} class="p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm min-h-[40px] max-w-full">${opts.map(o => `<option value="${esc(o[0])}"${o[0] === cur ? ' selected' : ''}>${esc(o[1])}</option>`).join('')}</select>`;
+
+    function impRender() {
+      const box = document.getElementById('imp-list');
+      if (!box) return;
+      if (!imp.items.length) box.innerHTML = `<p class="py-8 text-center text-sm text-slate-500">${imp.dups ? 'Усі операції з цього файлу вже є в застосунку.' : 'У файлі не знайшлося операцій.'}</p>`;
+      else box.innerHTML = imp.items.map((it, i) => {
+        const cats = impCats(it.for).map(c => [c, c]);
+        const rest = impRest(it);
+        return `<div class="py-3 border-b border-slate-100 dark:border-slate-700/60${it.on ? '' : ' opacity-60'}" data-i="${i}">
+          <label class="flex items-start gap-3 cursor-pointer"><input type="checkbox" data-on${it.on ? ' checked' : ''} class="mt-1 w-5 h-5 shrink-0"${it.isIn && imp.owner === 'card' ? ' disabled' : ''}>
+            <span class="flex-1 min-w-0"><span class="block truncate font-medium text-sm">${esc(it.title)}</span><span class="block text-xs text-slate-500">${fmtD(it.date)}${it.notes.length ? ' · ' + esc(it.notes.join(' · ')) : ''}</span></span>
+            <span class="g-num font-semibold text-sm whitespace-nowrap ${it.isIn ? 'text-emerald-700 dark:text-emerald-400' : ''}">${it.isIn ? '+' : '−'}${esc(fmtMoney(it.amount))}</span></label>
+          ${!it.on ? '' : it.isIn ? `<p class="pl-8 pt-1 text-xs text-slate-500">Дохід: ${esc(nameOf(imp.owner))}</p>` : `
+          <div class="pl-8 pt-2 flex flex-wrap gap-2 items-center">${impSel('data-cat', cats, it.cat)}${impSel('data-for', impForOpts(), it.for)}
+            <button type="button" data-split class="px-3 rounded-lg border text-sm min-h-[40px]">Розділити</button></div>
+          ${it.parts.length ? `<div class="pl-8 pt-2 space-y-2">${it.parts.map((p, j) => `<div class="flex gap-2 items-center">
+              <input type="number" step="any" inputmode="decimal" data-pa="${j}" value="${esc(p.amount)}" aria-label="Сума частини" class="w-28 p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm min-h-[40px] g-num">
+              ${impSel(`data-pc="${j}"`, cats.concat([[SKIP, '— не враховувати']]), p.cat)}
+              <button type="button" data-pdel="${j}" aria-label="Прибрати частину" class="px-3 rounded-lg border text-sm min-h-[40px]">×</button></div>`).join('')}
+            <p class="text-xs ${rest < 0 ? 'text-rose-600' : 'text-slate-500'}">Решта ${esc(fmtMoney(rest))} → ${esc(it.cat)}</p></div>` : ''}`}
+        </div>`;
+      }).join('');
+      impFooter();
+    }
+    function impFooter() {
+      const go = document.getElementById('imp-go');
+      if (!go) return;
+      const on = imp.items.filter(it => it.on), bad = on.some(it => impRest(it) < 0);
+      const out = on.filter(it => !it.isIn).reduce((s, it) => s + it.amount - it.parts.filter(p => p.cat === SKIP).reduce((a, p) => a + (Number(p.amount) || 0), 0), 0);
+      const inc = on.filter(it => it.isIn).reduce((s, it) => s + it.amount, 0);
+      go.disabled = !on.length || bad;
+      go.textContent = !imp.items.length ? 'Оберіть файл' : bad ? 'Частини більші за суму покупки' : on.length ? `Додати ${on.length} · витрати ${fmtMoney(r2(out))}` + (inc ? ` · доходи ${fmtMoney(inc)}` : '') : 'Нічого не вибрано';
+    }
+    function impOnChange(e) {
+      const row = e.target.closest('[data-i]'); if (!row) return;
+      const it = imp.items[+row.dataset.i], d = e.target.dataset;
+      if ('on' in d) it.on = e.target.checked;
+      else if ('cat' in d) it.cat = e.target.value;
+      else if ('for' in d) { it.for = e.target.value; const cs = impCats(it.for); if (cs.indexOf(it.cat) < 0) it.cat = impCatName(it.cat, cs); it.parts.forEach(p => { if (p.cat !== SKIP && cs.indexOf(p.cat) < 0) p.cat = it.cat; }); }
+      else if (d.pa !== undefined) it.parts[+d.pa].amount = e.target.value;
+      else if (d.pc !== undefined) it.parts[+d.pc].cat = e.target.value;
+      impRender();
+    }
+    function impOnClick(e) {
+      const b = e.target.closest('button'), row = b && b.closest('[data-i]'); if (!row) return;
+      const it = imp.items[+row.dataset.i];
+      if ('split' in b.dataset) it.parts.push({ amount: '', cat: impCats(it.for).find(c => c !== it.cat) || it.cat });
+      else if (b.dataset.pdel !== undefined) it.parts.splice(+b.dataset.pdel, 1);
+      impRender();
+      if ('split' in b.dataset) { const inp = document.querySelectorAll(`#imp-list [data-i="${row.dataset.i}"] [data-pa]`); if (inp.length) inp[inp.length - 1].focus(); }
+    }
+
+    function impCommit() {
+      const on = imp.items.filter(it => it.on);
+      if (!on.length || on.some(it => impRest(it) < 0)) return;
+      const before = clone(flattenState(state)), stamp = Date.now().toString(36);
+      let n = 0;
+      on.forEach((it, i) => {
+        const id = () => 'bk_' + stamp + '_' + i + '_' + (n++);
+        if (it.isIn) { (state.personalIncomes = state.personalIncomes || []).push({ id: id(), owner: imp.owner, date: it.date, source: it.title, amount: it.amount, bank: it.bank }); return; }
+        const pieces = [{ amount: impRest(it), cat: it.cat }].concat(it.parts.map(p => ({ amount: r2(Number(p.amount) || 0), cat: p.cat }))).filter(p => p.amount > 0 && p.cat !== SKIP);
+        pieces.forEach(p => {
+          const rec = { id: id(), date: it.date, title: it.title + (pieces.length > 1 || it.parts.length ? ' (частина)' : ''), amount: p.amount, category: p.cat, bank: it.bank };
+          if (it.for === 'shared') state.expenses.push(Object.assign(rec, { payer: imp.owner }));
+          else (state.personalExpenses = state.personalExpenses || []).push(Object.assign(rec, { owner: it.for, fromCard: imp.owner === 'card', title: rec.title + (imp.owner === 'card' ? ' (з картки)' : '') }));
+        });
+      });
+      if (imp.remember) {
+        const rules = impRules().slice();
+        imp.items.forEach(it => {
+          if (it.on === it.def.on && it.cat === it.def.cat && it.for === it.def.for) return;
+          const r = { k: it.key, skip: !it.on, cat: it.cat, for: it.for }, j = rules.findIndex(x => x.k === it.key);
+          if (j >= 0) rules[j] = r; else rules.push(r);
+        });
+        state.settings.importRules = rules;
+      }
+      const after = flattenState(state), touched = {};
+      Object.keys(Object.assign({}, before, after)).forEach(k => { if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) touched[k] = before[k]; });
+      closeEdit();
+      saveToCloud(); renderAll();
+      showUndo(touched, `Імпортовано записів: ${n}`);
+    }
+    function forgetImportRules() {
+      showConfirmModal('Забути правила імпорту?', `Збережених правил: ${impRules().length}. Наступний імпорт знову запропонує категорії автоматично.`, () => { state.settings.importRules = []; saveToCloud(); renderAll(); if (imp && imp.raw) impLoad(imp.raw); const b = document.getElementById('imp-forget'); if (b) b.remove(); }, 'Забути');
+    }
+
+    // Розділити вже записану витрату: частина йде в іншу категорію (і її ліміт)
+    const openEditV55 = openEdit;
+    openEdit = function (kind, id, owner) {
+      openEditV55(kind, id, owner);
+      if (kind !== 'expense' && kind !== 'pexpense') return;
+      const m = document.getElementById('edit-modal'), K = EDIT_KINDS[kind], rec = K && (K.coll(owner) || []).find(x => x.id === id);
+      if (!m || !rec) return;
+      const opts = kind === 'expense' ? catOpts(rec.category) : pcatOpts(rec.owner, rec.category);
+      m.querySelector('#edit-err').insertAdjacentHTML('beforebegin', `<details class="g-more"><summary>Розділити на дві категорії</summary>
+        <div class="grid grid-cols-2 gap-3 pt-3"><div><label class="block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300" for="ed-part">Сума частини</label><input id="ed-part" type="number" step="any" inputmode="decimal" placeholder="0" class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm"></div>
+        <div><label class="block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300" for="ed-part-cat">Категорія частини</label><select id="ed-part-cat" class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm">${opts.map(o => `<option value="${esc(o[0])}">${esc(o[1])}</option>`).join('')}</select></div></div></details>`);
+      const form = m.querySelector('form'), save = form.onsubmit;
+      form.onsubmit = ev => {
+        const part = Number(m.querySelector('#ed-part').value) || 0, amt = m.querySelector('#ed-amount');
+        if (!part) return save(ev);
+        ev.preventDefault();
+        if (!(part > 0) || !(part < Number(amt.value))) { m.querySelector('#edit-err').textContent = 'Частина має бути меншою за суму витрати.'; return; }
+        const before = clone(flattenState(state)), cat = m.querySelector('#ed-part-cat').value;
+        const total = amt.value;
+        amt.value = r2(Number(total) - part);
+        save(ev);
+        if (document.getElementById('edit-modal')) { amt.value = total; return; }
+        const copy = Object.assign({}, rec, { id: rec.id + '_s' + Date.now().toString(36), amount: r2(part), category: cat });
+        K.coll(owner).push(copy);
+        const after = flattenState(state), touched = {};
+        Object.keys(Object.assign({}, before, after)).forEach(k => { if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) touched[k] = before[k]; });
+        saveToCloud(); renderAll();
+        showUndo(touched, `Розділено: ${fmtMoney(r2(part))} → ${cat}`);
+      };
+    };
+
+    // Файл, надісланий через «Поділитися → UsBudget», відкриває імпорт
+    const openFromHashV55 = openFromHash;
+    openFromHash = function () {
+      if (location.hash === '#import') { history.replaceState(null, '', location.pathname + location.search); openBankImport(true); }
+      else openFromHashV55();
+    };
   </script>
 </body>
 </html>

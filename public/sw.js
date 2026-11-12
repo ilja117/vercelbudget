@@ -1,5 +1,5 @@
 // UsBudget service worker: робота без інтернету та сповіщення
-const CACHE = 'usbudget-v5.4.0';
+const CACHE = 'usbudget-v5.5.0';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/badge-96.png', './i18n.js'];
 
 self.addEventListener('install', e => {
@@ -7,11 +7,19 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== 'usbudget-share').map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', e => {
   const req = e.request;
+  // «Поділитися → UsBudget»: кладемо файл виписки в кеш і відкриваємо імпорт
+  if (req.method === 'POST' && new URL(req.url).pathname.endsWith('/share-target')) {
+    e.respondWith(req.formData().then(fd => {
+      const f = fd.get('file');
+      return f ? caches.open('usbudget-share').then(c => c.put('./shared-file', new Response(f, { headers: { 'x-name': encodeURIComponent(f.name || 'file') } }))) : null;
+    }).catch(() => null).then(() => Response.redirect('./#import', 303)));
+    return;
+  }
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   // Живі дані й серверні функції завжди з мережі

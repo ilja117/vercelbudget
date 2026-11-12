@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.7.2</title>
+  <title>UsBudget — Спільний бюджет пари · v5.7.3</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1326,12 +1326,10 @@ const snapshotFlat = st => clone(flattenState(st));
     function nameOfAny(v) { try { return typeof nameOf === 'function' ? nameOf(v) : (v || ''); } catch (e) { return v || ''; } }
 // --- v4.3: облік від старту моделі та регулярні операції (чисті функції) ---
     // Імпорт з банку (v5.5) писав час створення в id у base36: bk_<час>_…
-    const createdTs = x => { const id = String((x && x.id) || ''), m = id.match(/\d{13}/), b = id.match(/^bk_([0-9a-z]{8})_/); return m ? Number(m[0]) : b ? parseInt(b[1], 36) : 0; };
-    // Запис враховується, якщо він датований після старту, створений після старту або проведений після старту
+    // Баланс і картка рахують записи за датою від «Облік з»; платіж, проведений після старту, теж (paidOn)
     function v4Includer(st) {
       const S = (st.settings && st.settings.modelStart) || '';
-      const t0 = S ? new Date(S + 'T00:00:00').getTime() : 0;
-      return x => (x.date || '') >= S || (x.paidOn || '') >= S || createdTs(x) >= t0;
+      return x => (x.date || '') >= S || (x.paidOn || '') >= S;
     }
 
     const isoOf = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -4851,7 +4849,7 @@ const snapshotFlat = st => clone(flattenState(st));
     function impCommit() {
       const on = imp.items.filter(it => it.on);
       if (!on.length || on.some(it => impRest(it) < 0)) return;
-      const before = clone(flattenState(state)), stamp = Date.now().toString(36); // createdTs читає цей час: імпорт рахується в балансі як новий запис
+      const before = clone(flattenState(state)), stamp = Date.now().toString(36);
       let n = 0;
       on.forEach((it, i) => {
         const id = () => 'bk_' + stamp + '_' + i + '_' + (n++);

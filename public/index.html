@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.6.1</title>
+  <title>UsBudget — Спільний бюджет пари · v5.7.0</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -314,6 +314,14 @@
     .g-chip input:checked + span { background: var(--g-pop); border-color: var(--g-tag-line); color: #111111; }
     .g-chip input:focus-visible + span { outline: 3px solid var(--g-ink); outline-offset: 2px; }
     .g-chip:active span { transform: scale(0.97); }
+    /* v5.7: згорнуті блоки */
+    .g-fold-head { cursor: pointer; position: relative; padding-right: 40px; min-height: 44px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .g-fold:not(.g-fold-open) > .g-fold-head { margin-bottom: 0 !important; }
+    .g-fold:not(.g-fold-open) > :not(.g-fold-head) { display: none !important; }
+    .g-fold-head::after { content: ''; position: absolute; right: 8px; top: 50%; width: 10px; height: 10px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-75%) rotate(45deg); transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
+    .g-fold-open > .g-fold-head::after { transform: translateY(-25%) rotate(-135deg); }
+    .g-fold-head:focus-visible { outline: 2px solid var(--g-ink, #111); outline-offset: 4px; border-radius: 8px; }
+    @media (prefers-reduced-motion: reduce) { .g-fold-head::after { transition: none; } }
     .g-more summary { min-height: 44px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; font-weight: 600; cursor: pointer; }
     #qa-amount { font-family: 'Oswald', sans-serif; font-size: 32px !important; font-weight: 600; }
     input[type=number] { -moz-appearance: textfield; } input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -5350,6 +5358,40 @@ const snapshotFlat = st => clone(flattenState(st));
       if (location.hash === '#import') { history.replaceState(null, '', location.pathname + location.search); openBankImport(true); }
       else openFromHashV55();
     };
+  </script>
+  <script id="usbudget-fold">
+    // v5.7: великі блоки з полями згортаються до заголовка; відкритий стан памʼятається на пристрої
+    const FOLD_SKIP = /історія|за місяць|мої доходи|мої витрати|баланс між|імпорт з банку|структура|^спільна картка|мова інтерфейсу|налаштування пари|history|this month|balance between|bank import|^shared card|language|couple and budget/i;
+    function applyFolds() {
+      const cards = [];
+      document.querySelectorAll('section.tab-content > div').forEach(d => { if (d.classList.contains('grid')) cards.push(...d.children); else cards.push(d); });
+      cards.filter(c => !c.dataset.fold).forEach(card => {
+        const head = card.firstElementChild, title = head ? (head.textContent || '').replace(/\s+/g, ' ').trim() : '';
+        if (!title || card.children.length < 2) return;
+        const fields = card.querySelectorAll('input:not([type=hidden]),select,textarea').length;
+        if (!(card.closest('#tab-settings') || card.querySelector('form') || fields >= 3) || FOLD_SKIP.test(title)) return;
+        card.dataset.fold = '1'; card.classList.add('g-fold'); head.classList.add('g-fold-head');
+        head.setAttribute('role', 'button'); head.tabIndex = 0;
+        const k = 'usbudget_fold_' + (card.closest('section').id) + '_' + title.slice(0, 30);
+        const set = o => { card.classList.toggle('g-fold-open', o); head.setAttribute('aria-expanded', String(o)); };
+        let open = false; try { open = localStorage.getItem(k) === '1'; } catch (e) {}
+        set(open);
+        const toggle = e => {
+          if (e.target !== head && e.target.closest('button,a,input,select,textarea,label')) return;
+          const o = !card.classList.contains('g-fold-open'); set(o);
+          try { localStorage.setItem(k, o ? '1' : '0'); } catch (e2) {}
+        };
+        head.addEventListener('click', toggle);
+        head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(e); } });
+      });
+    }
+    let foldQueued = false;
+    const queueFolds = () => { if (foldQueued) return; foldQueued = true; requestAnimationFrame(() => { foldQueued = false; applyFolds(); }); };
+    window.addEventListener('DOMContentLoaded', () => {
+      queueFolds();
+      const root = document.getElementById('tab-dashboard') && document.getElementById('tab-dashboard').parentNode;
+      if (root) new MutationObserver(queueFolds).observe(root, { childList: true, subtree: true });
+    });
   </script>
 </body>
 </html>

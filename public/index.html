@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.7.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.7.1</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -321,7 +321,14 @@
     .g-fold-head::after { content: ''; position: absolute; right: 8px; top: 50%; width: 10px; height: 10px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-75%) rotate(45deg); transition: transform .2s cubic-bezier(0.23,1,0.32,1); }
     .g-fold-open > .g-fold-head::after { transform: translateY(-25%) rotate(-135deg); }
     .g-fold-head:focus-visible { outline: 2px solid var(--g-ink, #111); outline-offset: 4px; border-radius: 8px; }
-    @media (prefers-reduced-motion: reduce) { .g-fold-head::after { transition: none; } }
+    @keyframes g-fold-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+    .g-fold-anim-in > :not(.g-fold-head) { animation: g-fold-in .34s cubic-bezier(0.23,1,0.32,1) both; animation-delay: calc(var(--fi, 1) * 35ms); }
+    .g-fold-anim-in > form { animation: none; }
+    .g-fold-anim-in > form > * { animation: g-fold-in .34s cubic-bezier(0.23,1,0.32,1) both; animation-delay: calc(var(--fi, 1) * 35ms + var(--fj, 0) * 28ms); }
+    .g-fold-anim-out > :not(.g-fold-head) { opacity: 0; transform: translateY(-4px); transition: opacity .16s ease, transform .2s ease; }
+    .g-fold-head { transition: background-color .2s ease; border-radius: 10px; }
+    .g-fold-head:active { background-color: rgba(127,127,127,.08); }
+    @media (prefers-reduced-motion: reduce) { .g-fold-head::after { transition: none; } .g-fold-anim-in > *, .g-fold-anim-out > * { animation: none !important; transition: none !important; } }
     .g-more summary { min-height: 44px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; font-weight: 600; cursor: pointer; }
     #qa-amount { font-family: 'Oswald', sans-serif; font-size: 32px !important; font-weight: 600; }
     input[type=number] { -moz-appearance: textfield; } input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -5378,12 +5385,30 @@ const snapshotFlat = st => clone(flattenState(st));
         set(open);
         const toggle = e => {
           if (e.target !== head && e.target.closest('button,a,input,select,textarea,label')) return;
-          const o = !card.classList.contains('g-fold-open'); set(o);
+          const o = !card.classList.contains('g-fold-open'); foldTo(card, o, set);
           try { localStorage.setItem(k, o ? '1' : '0'); } catch (e2) {}
         };
         head.addEventListener('click', toggle);
         head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(e); } });
       });
+    }
+    // Висота картки плавно тягнеться до нової, а вміст проявляється згори вниз з невеликою затримкою
+    function foldTo(card, open, set) {
+      const token = card._fold = (card._fold || 0) + 1;
+      const done = () => { if (card._fold !== token) return; card.style.height = card.style.overflow = card.style.transition = ''; card.classList.remove('g-fold-anim-in', 'g-fold-anim-out'); };
+      if (!motionOnV5()) { set(open); done(); return; }
+      const from = card.getBoundingClientRect().height;
+      set(!open ? false : true);
+      const to = card.getBoundingClientRect().height;
+      if (!open) set(true);
+      [...card.children].forEach((el, i) => el.style.setProperty('--fi', Math.min(i, 6)));
+      card.querySelectorAll(':scope > form > *').forEach((el, i) => el.style.setProperty('--fj', Math.min(i, 8)));
+      card.style.overflow = 'hidden'; card.style.height = from + 'px';
+      card.classList.toggle('g-fold-anim-in', open); card.classList.toggle('g-fold-anim-out', !open);
+      void card.offsetHeight;
+      card.style.transition = 'height ' + (open ? 380 : 260) + 'ms cubic-bezier(0.23,1,0.32,1)';
+      card.style.height = to + 'px';
+      setTimeout(() => { if (card._fold !== token) return; if (!open) set(false); done(); }, open ? 400 : 280);
     }
     let foldQueued = false;
     const queueFolds = () => { if (foldQueued) return; foldQueued = true; requestAnimationFrame(() => { foldQueued = false; applyFolds(); }); };

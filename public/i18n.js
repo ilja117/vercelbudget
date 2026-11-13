@@ -22,6 +22,7 @@
 
   var D = {
     // простіші слова (v5.8)
+    'Ще': 'More', 'Особисте': 'Personal', 'Регулярні платежі': 'Recurring payments', 'Останні записи': 'Latest entries', 'Детальніше': 'More details', '· ліміти і платежі': '· limits and payments', 'Записів ще немає. Натисніть «+».': 'No entries yet. Tap “+”.', 'Повернули борг': 'Paid a debt back', 'Скинули на картку': 'Put on the card',
     'вклад': 'paid in',
     'і виберіть, що сталося. Три головні числа:': 'and choose what happened. Three main numbers:', '— скинули на картку цього місяця мінус усі спільні витрати;': '— put on the card this month minus all shared expenses;', '— гроші, які мають лежати на картці;': '— the money that should be on the card;', '— різниця між тим, що вклав кожен, і вашими частками. Під кожним числом є «Звідки це число?».': '— the difference between what each of you put in and your shares. Each number has “Where does this number come from?”.',
     'Скинули на спільну картку': 'Put on the shared card',
@@ -249,7 +250,7 @@
     [/^— на (\d+)% (менше|більше), ніж у (\S+)\.$/, function (m, n, d, a) { var i = monthOf(a, M_LOC); return i === null ? null : '— ' + n + '% ' + (d === 'менше' ? 'less' : 'more') + ' than in ' + MONTHS[i] + '.'; }],
     [/^— стільки ж, як у (\S+)\.$/, function (m, a) { var i = monthOf(a, M_LOC); return i === null ? null : '— the same as in ' + MONTHS[i] + '.'; }],
     [/^з (\d.*)$/, 'of $1'], [/^(.*\d.*) з (\d.*)$/, '$1 of $2'], [/^понад ліміт на (.+)$/, 'over by $1'],
-    [/^Кому: (.+)$/, 'To: $1'], [/^· частка (\d+)% = (.+)$/, '· share $1% = $2'], [/^Зі своєї картки: (.+)$/, 'From own card: $1'], [/^Вклад: (.+)$/, 'Put in by $1'], [/^Частка (\d+)%$/, 'Share $1%'], [/^Скинули на картку: (.+) — (.+)$/, 'Put on the card: $1 — $2'], [/^Борг повернуто: (.+) → (.+), (.+)$/, 'Debt paid back: $1 → $2, $3'], [/^Дохід: (.+) — (.+)$/, 'Income: $1 — $2'], [/^Борг: (.+) → (.+) · (.+)$/, '$1 owes $2: $3'], [/^(.+) доплачує (.+)$/, '$1 owes $2'], [/^(.+) має доплатити (.+)$/, '$1 needs to pay $2'],
+    [/^Кому: (.+)$/, 'To: $1'], [/^Особисте: (.+)$/, 'Personal: $1'], [/^· частка (\d+)% = (.+)$/, '· share $1% = $2'], [/^Зі своєї картки: (.+)$/, 'From own card: $1'], [/^Вклад: (.+)$/, 'Put in by $1'], [/^Частка (\d+)%$/, 'Share $1%'], [/^Скинули на картку: (.+) — (.+)$/, 'Put on the card: $1 — $2'], [/^Борг повернуто: (.+) → (.+), (.+)$/, 'Debt paid back: $1 → $2, $3'], [/^Дохід: (.+) — (.+)$/, 'Income: $1 — $2'], [/^Борг: (.+) → (.+) · (.+)$/, '$1 owes $2: $3'], [/^(.+) доплачує (.+)$/, '$1 owes $2'], [/^(.+) має доплатити (.+)$/, '$1 needs to pay $2'],
     [/^Особисте: (.+)$/, 'Personal: $1'], [/^Особистий:\s+(.+)$/, 'Personal: $1'], [/^Особиста \((.+)\)$/, function (m, a) { return 'Personal (' + (tr(a) || a) + ')'; }], [/^· (.+)$/, function (m, a) { var r = tr(a); return r === null ? null : '· ' + r; }], [/^(.+) \(зі своїх\)$/, '$1 (own money)'],
     [/^Частка (.+), %$/, '$1’s share, %'], [/^Показано (\d+) із (\d+)$/, 'Showing $1 of $2'], [/^записів: (\d+)$/, 'entries: $1'],
     [/^Платежі (.+) \(проведено (.+)\)$/, 'Payments $1 (paid $2)'], [/^доходи (.+)$/, 'income $1'], [/^внески (.+)$/, 'contributions $1'], [/^відкладено (.+)$/, 'saved $1'],

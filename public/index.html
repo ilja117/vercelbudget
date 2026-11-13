@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.8.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.9.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -241,7 +241,7 @@
     .g-dnav { gap: 6px; border-bottom: 2px solid var(--g-tag-line); padding-bottom: 12px; }
     .g-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 12px; font: 600 15px/1 'Inter', sans-serif; color: var(--g-muted); text-decoration: none; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
     .g-tab[aria-current="page"] { background: var(--g-pop); color: #111111; }
-    #g-mnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--g-nav); display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px)); }
+    #g-mnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--g-nav); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px)); }
     #g-mnav-add { align-self: center; justify-self: center; width: 52px; height: 52px; border-radius: 16px; border: 2px solid #111111; background: var(--g-pop); color: #111111; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 160ms var(--g-ease); }
     #g-mnav-add:active { transform: scale(0.97); }
     @media (max-width: 639px) { #g-fab { display: none !important; } }
@@ -439,22 +439,20 @@
     </div>
   </header>
 
-  <!-- Навігація v5: 5 розділів (Головна · Записи · План · Особисте · Ми) -->
+  <!-- Навігація v5.9: Головна · Записи · Борги · Ще (+ «+» посередині на телефоні) -->
   <nav aria-label="Розділи" class="g-dnav max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6 w-full hidden sm:flex">
       <a href="#dashboard" onclick="event.preventDefault(); openGroup('home')" data-group="home" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Головна</span></a>
       <a href="#expenses" onclick="event.preventDefault(); openGroup('rec')" data-group="rec" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Записи</span></a>
-      <a href="#fixed" onclick="event.preventDefault(); openGroup('plan')" data-group="plan" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>План</span></a>
-      <a href="#p1" onclick="event.preventDefault(); openGroup('me')" data-group="me" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>Особисте</span></a>
-      <a href="#settlement" onclick="event.preventDefault(); openGroup('us')" data-group="us" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.5"/><circle cx="16" cy="10" r="3"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.5 0 4.5 1.3 5.5 4.5"/></svg><span>Ми</span></a>
+      <a href="#settlement" onclick="event.preventDefault(); openGroup('debt')" data-group="debt" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M5 8h14M7 8l-3 6a3 3 0 0 0 6 0zM17 8l-3 6a3 3 0 0 0 6 0zM8 20h8"/></svg><span>Борги</span></a>
+      <a href="#settings" onclick="event.preventDefault(); openGroup('more')" data-group="more" class="g-tab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>Ще</span></a>
   </nav>
 
   <nav aria-label="Розділи" id="g-mnav" class="sm:hidden">
     <a href="#dashboard" onclick="event.preventDefault(); openGroup('home')" data-group="home" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Головна</span></a>
     <a href="#expenses" onclick="event.preventDefault(); openGroup('rec')" data-group="rec" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Записи</span></a>
     <button type="button" id="g-mnav-add" onclick="openQuickAdd()" aria-label="Додати запис"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-    <a href="#fixed" onclick="event.preventDefault(); openGroup('plan')" data-group="plan" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>План</span></a>
-    <a href="#p1" onclick="event.preventDefault(); openGroup('me')" data-group="me" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>Особисте</span></a>
-    <a href="#settlement" onclick="event.preventDefault(); openGroup('us')" data-group="us" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.5"/><circle cx="16" cy="10" r="3"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.5 0 4.5 1.3 5.5 4.5"/></svg><span>Ми</span></a>
+    <a href="#settlement" onclick="event.preventDefault(); openGroup('debt')" data-group="debt" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M5 8h14M7 8l-3 6a3 3 0 0 0 6 0zM17 8l-3 6a3 3 0 0 0 6 0zM8 20h8"/></svg><span>Борги</span></a>
+    <a href="#settings" onclick="event.preventDefault(); openGroup('more')" data-group="more" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>Ще</span></a>
   </nav>
 
   <!-- Основний контент -->
@@ -4505,23 +4503,22 @@ const snapshotFlat = st => clone(flattenState(st));
     });
   </script>
   <script id="usbudget-nav-v5">
-    // v5: 5 розділів; кожен пам'ятає останній підрозділ
+    // v5.9: 4 розділи (Головна, Записи, Борги, Ще); кожен пам'ятає останній підрозділ
     const NAV_GROUPS = {
       home: { tabs: ['dashboard'] },
       rec: { tabs: ['expenses', 'incomes'], labels: { expenses: 'Витрати', incomes: 'На картку' } },
-      plan: { tabs: ['fixed', 'goals'], labels: { fixed: 'Регулярні', goals: 'Цілі' } },
-      me: { tabs: ['p1', 'p2'] },
-      us: { tabs: ['settlement', 'settings', 'analytics'], labels: { settlement: 'Борги', settings: 'Налаштування', analytics: 'Аналітика' } }
+      debt: { tabs: ['settlement'], labels: { settlement: 'Борги' } },
+      more: { tabs: ['p1', 'p2', 'fixed', 'goals', 'analytics', 'settings'], labels: { fixed: 'Регулярні платежі', goals: 'Цілі', analytics: 'Аналітика', settings: 'Налаштування' } }
     };
     const navLast = {};
     const groupOf = tab => Object.keys(NAV_GROUPS).find(g => NAV_GROUPS[g].tabs.indexOf(tab) >= 0) || 'home';
     function subLabel(g, t) {
-      if (g === 'me') return t === 'p1' ? getPartner1Name() : getPartner2Name();
+      if (t === 'p1' || t === 'p2') return 'Особисте: ' + (t === 'p1' ? getPartner1Name() : getPartner2Name());
       return NAV_GROUPS[g].labels[t];
     }
     function openGroup(g) {
       let t = navLast[g];
-      if (!t && g === 'me') { try { t = localStorage.getItem('usbudget_push_owner') || ''; } catch (e) {} }
+      if (!t && g === 'more') { try { t = localStorage.getItem('usbudget_push_owner') || ''; } catch (e) {} }
       switchTab(NAV_GROUPS[g].tabs.indexOf(t) >= 0 ? t : NAV_GROUPS[g].tabs[0]);
     }
     function updateGroupNav(tab) {
@@ -4532,8 +4529,7 @@ const snapshotFlat = st => clone(flattenState(st));
       });
       const box = document.getElementById('g-subnav');
       if (!box) return;
-      // Аналітику показуємо в підменю «Ми» лише коли її відкрито з налаштувань
-      const tabs = NAV_GROUPS[g].tabs;
+            const tabs = NAV_GROUPS[g].tabs;
       requestAnimationFrame(moveNavIndicator);
       box.classList.toggle('hidden', tabs.length < 2);
       box.innerHTML = tabs.length < 2 ? '' : tabs.map(t =>
@@ -4973,12 +4969,16 @@ const snapshotFlat = st => clone(flattenState(st));
   </script>
   <style id="usbudget-simple-css">
     .g-why { display: inline-block; margin-top: 6px; padding: 8px 0; min-height: 36px; background: none; border: 0; color: inherit; font: 600 13px/1.2 inherit; text-decoration: underline; text-underline-offset: 3px; opacity: .85; cursor: pointer; }
+    #g-home-more > summary { flex-wrap: nowrap; padding: 0 16px; min-height: 52px; border-radius: 16px; border: 2px solid var(--g-ink, #111); list-style: none; justify-content: space-between; }
+    #g-home-more > summary::-webkit-details-marker { display: none; }
+    #g-home-more > summary::after { content: ''; width: 9px; height: 9px; border-right: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: rotate(45deg) translateY(-2px); flex: none; margin-left: auto; }
+    #g-home-more[open] > summary::after { transform: rotate(225deg); }
     .g-why-card { position: relative; cursor: pointer; }
     .g-why-card::after { content: '?'; position: absolute; right: 10px; bottom: 10px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; font: 700 12px/17px inherit; text-align: center; opacity: .5; }
     .g-why-card:focus-visible { outline: 2px solid var(--g-ink, currentColor); outline-offset: 2px; }
   </style>
   <script id="usbudget-simple">
-    // v5.8: кнопка «+» спершу питає, що сталося; пояснення «звідки це число?» під великими сумами
+    // v5.8–5.9: кнопка «+» питає, що сталося; «звідки це число?»; головна з трьох блоків і «Детальніше»
     (function () {
       const openQuickExpense = openQuickAdd;
       const inp = 'w-full p-3 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm';
@@ -5108,6 +5108,38 @@ const snapshotFlat = st => clone(flattenState(st));
         m.querySelector('#why-close').onclick = closeEdit;
       }
 
+
+      // Головна: головне число, борг, останні записи; решта — у «Детальніше»
+      function recentRows() {
+        const money = (n, sign) => sign + Number(n).toLocaleString(APP_LOCALE) + ' ' + getCurrency();
+        const it = [];
+        (state.expenses || []).forEach((e, i) => it.push({ d: e.date || '', i, t: e.title || e.category || 'Витрата', sub: nameOf(e.payer), v: money(e.amount, '−') }));
+        (state.contributions || []).forEach((c, i) => it.push({ d: c.date || '', i, t: 'Скинули на картку', sub: nameOf(c.from), v: money(c.amount, '+'), plus: true }));
+        (state.settlements || []).forEach((t, i) => it.push({ d: t.date || '', i, t: 'Повернули борг', sub: nameOf(t.from) + ' → ' + nameOf(t.to), v: money(t.amount, '') }));
+        it.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : b.i - a.i);
+        return it.slice(0, 5);
+      }
+      function homeLayout() {
+        const host = document.getElementById('g-hero'), tab = document.getElementById('tab-dashboard');
+        if (!host || !tab) return;
+        let more = document.getElementById('g-home-more'), recent = document.getElementById('g-recent');
+        if (!more) {
+          recent = document.createElement('div'); recent.id = 'g-recent'; recent.className = 'bg-white dark:bg-slate-800/80 rounded-2xl p-4';
+          more = document.createElement('details'); more.id = 'g-home-more'; more.className = 'g-more';
+          more.innerHTML = '<summary>Детальніше <span class="text-slate-500">· ліміти і платежі</span></summary><div id="g-home-more-body" class="space-y-4 pt-3"></div>';
+          try { more.open = localStorage.getItem('usbudget_home_more') === '1'; } catch (e) {}
+          more.addEventListener('toggle', () => { try { localStorage.setItem('usbudget_home_more', more.open ? '1' : '0'); } catch (e) {} });
+          host.after(recent); recent.after(more);
+          const ins = document.getElementById('g-insights'); if (ins) more.querySelector('#g-home-more-body').appendChild(ins);
+        }
+        const body = more.querySelector('#g-home-more-body'), ins = document.getElementById('g-insights');
+        [...body.children].forEach(c => { if (c !== ins) c.remove(); });
+        [...host.children].forEach(c => { if (!c.classList.contains('g-hero') && !c.classList.contains('g-pop')) body.insertBefore(c, ins); });
+        const rows = recentRows();
+        recent.innerHTML = `<div class="flex items-center justify-between mb-1"><h3 class="text-sm">Останні записи</h3><button type="button" onclick="switchTab('expenses')" class="text-xs font-semibold text-pink-600 min-h-[36px] px-2">Усі</button></div>`
+          + (rows.length ? rows.map(r => `<div class="flex items-center gap-3 py-2.5 border-t"><div class="flex-1 min-w-0"><div class="font-semibold truncate">${esc(r.t)}</div><div class="text-xs text-slate-500">${esc((r.d ? fmtDay(r.d) + ' · ' : '') + r.sub)}</div></div><span class="g-num${r.plus ? ' text-emerald-600' : ''}" style="font-size:15px">${esc(r.v)}</span></div>`).join('')
+            : '<p class="text-sm text-slate-500 py-3">Записів ще немає. Натисніть «+».</p>');
+      }
       const KPI = { 'kpi-income': 'income', 'kpi-expenses': 'expenses', 'kpi-savings': 'card', 'kpi-savings-rate': 'debt' };
       function arm() {
         Object.keys(KPI).forEach(id => {
@@ -5123,8 +5155,8 @@ const snapshotFlat = st => clone(flattenState(st));
       document.addEventListener('click', e => { const t = e.target.closest('[data-why]'); if (t) why(t.dataset.why); });
       document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('g-why-card')) { e.preventDefault(); why(e.target.dataset.why); } });
       const renderAllV58 = renderAll;
-      renderAll = function () { renderAllV58(); arm(); };
-      arm();
+      renderAll = function () { renderAllV58(); homeLayout(); arm(); };
+      homeLayout(); arm();
     })();
   </script>
 </body>

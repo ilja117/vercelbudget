@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.7.3</title>
+  <title>UsBudget — Спільний бюджет пари · v5.8.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -451,7 +451,7 @@
   <nav aria-label="Розділи" id="g-mnav" class="sm:hidden">
     <a href="#dashboard" onclick="event.preventDefault(); openGroup('home')" data-group="home" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Головна</span></a>
     <a href="#expenses" onclick="event.preventDefault(); openGroup('rec')" data-group="rec" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Записи</span></a>
-    <button type="button" id="g-mnav-add" onclick="openQuickAdd()" aria-label="Записати витрату"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button type="button" id="g-mnav-add" onclick="openQuickAdd()" aria-label="Додати запис"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
     <a href="#fixed" onclick="event.preventDefault(); openGroup('plan')" data-group="plan" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>План</span></a>
     <a href="#p1" onclick="event.preventDefault(); openGroup('me')" data-group="me" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>Особисте</span></a>
     <a href="#settlement" onclick="event.preventDefault(); openGroup('us')" data-group="us" class="g-mtab"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="3.5"/><circle cx="16" cy="10" r="3"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.5 0 4.5 1.3 5.5 4.5"/></svg><span>Ми</span></a>
@@ -483,7 +483,7 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
           <div class="flex justify-between items-center text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs font-medium">
-            <span>Внески на картку (місяць)</span>
+            <span>Скинули на картку (місяць)</span>
             <span class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hidden sm:inline">📈</span>
           </div>
           <h3 id="kpi-income" class="text-lg sm:text-2xl font-bold mt-1.5 sm:mt-2 text-slate-900 dark:text-white">0 ₴</h3>
@@ -499,7 +499,7 @@
 
         <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
           <div class="flex justify-between items-center text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs font-medium">
-            <span>Баланс картки</span>
+            <span>Лишилось на картці</span>
             <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg hidden sm:inline">💎</span>
           </div>
           <h3 id="kpi-savings" class="text-lg sm:text-2xl font-bold mt-1.5 sm:mt-2 text-emerald-600">0 ₴</h3>
@@ -507,7 +507,7 @@
 
         <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
           <div class="flex justify-between items-center text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs font-medium">
-            <span>Баланс між вами</span>
+            <span>Хто кому винен</span>
             <span class="p-1.5 bg-pink-50 text-pink-600 rounded-lg hidden sm:inline">📊</span>
           </div>
           <h3 id="kpi-savings-rate" class="text-lg sm:text-2xl font-bold mt-1.5 sm:mt-2 text-pink-600">0%</h3>
@@ -530,7 +530,7 @@
     <!-- TAB 2: ДОХОДИ -->
     <section id="tab-incomes" class="tab-content hidden space-y-4 sm:space-y-6">
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
-        <h3 class="text-base sm:text-lg font-bold mb-1">💳 Внесок на спільну картку</h3>
+        <h3 class="text-base sm:text-lg font-bold mb-1">💳 Скинути гроші на спільну картку</h3>
         <p class="text-xs text-slate-500 mb-3 sm:mb-4">Ваші зарплати й інші доходи тепер записуються в особистих вкладках. Тут лише перекази на спільну картку.</p>
         <form id="contrib-form" onsubmit="addContribution(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-3 sm:gap-4">
           <div><label class="block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300">Дата</label><input type="date" id="contrib-date" required class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm"></div>
@@ -554,7 +554,7 @@
       </div>
 
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
-        <h3 class="text-base sm:text-lg font-bold mb-3">Внески за місяць</h3>
+        <h3 class="text-base sm:text-lg font-bold mb-3">Хто скидав цього місяця</h3>
         <div id="contrib-toolbar-host"></div>
         <div id="contrib-list" class="space-y-2.5"></div>
       </div>
@@ -666,20 +666,21 @@
     <section id="tab-settlement" class="tab-content hidden space-y-4 sm:space-y-6">
       <details class="g-more bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
         <summary>Як записувати, щоб не плутатись</summary>
-        <p class="text-sm text-slate-600 dark:text-slate-300 pt-2">Три різні числа: <b>Можна ще витратити</b> — внески місяця мінус усі спільні витрати; <b>На спільній картці</b> — реальні гроші на картці; <b>Хто кому доплачує</b> — борг за частками.</p>
+        <p class="text-sm text-slate-600 dark:text-slate-300 pt-2">Натисніть <b>«+»</b> і виберіть, що сталося. Три головні числа: <b>Можна ще витратити</b> — скинули на картку цього місяця мінус усі спільні витрати; <b>Лишилось на картці</b> — гроші, які мають лежати на картці; <b>Хто кому винен</b> — різниця між тим, що вклав кожен, і вашими частками. Під кожним числом є «Звідки це число?».</p>
         <ul class="text-sm mt-2">
-            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Скинули гроші на спільну картку</b><span class="text-slate-600 dark:text-slate-300">Записи → Внески: хто і скільки. З внесків складається бюджет місяця.</span></li>
-            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили спільною карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">Витрата, хто платив: «Спільна картка». Зменшує бюджет і гроші на картці, борг не змінює.</span></li>
-            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили своєю карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">Витрата, хто платив: ви «зі своїх», для кого: «Спільна». Ділиться за частками — партнер винен вам свою частину.</span></li>
-            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Купили собі спільною карткою</b><span class="text-slate-600 dark:text-slate-300">Витрата, хто платив: «Спільна картка», для кого: «Особисте». Зменшує бюджет і повністю рахується на вас.</span></li>
-            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Купили собі своєю карткою</b><span class="text-slate-600 dark:text-slate-300">Лише в розділі «Особисте» або взагалі не записувати. На спільний бюджет і борг не впливає.</span></li>
-            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Віддали партнерові борг</b><span class="text-slate-600 dark:text-slate-300">Ми → Баланс → кнопка «Переказ для…». Не записуйте це як витрату чи внесок.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Скинули гроші на спільну картку</b><span class="text-slate-600 dark:text-slate-300">«+» → «Скинули на спільну картку». З цього складається бюджет місяця.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили спільною карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">«+» → «Витратили гроші», хто платив: «Спільна картка». Зменшує бюджет і гроші на картці, борг не змінює.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили своєю карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">«+» → «Витратили гроші», хто платив: ви «зі своїх», для кого: «Спільна». Ділиться за частками — партнер винен вам свою частину.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Купили собі спільною карткою</b><span class="text-slate-600 dark:text-slate-300">«+» → «Витратили гроші», хто платив: «Спільна картка», для кого: «Особисте». Зменшує бюджет і повністю рахується на вас.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Купили собі своєю карткою</b><span class="text-slate-600 dark:text-slate-300">Нічого не записувати або записати в розділі «Особисте». На спільний бюджет і борг не впливає.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Віддали партнерові борг</b><span class="text-slate-600 dark:text-slate-300">«+» → «Повернули борг». Не записуйте це як витрату чи внесок.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Отримали зарплату чи аванс</b><span class="text-slate-600 dark:text-slate-300">«+» → «Отримали гроші». Це особисте, спільну картку не чіпає. Частину, яку скидаєте на картку, записуйте окремо: «Скинули на спільну картку».</span></li>
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Переказ між своїми картками, повернення покупки</b><span class="text-slate-600 dark:text-slate-300">Не записувати. Імпорт з банку такі операції вимикає сам.</span></li>
         </ul>
       </details>
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
-        <h3 class="text-base sm:text-lg font-bold mb-1">⚖️ Баланс між партнерами</h3>
-        <p class="text-xs sm:text-sm text-slate-500 mb-4">Рахується накопичувально: внески на картку плюс спільні витрати, оплачені зі своїх, порівнюються з вашими частками. Витрати з картки цей баланс не змінюють, бо картку ви наповнюєте у своїх частках; вони зменшують баланс картки.</p>
+        <h3 class="text-base sm:text-lg font-bold mb-1">⚖️ Хто кому винен</h3>
+        <p class="text-xs sm:text-sm text-slate-500 mb-4">Вклад кожного: скинув на картку плюс оплатив зі своєї картки за спільне. Він порівнюється з вашою часткою витрат. Витрати зі спільної картки борг не змінюють, вони лише зменшують гроші на картці.</p>
         <div id="balance-box"></div>
       </div>
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
@@ -860,11 +861,11 @@
                 <p id="pct-view-p2" class="text-[11px] text-slate-500 mt-1"></p>
               </div>
               <div>
-                <label class="block text-xs font-medium mb-1.5">Баланс картки на дату старту</label>
+                <label class="block text-xs font-medium mb-1.5">Скільки було на картці на старті</label>
                 <input type="number" step="any" id="settings-card-start" class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm">
               </div>
               <div>
-                <label class="block text-xs font-medium mb-1.5">Баланс між вами рахується з</label>
+                <label class="block text-xs font-medium mb-1.5">Рахувати борги з дати</label>
                 <input type="date" id="settings-model-start" class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm">
               </div>
           </div>
@@ -3301,11 +3302,11 @@ const snapshotFlat = st => clone(flattenState(st));
         const pct = k === 'p1' ? b.pct1 : 1 - b.pct1;
         return `<div class="flex justify-between gap-3 text-sm py-1.5 border-b border-slate-100 dark:border-slate-800/60">
           <span>${avatarOf(k)} ${esc(nameOf(k))}</span>
-          <span class="text-right">вклав <b>${fmtMoney(b.put[k])}</b> · мав ${Math.round(pct * 100)}% = ${fmtMoney(b.T * pct)}</span></div>`;
+          <span class="text-right">вклад <b>${fmtMoney(b.put[k])}</b> · частка ${Math.round(pct * 100)}% = ${fmtMoney(b.T * pct)}</span></div>`;
       };
       box.innerHTML = `
         <div class="p-4 sm:p-5 rounded-2xl border bg-slate-50 dark:bg-slate-900/40 space-y-3">
-          <div class="text-lg sm:text-xl font-bold">${s.debtor ? `${avatarOf(s.debtor)} ${esc(nameOf(s.debtor))} має доплатити ${fmtMoney(s.toPartner)}` : '✓ Баланс вирівняно'}</div>
+          <div class="text-lg sm:text-xl font-bold">${s.debtor ? `${avatarOf(s.debtor)} Борг: ${esc(nameOf(s.debtor))} → ${esc(nameOf(s.creditor))} · ${fmtMoney(s.toPartner)}` : '✓ Ви квити'}</div>
           <div>${row('p1')}${row('p2')}</div>
           <div class="text-xs text-slate-500">Облік з ${esc(state.settings.modelStart || '')} · частки ${pct1}/${100 - pct1} · картка: ${fmtMoney(v4Card(state))}</div>
           ${s.debtor ? `<div class="flex flex-col sm:flex-row gap-2 pt-1">
@@ -3460,8 +3461,8 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
     function relabelNav() {
-      document.querySelectorAll(`[onclick*="switchTab('incomes')"]`).forEach(b => { b.innerHTML = b.innerHTML.replace('Доходи', 'Внески'); });
-      document.querySelectorAll(`[onclick*="switchTab('settlement')"]`).forEach(b => { b.innerHTML = b.innerHTML.replace('Взаєморозрахунки', 'Баланс').replace('Розрахунки', 'Баланс'); });
+      document.querySelectorAll(`[onclick*="switchTab('incomes')"]`).forEach(b => { b.innerHTML = b.innerHTML.replace('Доходи', 'На картку'); });
+      document.querySelectorAll(`[onclick*="switchTab('settlement')"]`).forEach(b => { b.innerHTML = b.innerHTML.replace('Взаєморозрахунки', 'Борги').replace('Розрахунки', 'Борги'); });
     }
 
     const renderAllV3 = renderAll;
@@ -3987,8 +3988,8 @@ const snapshotFlat = st => clone(flattenState(st));
       };
       const s = v4Settle(v4Balance(state));
       const strip = s.debtor
-        ? `<div class="g-pop"><span style="font-weight:700">${esc(nameOf(s.debtor))} доплачує ${fmtMoney(s.toPartner)}</span><button type="button" onclick="switchTab('settlement')">Вирівняти</button></div>`
-        : `<div class="g-pop"><span style="font-weight:700;display:flex;align-items:center;gap:8px">${ICON('check', 18)} Баланс між вами рівний</span></div>`;
+        ? `<div class="g-pop"><span style="font-weight:700">Борг: ${esc(nameOf(s.debtor))} → ${esc(nameOf(s.creditor))} · ${fmtMoney(s.toPartner)}</span><button type="button" onclick="switchTab('settlement')">Вирівняти</button></div>`
+        : `<div class="g-pop"><span style="font-weight:700;display:flex;align-items:center;gap:8px">${ICON('check', 18)} Ви квити</span></div>`;
       const today = getTodayString(), up = [], KI = { expense: 'receipt', savings: 'gem', debt: 'card', income: 'coins', contribution: 'bank' };
       (state.fixedExpenses || []).filter(visibleRec).forEach(fx => fxOccurrences(fx, addDays(today, -30), addDays(today, 14)).forEach(o => { if (!paidKeyFor(fx, o)) up.push({ fx, o }); }));
       up.sort((a, b) => a.o.localeCompare(b.o));
@@ -4388,7 +4389,7 @@ const snapshotFlat = st => clone(flattenState(st));
     // --- швидка витрата ---
     function setupFab() {
       if (document.getElementById('g-fab')) return;
-      document.body.insertAdjacentHTML('beforeend', `<button type="button" id="g-fab" onclick="openQuickAdd()" aria-label="Швидко додати витрату" title="Швидка витрата"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>`);
+      document.body.insertAdjacentHTML('beforeend', `<button type="button" id="g-fab" onclick="openQuickAdd()" aria-label="Додати запис" title="Додати запис"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>`);
     }
 
     function openQuickAdd() {
@@ -4453,7 +4454,7 @@ const snapshotFlat = st => clone(flattenState(st));
       setTimeout(() => { const a = m.querySelector('#qa-amount'); if (a) a.focus(); }, 50);
     }
 
-    // Посилання з іконки застосунку: #quick відкриває швидку витрату, #fixed тощо — вкладку
+    // Посилання з іконки застосунку: #quick відкриває «Що сталося?», #fixed тощо — вкладку
     function openFromHash() {
       const h = (location.hash || '').replace('#', '');
       if (h === 'quick') openQuickAdd();
@@ -4507,10 +4508,10 @@ const snapshotFlat = st => clone(flattenState(st));
     // v5: 5 розділів; кожен пам'ятає останній підрозділ
     const NAV_GROUPS = {
       home: { tabs: ['dashboard'] },
-      rec: { tabs: ['expenses', 'incomes'], labels: { expenses: 'Витрати', incomes: 'Внески' } },
+      rec: { tabs: ['expenses', 'incomes'], labels: { expenses: 'Витрати', incomes: 'На картку' } },
       plan: { tabs: ['fixed', 'goals'], labels: { fixed: 'Регулярні', goals: 'Цілі' } },
       me: { tabs: ['p1', 'p2'] },
-      us: { tabs: ['settlement', 'settings', 'analytics'], labels: { settlement: 'Баланс', settings: 'Налаштування', analytics: 'Аналітика' } }
+      us: { tabs: ['settlement', 'settings', 'analytics'], labels: { settlement: 'Борги', settings: 'Налаштування', analytics: 'Аналітика' } }
     };
     const navLast = {};
     const groupOf = tab => Object.keys(NAV_GROUPS).find(g => NAV_GROUPS[g].tabs.indexOf(tab) >= 0) || 'home';
@@ -4615,7 +4616,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const lc = document.getElementById('g-limits-card'), exp = document.getElementById('tab-expenses');
       if (lc && exp && exp.firstElementChild) exp.firstElementChild.after(lc);
       // Невидимий заголовок h2 у кожному розділі: правильна структура для програм читання з екрана
-      const TITLES = { dashboard: 'Головна', expenses: 'Витрати', incomes: 'Внески', fixed: 'Регулярні платежі', goals: 'Цілі', p1: 'Особисте', p2: 'Особисте', settlement: 'Баланс', settings: 'Налаштування', analytics: 'Аналітика' };
+      const TITLES = { dashboard: 'Головна', expenses: 'Витрати', incomes: 'На картку', fixed: 'Регулярні платежі', goals: 'Цілі', p1: 'Особисте', p2: 'Особисте', settlement: 'Борги', settings: 'Налаштування', analytics: 'Аналітика' };
       Object.keys(TITLES).forEach(t => { const sec = document.getElementById('tab-' + t); if (sec && !sec.querySelector(':scope > h2.sr-only')) sec.insertAdjacentHTML('afterbegin', `<h2 class="sr-only">${TITLES[t]}</h2>`); });
       const set = document.getElementById('tab-settings');
       if (set && !document.getElementById('g-lang')) {
@@ -4920,7 +4921,7 @@ const snapshotFlat = st => clone(flattenState(st));
   </script>
   <script id="usbudget-fold">
     // v5.7: великі блоки з полями згортаються до заголовка; відкритий стан памʼятається на пристрої
-    const FOLD_SKIP = /історія|за місяць|мої доходи|мої витрати|баланс між|імпорт з банку|структура|^спільна картка|мова інтерфейсу|налаштування пари|history|this month|balance between|bank import|^shared card|language|couple and budget/i;
+    const FOLD_SKIP = /історія|за місяць|цього місяця|хто кому винен|мої доходи|мої витрати|баланс між|імпорт з банку|структура|^спільна картка|мова інтерфейсу|налаштування пари|history|this month|who owes whom|balance between|bank import|^shared card|language|couple and budget/i;
     function applyFolds() {
       const cards = [];
       document.querySelectorAll('section.tab-content > div').forEach(d => { if (d.classList.contains('grid')) cards.push(...d.children); else cards.push(d); });
@@ -4969,6 +4970,162 @@ const snapshotFlat = st => clone(flattenState(st));
       const root = document.getElementById('tab-dashboard') && document.getElementById('tab-dashboard').parentNode;
       if (root) new MutationObserver(queueFolds).observe(root, { childList: true, subtree: true });
     });
+  </script>
+  <style id="usbudget-simple-css">
+    .g-why { display: inline-block; margin-top: 6px; padding: 8px 0; min-height: 36px; background: none; border: 0; color: inherit; font: 600 13px/1.2 inherit; text-decoration: underline; text-underline-offset: 3px; opacity: .85; cursor: pointer; }
+    .g-why-card { position: relative; cursor: pointer; }
+    .g-why-card::after { content: '?'; position: absolute; right: 10px; bottom: 10px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; font: 700 12px/17px inherit; text-align: center; opacity: .5; }
+    .g-why-card:focus-visible { outline: 2px solid var(--g-ink, currentColor); outline-offset: 2px; }
+  </style>
+  <script id="usbudget-simple">
+    // v5.8: кнопка «+» спершу питає, що сталося; пояснення «звідки це число?» під великими сумами
+    (function () {
+      const openQuickExpense = openQuickAdd;
+      const inp = 'w-full p-3 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm';
+      const lbl = 'block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300';
+      const sumOf = (a, f) => a.reduce((t, x) => t + (Number(x.amount) || 0), 0);
+      const other = k => k === 'p1' ? 'p2' : 'p1';
+      const lastWho = () => { try { return localStorage.getItem('usbudget_qa_who') || pushOwner(); } catch (e) { return 'p1'; } };
+
+      function modal(inner) {
+        closeEdit();
+        const m = document.createElement('div');
+        m.id = 'edit-modal';
+        m.className = 'fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-4 bg-black/50';
+        m.innerHTML = `<div class="bg-white dark:bg-slate-800 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-3.5 max-h-[92vh] overflow-y-auto">${inner}</div>`;
+        document.body.appendChild(m);
+        m.addEventListener('click', e => { if (e.target === m) closeEdit(); });
+        return m;
+      }
+
+      // Записує зміну й дає «Скасувати»
+      function commit(change, text) {
+        const before = clone(flattenState(state));
+        change();
+        const after = flattenState(state), touched = {};
+        Object.keys(Object.assign({}, before, after)).forEach(k => { if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) touched[k] = before[k]; });
+        closeEdit(); saveToCloud(); renderAll();
+        showUndo(touched, text);
+      }
+
+      const whoChips = (name, sel) => ['p1', 'p2'].map(k => `<label class="g-chip"><input type="radio" name="${name}" value="${k}"${k === sel ? ' checked' : ''}><span>${esc(nameOf(k))}</span></label>`).join('');
+
+      // Крок 1: що сталося?
+      openQuickAdd = function () {
+        const tile = (id, icon, title, sub) => `<button type="button" data-add="${id}" class="w-full flex items-center gap-3 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 text-left min-h-[64px]"><span class="g-chip-ic">${ICON(icon, 20)}</span><span class="min-w-0"><b class="block text-sm">${title}</b><span class="block text-xs text-slate-500">${sub}</span></span></button>`;
+        const m = modal(`
+          <h3>Що сталося?</h3>
+          ${tile('expense', 'receipt', 'Витратили гроші', 'Покупка або платіж: спільний чи особистий')}
+          ${tile('put', 'bank', 'Скинули на спільну картку', 'Переказ із зарплати чи авансу на спільну картку')}
+          ${tile('debt', 'scale', 'Повернули борг', 'Один з вас переказав гроші іншому, щоб вирівняти')}
+          ${tile('income', 'coins', 'Отримали гроші', 'Зарплата, аванс чи подарунок на свою картку')}
+          <button type="button" id="qa-cancel" class="w-full py-3 rounded-xl border text-sm font-medium">Скасувати</button>`);
+        m.querySelector('#qa-cancel').onclick = closeEdit;
+        m.querySelectorAll('[data-add]').forEach(b => { b.onclick = () => { const id = b.dataset.add; id === 'expense' ? openQuickExpense() : openSimple(id); }; });
+      };
+
+      // Крок 2: коротка форма (внесок, борг, дохід)
+      function openSimple(kind) {
+        const s = v4Settle(v4Balance(state)), debt = kind === 'debt' && s.debtor;
+        const who = debt ? s.debtor : lastWho();
+        const T = {
+          put: { h: 'Скинули на спільну картку', who: 'Хто скинув', btn: 'Записати' },
+          debt: { h: 'Повернули борг', who: 'Хто віддав гроші', btn: 'Записати' },
+          income: { h: 'Отримали гроші', who: 'Хто отримав', btn: 'Записати' }
+        }[kind];
+        const m = modal(`
+          <form novalidate class="space-y-3.5">
+            <h3>${T.h}</h3>
+            <fieldset class="g-chips"><legend class="${lbl}">${T.who}</legend>${whoChips('qs-who', who)}</fieldset>
+            ${kind === 'debt' ? `<p id="qs-to" class="text-sm text-slate-600 dark:text-slate-300"></p>` : ''}
+            <div><label class="${lbl}" for="qs-amount">Сума, ${esc(getCurrency())}</label><input id="qs-amount" type="number" inputmode="decimal" step="any" placeholder="0" value="${debt ? s.toPartner : ''}" class="${inp} g-num" style="font-size:24px"></div>
+            ${kind === 'income' ? `<div><label class="${lbl}" for="qs-src">Що це</label><input id="qs-src" type="text" placeholder="Наприклад: зарплата, аванс" class="${inp}"></div>` : ''}
+            <div><label class="${lbl}" for="qs-date">Дата</label><input id="qs-date" type="date" value="${getTodayString()}" class="${inp}"></div>
+            ${kind === 'income' ? `<p class="text-xs text-slate-500">Дохід записується в «Особисте» вибраної людини і не чіпає спільну картку.</p>` : ''}
+            <p id="qs-err" class="text-xs text-rose-500 min-h-4"></p>
+            <div class="flex gap-2">
+              <button type="button" id="qs-back" class="flex-1 py-3 rounded-xl border text-sm font-medium">Назад</button>
+              <button type="submit" class="flex-1 py-3 rounded-xl bg-pink-500 text-white text-sm font-semibold">${T.btn}</button>
+            </div>
+          </form>`);
+        const f = m.querySelector('form'), val = id => m.querySelector('#' + id).value, who$ = () => (f.querySelector('input[name="qs-who"]:checked') || {}).value || 'p1';
+        const toLine = () => { const el = m.querySelector('#qs-to'); if (el) el.textContent = 'Кому: ' + nameOf(other(who$())); };
+        toLine(); f.querySelectorAll('input[name="qs-who"]').forEach(r => { r.onchange = toLine; });
+        m.querySelector('#qs-back').onclick = openQuickAdd;
+        f.onsubmit = ev => {
+          ev.preventDefault();
+          const amount = Number(val('qs-amount')), date = val('qs-date') || getTodayString(), w = who$();
+          if (!(amount > 0) || amount > 1e9) { m.querySelector('#qs-err').textContent = 'Вкажіть суму.'; return; }
+          try { localStorage.setItem('usbudget_qa_who', w); } catch (e) {}
+          if (kind === 'put') commit(() => (state.contributions = state.contributions || []).push({ id: 'ct_' + Date.now(), date, from: w, amount, note: '' }), `Скинули на картку: ${nameOf(w)} — ${fmtMoney(amount)}`);
+          else if (kind === 'debt') commit(() => (state.settlements = state.settlements || []).push({ id: 'st_' + Date.now(), date, from: w, to: other(w), amount }), `Борг повернуто: ${nameOf(w)} → ${nameOf(other(w))}, ${fmtMoney(amount)}`);
+          else commit(() => (state.personalIncomes = state.personalIncomes || []).push({ id: Date.now().toString(), owner: w, date, source: val('qs-src').trim() || 'Дохід', amount }), `Дохід: ${nameOf(w)} — ${fmtMoney(amount)}`);
+        };
+        setTimeout(() => { const a = m.querySelector('#qs-amount'); if (a) a.focus(); }, 50);
+      }
+
+      // «Звідки це число?»
+      const row = (label, value, cls) => `<div class="flex justify-between gap-3 py-2 border-b border-slate-100 dark:border-slate-700/60 text-sm ${cls || ''}"><span>${label}</span><b class="shrink-0 g-num">${value}</b></div>`;
+      const sub = (label, value) => `<div class="flex justify-between gap-3 py-1 pl-4 text-xs text-slate-500"><span>${label}</span><span class="shrink-0">${value}</span></div>`;
+
+      function why(kind) {
+        const per = filterByPeriod(state.contributions || []), ex = filterByPeriod(state.expenses), pe = filterByPeriod(state.personalExpenses || []).filter(e => e.fromCard);
+        const by = (a, k, key) => sumOf(a.filter(x => x[key] === k));
+        const names = ['p1', 'p2'];
+        let title = '', body = '', note = '';
+        if (kind === 'left') {
+          const budget = sumOf(per), spent = sumOf(ex) + sumOf(pe);
+          title = 'Можна ще витратити';
+          body = row('Скинули на картку цього місяця', fmtMoney(budget)) + names.map(k => sub(nameOf(k), fmtMoney(by(per, k, 'from')))).join('')
+            + row('Витратили разом', '− ' + fmtMoney(spent))
+            + sub('Зі спільної картки', fmtMoney(by(ex, 'card', 'payer')))
+            + names.map(k => sub('Зі своєї картки: ' + nameOf(k), fmtMoney(by(ex, k, 'payer')))).join('')
+            + (sumOf(pe) ? sub('Особисте, куплене зі спільної картки', fmtMoney(sumOf(pe))) : '')
+            + row(budget - spent >= 0 ? 'Залишилось' : 'Перевитрата', fmtMoney(Math.abs(budget - spent)), 'text-base');
+          note = 'Це рахунок за місяць. Скільки грошей лежить на самій картці, показує інше число — «Лишилось на картці».';
+        } else if (kind === 'income') {
+          title = 'Скинули на картку';
+          body = names.map(k => row(nameOf(k), fmtMoney(by(per, k, 'from')))).join('') + row('Разом за місяць', fmtMoney(sumOf(per.filter(c => names.indexOf(c.from) >= 0))), 'text-base');
+          note = 'Це переказ на спільну картку, не зарплата. Зарплати записуються в «Особисте».';
+        } else if (kind === 'expenses') {
+          title = 'Спільні витрати';
+          body = row('Зі спільної картки', fmtMoney(by(ex, 'card', 'payer'))) + names.map(k => row('Зі своєї картки: ' + nameOf(k), fmtMoney(by(ex, k, 'payer')))).join('') + row('Разом за місяць', fmtMoney(sumOf(ex)), 'text-base');
+          note = 'Особисті покупки сюди не входять. Хто платив своєю карткою, потрапляє в «Хто кому винен».';
+        } else if (kind === 'card') {
+          const inR = v4Includer(state), c = (state.contributions || []).filter(inR), e = (state.expenses || []).filter(inR).filter(x => x.payer === 'card'), p = (state.personalExpenses || []).filter(inR).filter(x => x.fromCard);
+          title = 'Лишилось на картці';
+          body = row('Було на старті', fmtMoney(Number(state.settings.cardStart) || 0)) + row('Скинули на картку', '+ ' + fmtMoney(sumOf(c))) + row('Витратили зі спільної картки', '− ' + fmtMoney(sumOf(e)))
+            + (sumOf(p) ? row('Особисте, куплене з картки', '− ' + fmtMoney(sumOf(p))) : '') + row('Має бути на картці', fmtMoney(v4Card(state)), 'text-base');
+          note = 'Це розрахунок від дати «Облік з». Якщо в банку інакше, звірте суму в «На картку».';
+        } else if (kind === 'debt') {
+          const b = v4Balance(state), s = v4Settle(b), pct = k => (k === 'p1' ? b.pct1 : 1 - b.pct1);
+          title = 'Хто кому винен';
+          body = names.map(k => row('Вклад: ' + nameOf(k), fmtMoney(b.put[k])) + sub('Частка ' + Math.round(pct(k) * 100) + '%', fmtMoney(b.T * pct(k)))).join('')
+            + row(s.debtor ? 'Борг' : 'Результат', s.debtor ? nameOf(s.debtor) + ' → ' + nameOf(s.creditor) + ' · ' + fmtMoney(s.toPartner) : 'Ви квити', 'text-base');
+          note = 'Вклад = скинули на картку + оплачено зі своєї картки за спільне − особисте, куплене зі спільної. Витрати діляться за частками, тому різниця й дає борг.';
+        } else return;
+        const m = modal(`<h3>${title}</h3><div>${body}</div><p class="text-xs text-slate-500">${note}</p><button type="button" id="why-close" class="w-full py-3 rounded-xl border text-sm font-medium">Зрозуміло</button>`);
+        m.querySelector('#why-close').onclick = closeEdit;
+      }
+
+      const KPI = { 'kpi-income': 'income', 'kpi-expenses': 'expenses', 'kpi-savings': 'card', 'kpi-savings-rate': 'debt' };
+      function arm() {
+        Object.keys(KPI).forEach(id => {
+          const h = document.getElementById(id), card = h && h.closest('.rounded-2xl');
+          if (card && !card.dataset.why) { card.dataset.why = KPI[id]; card.classList.add('g-why-card'); card.setAttribute('role', 'button'); card.tabIndex = 0; card.setAttribute('aria-label', 'Звідки це число? ' + card.textContent.trim().slice(0, 40)); }
+        });
+        const hero = document.querySelector('#g-hero .g-hero');
+        if (hero && !hero.querySelector('.g-why')) hero.insertAdjacentHTML('beforeend', '<button type="button" class="g-why" data-why="left">Звідки це число?</button>');
+        const link = (host, k) => { if (host && !host.querySelector('.g-why')) host.insertAdjacentHTML('beforeend', `<button type="button" class="g-why" data-why="${k}">Звідки це число?</button>`); };
+        link(document.querySelector('#balance-box > div'), 'debt');
+        const cb = document.getElementById('card-balance'); link(cb && cb.parentElement.nextElementSibling, 'card');
+      }
+      document.addEventListener('click', e => { const t = e.target.closest('[data-why]'); if (t) why(t.dataset.why); });
+      document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('g-why-card')) { e.preventDefault(); why(e.target.dataset.why); } });
+      const renderAllV58 = renderAll;
+      renderAll = function () { renderAllV58(); arm(); };
+      arm();
+    })();
   </script>
 </body>
 </html>

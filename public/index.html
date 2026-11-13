@@ -842,7 +842,7 @@
         <p class="text-sm text-slate-600 dark:text-slate-300 pt-2">Натисніть <b>«+»</b> і виберіть, що сталося. Три головні числа: <b>Можна ще витратити</b> — скинули на картку цього місяця мінус усі спільні витрати; <b>Лишилось на картці</b> — гроші, які мають лежати на картці; <b>Хто кому винен</b> — різниця між тим, що вклав кожен, і вашими частками. Під кожним числом є «Звідки це число?».</p>
         <ul class="text-sm mt-2">
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Скинули гроші на спільну картку</b><span class="text-slate-600 dark:text-slate-300">«+» → «Скинули на спільну картку». З цього складається бюджет місяця.</span></li>
-            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили спільною карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">«+» → «Витратили гроші», хто платив: «Спільна картка». Зменшує бюджет і гроші на картці, борг не змінює.</span></li>
+            <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили спільною карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">«+» → «Витратили гроші», хто платив: «Спільна картка». Зменшує бюджет і гроші на картці. Платять за це ті, хто скинув на картку, у пропорції внесків.</span></li>
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили своєю карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">«+» → «Витратили гроші», хто платив: ви «зі своїх», для кого: «Спільна». Ділиться за частками — партнер винен вам свою частину.</span></li>
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Купили собі спільною карткою</b><span class="text-slate-600 dark:text-slate-300">«+» → «Витратили гроші», хто платив: «Спільна картка», для кого: «Особисте». Зменшує бюджет і повністю рахується на вас.</span></li>
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Купили собі своєю карткою</b><span class="text-slate-600 dark:text-slate-300">Нічого не записувати або записати в розділі «Особисте». На спільний бюджет і борг не впливає.</span></li>
@@ -854,7 +854,7 @@
       </details>
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
         <h3 class="text-base sm:text-lg font-bold mb-1">⚖️ Хто кому винен</h3>
-        <p class="text-xs sm:text-sm text-slate-500 mb-4">Вклад кожного: скинув на картку плюс оплатив зі своєї картки за спільне. Він порівнюється з вашою часткою витрат. Витрати зі спільної картки борг не змінюють, вони лише зменшують гроші на картці.</p>
+        <p class="text-xs sm:text-sm text-slate-500 mb-4">Скільки кожен фактично заплатив за спільне: зі своєї картки, а витрати зі спільної — у пропорції внесків на неї. Це порівнюється з вашою часткою витрат. Гроші, що ще лежать на картці, борг не створюють.</p>
         <div id="balance-box"></div>
       </div>
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
@@ -1467,24 +1467,32 @@ const snapshotFlat = st => clone(flattenState(st));
       return true;
     }
 
-    // Скільки кожен вклав у спільне від дати старту: внески на картку, спільні витрати зі своїх,
-    // мінус особисті покупки з картки, з урахуванням прямих переказів між партнерами
+    // Скільки кожен фактично заплатив за спільне від дати старту. Витрати зі своєї картки рахуються на того, хто платив.
+    // Витрати зі спільної картки (і особисте, куплене з неї) лягають на обох у пропорції їхніх внесків на картку
+    // (гроші, що були на старті, — за частками). Гроші, що ще лежать на картці, боргу не створюють.
+    // Далі: мінус особисте з картки, плюс прямі перекази між партнерами
     function v4Balance(st) {
-      const put = { p1: 0, p2: 0 }, inRange = v4Includer(st);
-      (st.contributions || []).filter(inRange).forEach(c => { if (c.from in put) put[c.from] += c.amount; });
-      (st.expenses || []).filter(inRange).forEach(e => { if (e.payer in put) put[e.payer] += e.amount; });
-      (st.personalExpenses || []).filter(inRange).forEach(e => { if (e.fromCard && e.owner in put) put[e.owner] -= e.amount; });
+      const inRange = v4Includer(st), set = st.settings || {};
+      const pct1 = clampPct(set.p1Pct) / 100, pct = { p1: pct1, p2: 1 - pct1 };
+      const c = { p1: 0, p2: 0 }, own = { p1: 0, p2: 0 }, pers = { p1: 0, p2: 0 };
+      let cardShared = 0;
+      (st.contributions || []).filter(inRange).forEach(x => { if (x.from in c) c[x.from] += x.amount; });
+      (st.expenses || []).filter(inRange).forEach(e => { if (e.payer in own) own[e.payer] += e.amount; else if (e.payer === 'card') cardShared += e.amount; });
+      (st.personalExpenses || []).filter(inRange).forEach(e => { if (e.fromCard && e.owner in pers) pers[e.owner] += e.amount; });
+      const start = Math.max(0, Number(set.cardStart) || 0);
+      const f = { p1: c.p1 + pct.p1 * start, p2: c.p2 + pct.p2 * start }, F = f.p1 + f.p2;
+      const out = cardShared + pers.p1 + pers.p2, put = {};
+      ['p1', 'p2'].forEach(k => { put[k] = own[k] + out * (F > 0 ? f[k] / F : pct[k]) - pers[k]; });
       (st.settlements || []).filter(inRange).forEach(t => { if (t.from in put) put[t.from] += t.amount; if (t.to in put) put[t.to] -= t.amount; });
-      const pct1 = clampPct(st.settings && st.settings.p1Pct) / 100, T = put.p1 + put.p2;
+      const T = put.p1 + put.p2;
       return { put, T, pct1, diff1: put.p1 - pct1 * T };
     }
 
-    // Хто й скільки має доплатити: напряму партнеру або на картку
+    // Хто й скільки винен партнеру
     function v4Settle(b) {
       if (Math.abs(b.diff1) < 1) return { debtor: null };
-      const debtor = b.diff1 > 0 ? 'p2' : 'p1', creditor = debtor === 'p1' ? 'p2' : 'p1', deficit = Math.abs(b.diff1);
-      const pctCred = creditor === 'p1' ? b.pct1 : 1 - b.pct1;
-      return { debtor, creditor, toPartner: Math.round(deficit), toCard: pctCred > 0 ? Math.round(deficit / pctCred) : 0 };
+      const debtor = b.diff1 > 0 ? 'p2' : 'p1', creditor = debtor === 'p1' ? 'p2' : 'p1';
+      return { debtor, creditor, toPartner: Math.round(Math.abs(b.diff1)) };
     }
 
     // Розрахунковий баланс спільної картки
@@ -3476,7 +3484,7 @@ const snapshotFlat = st => clone(flattenState(st));
         const pct = k === 'p1' ? b.pct1 : 1 - b.pct1;
         return `<div class="flex justify-between gap-3 text-sm py-1.5 border-b border-slate-100 dark:border-slate-800/60">
           <span>${avatarOf(k)} ${esc(nameOf(k))}</span>
-          <span class="text-right">вклад <b>${fmtMoney(b.put[k])}</b> · частка ${Math.round(pct * 100)}% = ${fmtMoney(b.T * pct)}</span></div>`;
+          <span class="text-right">заплачено <b>${fmtMoney(b.put[k])}</b> · частка ${Math.round(pct * 100)}% = ${fmtMoney(b.T * pct)}</span></div>`;
       };
       box.innerHTML = `
         <div class="p-4 sm:p-5 rounded-2xl border bg-slate-50 dark:bg-slate-900/40 space-y-3">
@@ -3485,7 +3493,6 @@ const snapshotFlat = st => clone(flattenState(st));
           <div class="text-xs text-slate-500">Облік з ${esc(state.settings.modelStart || '')} · частки ${pct1}/${100 - pct1} · картка: ${fmtMoney(v4Card(state))}</div>
           ${s.debtor ? `<div class="flex flex-col sm:flex-row gap-2 pt-1">
             <button onclick="settleBalance('partner')" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-4 rounded-xl text-sm min-h-[48px]">Переказ для ${esc(nameOf(s.creditor))}: ${fmtMoney(s.toPartner)}</button>
-            ${s.toCard ? `<button onclick="settleBalance('card')" class="flex-1 py-3 px-4 rounded-xl border text-sm font-semibold min-h-[48px]">Доплата на картку: ${fmtMoney(s.toCard)}</button>` : ''}
           </div>` : ''}
         </div>`;
     }
@@ -3493,12 +3500,9 @@ const snapshotFlat = st => clone(flattenState(st));
     function settleBalance(mode) {
       const s = v4Settle(v4Balance(state));
       if (!s.debtor) return;
-      const text = mode === 'card'
-        ? `${nameOf(s.debtor)} переказує ${fmtMoney(s.toCard)} на спільну картку.`
-        : `${nameOf(s.debtor)} переказує ${fmtMoney(s.toPartner)} для ${nameOf(s.creditor)}.`;
+      const text = `${nameOf(s.debtor)} переказує ${fmtMoney(s.toPartner)} для ${nameOf(s.creditor)}.`;
       showConfirmModal('Записати вирівнювання?', text + ' Баланс стане рівним.', () => {
-        if (mode === 'card') (state.contributions = state.contributions || []).push({ id: 'ct_' + Date.now(), date: getTodayString(), from: s.debtor, amount: s.toCard, note: 'Вирівнювання балансу' });
-        else (state.settlements = state.settlements || []).push({ id: 'st_' + Date.now(), date: getTodayString(), from: s.debtor, to: s.creditor, amount: s.toPartner });
+        (state.settlements = state.settlements || []).push({ id: 'st_' + Date.now(), date: getTodayString(), from: s.debtor, to: s.creditor, amount: s.toPartner });
         saveToCloud(); renderAll();
       }, 'Записати');
     }
@@ -5276,9 +5280,9 @@ const snapshotFlat = st => clone(flattenState(st));
         } else if (kind === 'debt') {
           const b = v4Balance(state), s = v4Settle(b), pct = k => (k === 'p1' ? b.pct1 : 1 - b.pct1);
           title = 'Хто кому винен';
-          body = names.map(k => row('Вклад: ' + nameOf(k), fmtMoney(b.put[k])) + sub('Частка ' + Math.round(pct(k) * 100) + '%', fmtMoney(b.T * pct(k)))).join('')
+          body = names.map(k => row('Заплачено: ' + nameOf(k), fmtMoney(b.put[k])) + sub('Частка ' + Math.round(pct(k) * 100) + '%', fmtMoney(b.T * pct(k)))).join('')
             + row(s.debtor ? 'Борг' : 'Результат', s.debtor ? nameOf(s.debtor) + ' → ' + nameOf(s.creditor) + ' · ' + fmtMoney(s.toPartner) : 'Ви квити', 'text-base');
-          note = 'Вклад = скинули на картку + оплачено зі своєї картки за спільне − особисте, куплене зі спільної. Витрати діляться за частками, тому різниця й дає борг.';
+          note = 'Заплачено = спільне, оплачене зі своєї картки, + ваша доля витрат зі спільної картки (за внесками на неї) − особисте, куплене зі спільної. Витрати діляться за частками, різниця й дає борг. Гроші, що ще лежать на картці, борг не створюють.';
         } else return;
         const m = modal(`<h3>${title}</h3><div>${body}</div><p class="text-xs text-slate-500">${note}</p><button type="button" id="why-close" class="w-full py-3 rounded-xl border text-sm font-medium">Зрозуміло</button>`);
         m.querySelector('#why-close').onclick = closeEdit;

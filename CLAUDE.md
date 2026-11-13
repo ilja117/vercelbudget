@@ -7,8 +7,9 @@
 - Після громіздких змін (злиття в `main`, великий етап роботи) — спитати, чи зробити `/compact`; команду набирає користувач.
 
 ## Структура
-- `public/index.html` — весь застосунок (~5200 рядків, v5.10). НЕ читати цілком: шукати `grep -n` і читати `sed -n 'A,Bp'`.
+- `public/index.html` — весь застосунок (~5300 рядків, v6.2). НЕ читати цілком: шукати `grep -n` і читати `sed -n 'A,Bp'`.
   Код шарами v3→v5: `renderAll`/`switchTab` перевизначаються обгортками; нова логіка — в останніх скриптах: `#usbudget-nav-v5` (навігація, обгортки `renderAllV5`, `switchTabV5`), `#usbudget-import` (імпорт виписок), `#usbudget-fold` (згортання блоків), `#usbudget-simple` («+» → «Що сталося?», «Звідки це число?», розкладка головної, знайомство `openIntro`).
+  Теми: двигун `#usbudget-theme-engine-js` (`SKINS`, `mascotSvg`, `setThemePref`; у сховищі `usbudget_theme`: `off` / `auto` / місяць / `sk-<id>`), стилі рожевих тем — `<style id="usbudget-skins">`.
   `confirmResetToDemo` у застосунку не викликається, але потрібна `tools/preview/fakefb.js` — не видаляти.
 - `public/i18n.js` — англійська поверх сторінки: словник `D` + шаблони `P`. Новий текст інтерфейсу → додати переклад.
 - `public/sw.js` — офлайн-кеш. При кожному релізі піднімати версію в `CACHE` і в `<title>` index.html.
@@ -23,9 +24,11 @@
 ## Дизайн (коротко, деталі в DESIGN.md)
 - Токени в `:root` блоку `#usbudget-graphic`: `--g-shell`, `--g-pop`, `--g-nav`, `--g-ink`, `--g-page`… Сезонні палітри `html.g-seasons[data-season]` міняють shell/pop/nav/page.
 - Кольори цінників лімітів постійні (зелений/жовтий/кораловий). Текст на кольорі — чорний. Мін. 12px, без емодзі, без «картки в картці».
+- Рожеві теми (v6): «Зайчик», «Кошеня», «Цукерка», «Хом'ячок», «Мочі» — `html[data-skin]`, не чіпають сезонні палітри. Нова тема = запис у `SKINS` + блок змінних `html[data-skin="id"]` + візерунок фону + переклад назви в i18n. Талісман — намальований SVG (`mascotSvg`), не емодзі; форма карток однакова для всіх (хом'ячий стиль: радіуси 34–36px, 2px рамка), різняться палітра й талісман. Текст на кольорі — темна слива/какао з `--g-ink`, не чисто чорний.
 - Анімації лише під `html.g-motion` і з `prefers-reduced-motion`.
 
 ## Перевірка без CDN і живої бази
 `tools/preview/build.sh` (перший раз — `cd tools/preview && npm i`), сервер на :8766, `node tools/preview/shot.cjs [tab…]`.
+Теми в перегляді: `SKIN=sk-hamster node tools/preview/shot.cjs dashboard` (також `sk-bunny|sk-cat|sk-candy|sk-mochi`, `DARK=1`). Шрифти Nunito і Comfortaa підтягує `build.sh`.
 Firebase у перегляді — заглушка `fakefb.js` (демо-дані завантажуються самі; знайомство вимкнено ключем `usbudget_intro`). Скріншоти дивитись вибірково: вони дорогі.
 Бібліотеку xlsx у перегляді підставляти через Playwright (`page.route`, контекст із `serviceWorkers: 'block'`). Для великих чисток — порівнювати `innerText` усіх вкладок до/після.

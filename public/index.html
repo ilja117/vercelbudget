@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v5.9.0</title>
+  <title>UsBudget — Спільний бюджет пари · v5.10.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -675,6 +675,7 @@
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Отримали зарплату чи аванс</b><span class="text-slate-600 dark:text-slate-300">«+» → «Отримали гроші». Це особисте, спільну картку не чіпає. Частину, яку скидаєте на картку, записуйте окремо: «Скинули на спільну картку».</span></li>
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Переказ між своїми картками, повернення покупки</b><span class="text-slate-600 dark:text-slate-300">Не записувати. Імпорт з банку такі операції вимикає сам.</span></li>
         </ul>
+        <button type="button" onclick="openIntro(0)" class="mt-3 px-4 rounded-xl border text-sm font-semibold min-h-[44px]">Показати знайомство ще раз</button>
       </details>
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
         <h3 class="text-base sm:text-lg font-bold mb-1">⚖️ Хто кому винен</h3>
@@ -5140,6 +5141,34 @@ const snapshotFlat = st => clone(flattenState(st));
           + (rows.length ? rows.map(r => `<div class="flex items-center gap-3 py-2.5 border-t"><div class="flex-1 min-w-0"><div class="font-semibold truncate">${esc(r.t)}</div><div class="text-xs text-slate-500">${esc((r.d ? fmtDay(r.d) + ' · ' : '') + r.sub)}</div></div><span class="g-num${r.plus ? ' text-emerald-600' : ''}" style="font-size:15px">${esc(r.v)}</span></div>`).join('')
             : '<p class="text-sm text-slate-500 py-3">Записів ще немає. Натисніть «+».</p>');
       }
+
+      // Знайомство: три екрани при першому відкритті на пристрої; повторно — з шпаргалки в «Борги»
+      const INTRO = [
+        { ic: 'home', h: 'Спільний бюджет для двох', t: 'Тут видно, скільки ще можна витратити цього місяця і хто кому винен. Усе записується разом, а рахунок за вас веде застосунок.' },
+        { ic: 'receipt', h: 'Як додати запис', t: 'Натисніть «+» і виберіть, що сталося: витратили гроші, скинули на спільну картку, повернули борг чи отримали гроші. Далі кілька полів, і готово.' },
+        { ic: 'scale', h: 'Що означають числа', t: 'Можна ще витратити — бюджет цього місяця. Лишилось на картці — гроші на спільній картці. Хто кому винен — різниця за частками. Під кожним числом є «Звідки це число?».' }
+      ];
+      window.openIntro = function (i) {
+        i = i || 0;
+        const st = INTRO[i], last = i === INTRO.length - 1;
+        const m = modal(`
+          <span class="g-chip-ic" style="width:52px;height:52px;border-radius:16px">${ICON(st.ic, 28)}</span>
+          <h3>${st.h}</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300">${st.t}</p>
+          <div class="flex gap-1.5 justify-center" aria-hidden="true">${INTRO.map((_, k) => `<span style="width:${k === i ? 22 : 8}px;height:8px;border-radius:99px;background:${k === i ? 'var(--g-ink, #111)' : 'var(--g-tag-line, #ccc)'}"></span>`).join('')}</div>
+          <div class="flex gap-2">
+            ${last ? '' : '<button type="button" id="in-skip" class="flex-1 py-3 rounded-xl border text-sm font-medium">Пропустити</button>'}
+            <button type="button" id="in-next" class="flex-1 py-3 rounded-xl bg-pink-500 text-white text-sm font-semibold">${last ? 'Зрозуміло' : 'Далі'}</button>
+          </div>`);
+        const sk = m.querySelector('#in-skip'); if (sk) sk.onclick = closeEdit;
+        m.querySelector('#in-next').onclick = () => last ? closeEdit() : openIntro(i + 1);
+      };
+      let introSeen = false; try { introSeen = localStorage.getItem('usbudget_intro') === '1'; } catch (e) {}
+      if (!introSeen) setTimeout(() => {
+        if (document.getElementById('edit-modal')) return;
+        try { localStorage.setItem('usbudget_intro', '1'); } catch (e) {}
+        openIntro(0);
+      }, 1500);
       const KPI = { 'kpi-income': 'income', 'kpi-expenses': 'expenses', 'kpi-savings': 'card', 'kpi-savings-rate': 'debt' };
       function arm() {
         Object.keys(KPI).forEach(id => {

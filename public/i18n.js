@@ -22,6 +22,10 @@
 
   var D = {
     // простіші слова (v5.8)
+    'Спільний бюджет для двох': 'A shared budget for two', 'Тут видно, скільки ще можна витратити цього місяця і хто кому винен. Усе записується разом, а рахунок за вас веде застосунок.': 'Here you can see how much is still safe to spend this month and who owes whom. You record things together and the app keeps the count.',
+    'Як додати запис': 'How to add an entry', 'Натисніть «+» і виберіть, що сталося: витратили гроші, скинули на спільну картку, повернули борг чи отримали гроші. Далі кілька полів, і готово.': 'Tap “+” and choose what happened: we spent money, put money on the shared card, paid a debt back or received money. Then a few fields and you are done.',
+    'Що означають числа': 'What the numbers mean', 'Можна ще витратити — бюджет цього місяця. Лишилось на картці — гроші на спільній картці. Хто кому винен — різниця за частками. Під кожним числом є «Звідки це число?».': '“Still can spend” is this month’s budget. “Left on the card” is the money on the shared card. “Who owes whom” is the difference by shares. Each number has “Where does this number come from?”.',
+    'Пропустити': 'Skip', 'Далі': 'Next', 'Показати знайомство ще раз': 'Show the intro again',
     'Ще': 'More', 'Особисте': 'Personal', 'Регулярні платежі': 'Recurring payments', 'Останні записи': 'Latest entries', 'Детальніше': 'More details', '· ліміти і платежі': '· limits and payments', 'Записів ще немає. Натисніть «+».': 'No entries yet. Tap “+”.', 'Повернули борг': 'Paid a debt back', 'Скинули на картку': 'Put on the card',
     'вклад': 'paid in',
     'і виберіть, що сталося. Три головні числа:': 'and choose what happened. Three main numbers:', '— скинули на картку цього місяця мінус усі спільні витрати;': '— put on the card this month minus all shared expenses;', '— гроші, які мають лежати на картці;': '— the money that should be on the card;', '— різниця між тим, що вклав кожен, і вашими частками. Під кожним числом є «Звідки це число?».': '— the difference between what each of you put in and your shares. Each number has “Where does this number come from?”.',

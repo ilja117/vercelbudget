@@ -9,7 +9,7 @@ related_targets: []
 
 Scope: whole app UI (public/index.html), first surface — Головна. Visitor mode: Operate.
 Audience/job: a couple on phones, seconds per visit: record an expense, see what is left this month, check upcoming payments and goals.
-Structure (confirmed): 5 bottom tabs — Головна · Записи · План · Особисте · Ми; a persistent "+" for a quick expense. Holiday banners, seasonal themes and monthly analytics move into Налаштування.
+Structure (confirmed): 4 bottom tabs — Головна · Записи · Борги · Ще (Особисте, Регулярні, Цілі, Аналітика, Налаштування); a persistent "+" asks «Що сталося?» (expense, put on card, debt paid, income). Holiday banners, seasonal themes and monthly analytics move into Налаштування.
 Must not feel: cold like a bank; faceless.
 
 ## Direction contract

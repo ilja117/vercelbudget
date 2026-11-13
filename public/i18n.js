@@ -147,7 +147,7 @@
     'Зберегти параметри': 'Save settings', 'Категорії витрат': 'Expense categories', 'Відновити типові': 'Restore defaults', 'Автокопії': 'Automatic backups',
     'Раз на день і перед масовими змінами на цьому пристрої зберігається копія (останні 7). Це страховка від випадкового видалення.': 'Once a day and before bulk changes, a copy is kept on this device (last 7). It protects against accidental deletion.',
     'перед переходом на модель внесків': 'before switching to contributions', 'перед масовою зміною': 'before a bulk change', 'щоденна': 'daily',
-    'Повернути внески': 'Restore contributions', 'Відновити все': 'Restore everything', 'Тема оформлення': 'Theme', 'Вибір зберігається на цьому пристрої.': 'Saved on this device.',
+    'Повернути внески': 'Restore contributions', 'Відновити все': 'Restore everything', 'Тема оформлення': 'Theme', 'Зайчик': 'Bunny', 'Кошеня': 'Kitten', 'Цукерка': 'Candy', 'М\u2019яко, як зефір': 'Soft as marshmallow', 'Тепло й мурчно': 'Warm and purring', 'Солодкий бюджет': 'Sweet budget', 'Вибір зберігається на цьому пристрої.': 'Saved on this device.',
     'Авто за календарем': 'Auto by calendar', 'Без сезонності': 'No seasonal colours', 'стандартна тема': 'standard theme', 'Позначки партнерів': 'Partner markers', 'Ініціали': 'Initials', 'Емодзі': 'Emoji',
     'Анімації': 'Animations', 'Плавні переходи, хвиля при натисканні, анімовані графіки й числа': 'Smooth transitions, tap ripple, animated charts and numbers',
     'Застосунок і сповіщення': 'App and notifications', 'Встановіть UsBudget на головний екран і отримуйте нагадування про платежі.': 'Install UsBudget on your home screen and get payment reminders.',

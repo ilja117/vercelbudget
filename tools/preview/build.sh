@@ -6,7 +6,7 @@ D=$(cd "$(dirname "$0")" && pwd); O=$D/out; R=$D/../..
 rm -rf "$O"; mkdir -p "$O"; cp -r "$R"/public/* "$O"/
 cd "$D" && npx tailwindcss -c tw.config.js -i in.css -o "$O/tw.css" --minify >/dev/null 2>&1
 cp node_modules/chart.js/dist/chart.umd.js fakefb.js fonts.css "$O"/
-for f in oswald inter; do for s in cyrillic latin; do for w in 400 500 600 700; do
+for f in oswald inter nunito comfortaa; do for s in cyrillic latin; do for w in 400 500 600 700; do
   src=node_modules/@fontsource/$f/files/$f-$s-$w-normal.woff2; [ -f "$src" ] && mkdir -p "$O/__font/$f" && cp "$src" "$O/__font/$f/$s-$w.woff2"; done; done; done
 python3 - "$O" <<'PY'
 import json,re,sys

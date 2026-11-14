@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.3.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.4.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -752,6 +752,10 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <h3 class="text-base sm:text-lg font-bold">Цього місяця</h3>
           <span id="rec-summary" class="text-xs text-slate-500"></span>
+        </div>
+        <div class="flex items-center justify-between gap-4 py-1">
+          <div><div class="text-sm font-semibold">Показувати особисті платежі</div><div id="rec-personal-hint" class="text-xs text-slate-500">Особисті видно у вкладках партнерів</div></div>
+          <label class="g-switch"><input type="checkbox" id="rec-show-personal" aria-label="Показувати особисті платежі" onchange="setShowPersonalRec(this.checked)"><span></span></label>
         </div>
         <div id="rec-overdue"></div>
         <div id="rec-list" class="space-y-2.5"></div>
@@ -2575,6 +2579,7 @@ const snapshotFlat = st => clone(flattenState(st));
         el.innerHTML = `
           <div id="pp-${k}-lock" class="pp-lockbox hidden"></div>
           <div id="pp-${k}-head" class="${card} flex flex-col md:flex-row md:items-center justify-between gap-4"></div>
+          <div id="pp-${k}-range" class="${card}" data-fold="0"></div>
           <div id="pp-${k}-kpi" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"></div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -2769,6 +2774,27 @@ const snapshotFlat = st => clone(flattenState(st));
           </div>
         `;
 
+        const rangeBox = document.getElementById(`pp-${k}-range`);
+        if (rangeBox) {
+          const rr = Object.assign({ on: false, from: '', to: '' }, ((state.settings || {}).personalRange || {})[k] || {});
+          const okR = personalRangeOf(k), bad = rr.on && rr.from && rr.to && rr.to < rr.from;
+          const dt = iso => parseLocalDate(iso).toLocaleDateString(APP_LOCALE, { day: 'numeric', month: 'short', year: 'numeric' });
+          const dInp = 'w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm';
+          rangeBox.innerHTML = `
+            <div class="flex items-center justify-between gap-4">
+              <div><div class="text-sm font-semibold">Свій період</div><div class="text-xs text-slate-500">Рахувати особистий бюджет з дати й до дати, а не за календарний місяць</div></div>
+              <label class="g-switch"><input type="checkbox" aria-label="Свій період" ${rr.on ? 'checked' : ''} onchange="setPersonalRange('${k}', 'on', this.checked)"><span></span></label>
+            </div>
+            ${rr.on ? `
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                <div><label class="block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300">З</label><input type="date" value="${esc(rr.from)}" onchange="setPersonalRange('${k}', 'from', this.value)" class="${dInp}"></div>
+                <div><label class="block text-xs font-medium mb-1.5 text-slate-600 dark:text-slate-300">До</label><input type="date" value="${esc(rr.to)}" onchange="setPersonalRange('${k}', 'to', this.value)" class="${dInp}"></div>
+              </div>
+              <p class="text-xs mt-2 ${okR ? 'text-slate-500' : 'text-rose-600 font-semibold'}">${okR
+                ? (okR.to ? `Рахується з ${dt(okR.from)} до ${dt(okR.to)} включно.` : `Рахується з ${dt(okR.from)} без кінцевої дати.`) + ' Перемикач місяців на цю вкладку не діє.'
+                : bad ? 'Дата «до» раніша за «з». Поки рахується вибраний місяць.' : 'Вкажіть дату «з». Поки рахується вибраний місяць.'}</p>` : ''}`;
+        }
+
         const kpi = (label, val, sub, cls = 'text-slate-900 dark:text-white') => `
           <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-5 rounded-2xl border shadow-xs">
             <div class="text-slate-500 text-[11px] sm:text-xs font-medium">${label}</div>
@@ -2841,10 +2867,13 @@ const snapshotFlat = st => clone(flattenState(st));
         const pExpByCat = {};
         d.pe.forEach(x => { pExpByCat[x.category] = (pExpByCat[x.category] || 0) + x.amount; });
 
+        // Ліміти місячні: для свого періоду множимо на кількість повних місяців у ньому (щонайменше 1)
+        const pr = personalRangeOf(k);
+        const limMul = pr ? Math.max(1, Math.round((parseLocalDate(pr.to || getTodayString()) - parseLocalDate(pr.from)) / 86400000 / 30.44)) : (currentPeriod.type === 'week' ? 12 / 52 : 1);
         const pCatLimitsBox = document.getElementById(`pp-${k}-categories-limits`);
         if (pCatLimitsBox) {
           pCatLimitsBox.innerHTML = pCats.map(cat => {
-            const lim = pLimits[cat] || 0, limP = Math.round(lim * (currentPeriod.type === 'week' ? 12 / 52 : 1));
+            const lim = pLimits[cat] || 0, limP = Math.round(lim * limMul);
             const spent = pExpByCat[cat] || 0;
             const pct = limP > 0 ? Math.min(100, Math.round((spent / limP) * 100)) : 0;
             return `
@@ -2976,7 +3005,7 @@ const snapshotFlat = st => clone(flattenState(st));
 
     function lockPartner(k) {
       delete unlocked[k]; saveUnlocked();
-      ['head', 'kpi', 'inc-body', 'exp-body', 'cats', 'goals-list', 'fixed-list', 'categories-limits'].forEach(id => { const e = document.getElementById(`pp-${k}-${id}`); if (e) e.innerHTML = ''; });
+      ['head', 'range', 'kpi', 'inc-body', 'exp-body', 'cats', 'goals-list', 'fixed-list', 'categories-limits'].forEach(id => { const e = document.getElementById(`pp-${k}-${id}`); if (e) e.innerHTML = ''; });
       if (personalCharts[k]) { personalCharts[k].destroy(); delete personalCharts[k]; }
       renderPersonalTabs();
     }
@@ -3472,12 +3501,38 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
     // --- особистий бюджет: мій дохід − у спільне − витрачено − відкладено ---
+    // Власний період особистого бюджету (з/до). Вимкнено або дати некоректні — рахується вибраний місяць, як у спільному
+    function personalRangeOf(k) {
+      const r = ((state.settings || {}).personalRange || {})[k];
+      if (!r || !r.on || !r.from) return null;
+      if (r.to && r.to < r.from) return null;
+      return { from: r.from, to: r.to || '' };
+    }
+    function filterPersonal(k, items) {
+      const r = personalRangeOf(k);
+      if (!r) return filterByPeriod(items);
+      return (items || []).filter(x => { const d = String(x.date || '').slice(0, 10); return !d || (d >= r.from && (!r.to || d <= r.to)); });
+    }
+    function setPersonalRange(k, field, value) {
+      const s = state.settings = state.settings || {};
+      const all = Object.assign({}, s.personalRange || {});
+      const cur = Object.assign({ on: false, from: '', to: '' }, all[k] || {});
+      if (field === 'on') {
+        cur.on = !!value;
+        if (cur.on && !cur.from) { const r = getPeriodRange(); cur.from = toLocalISO(r.start); cur.to = toLocalISO(r.end); }
+      } else cur[field] = value || '';
+      all[k] = cur;
+      s.personalRange = all;
+      saveToCloud(); renderAll();
+    }
+
     function personalOf(k) {
-      const mine = arr => filterByPeriod((arr || []).filter(x => x.owner === k));
+      const per = arr => filterPersonal(k, arr);
+      const mine = arr => per((arr || []).filter(x => x.owner === k));
       const pi = mine(state.personalIncomes), pe = mine(state.personalExpenses);
-      const contrib = sumBy(filterByPeriod((state.contributions || []).filter(c => c.from === k)), c => c.amount);
-      const sharedPaid = sumBy(filterByPeriod(state.expenses.filter(e => e.payer === k)), e => e.amount);
-      const tr = filterByPeriod(state.settlements || []);
+      const contrib = sumBy(per((state.contributions || []).filter(c => c.from === k)), c => c.amount);
+      const sharedPaid = sumBy(per(state.expenses.filter(e => e.payer === k)), e => e.amount);
+      const tr = per(state.settlements || []);
       const transfers = sumBy(tr.filter(t => t.from === k), t => t.amount) - sumBy(tr.filter(t => t.to === k), t => t.amount);
       const income = sumBy(pi, x => x.amount);
       const spentOwn = sumBy(pe.filter(x => !x.fromCard && x.kind !== 'savings'), x => x.amount);
@@ -3685,11 +3740,20 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
     function visibleRec(fx) { return fx.scope === 'shared' || !isLocked(fx.scope); }
+    // Особисті (платежі, відкладання, кредити й доходи одного партнера) у «Регулярних» — лише з увімкненим налаштуванням. Внески на картку завжди видно
+    const isPersonalRec = fx => fx.scope !== 'shared' && fx.kind !== 'contribution';
+    const showPersonalRec = () => !!(state.settings && state.settings.showPersonalRec);
+    function setShowPersonalRec(on) { state.settings.showPersonalRec = !!on; saveToCloud(); renderAll(); }
 
     function renderRecurring() {
       const list = document.getElementById('rec-list');
       if (!list) return;
-      const today = getTodayString(), { from, to } = monthRange(), items = (state.fixedExpenses || []).filter(visibleRec);
+      const today = getTodayString(), { from, to } = monthRange(), all = (state.fixedExpenses || []).filter(visibleRec);
+      const showP = showPersonalRec(), items = showP ? all : all.filter(fx => !isPersonalRec(fx)), hiddenN = all.length - items.length;
+      const sw = document.getElementById('rec-show-personal');
+      if (sw) sw.checked = showP;
+      const hint = document.getElementById('rec-personal-hint');
+      if (hint) hint.textContent = showP ? 'Особисті платежі партнерів теж у списку' : hiddenN ? `Приховано особистих: ${hiddenN}. Їх видно у вкладках партнерів` : 'Особисті видно у вкладках партнерів';
       const rows = [], idle = [];
       let outSum = 0, outPaid = 0, inSum = 0, ctSum = 0;
       items.forEach(fx => {
@@ -3721,14 +3785,15 @@ const snapshotFlat = st => clone(flattenState(st));
     function renderFixedExpenses() { renderRecurring(); }
 
     function renderPersonalRecurring() {
-      const today = getTodayString(), { from, to } = monthRange();
+      const today = getTodayString(), mr = monthRange();
       ['p1', 'p2'].forEach(k => {
         const box = document.getElementById(`pp-${k}-fixed-list`);
         if (!box || isLocked(k)) return;
+        const pr = personalRangeOf(k), from = pr ? pr.from : mr.from, to = pr ? (pr.to || (today > pr.from ? today : pr.from)) : mr.to;
         const rows = [];
         (state.fixedExpenses || []).filter(fx => fx.scope === k).forEach(fx => fxOccurrences(fx, from, to).forEach(o => rows.push({ fx, o })));
         rows.sort((a, b) => a.o.localeCompare(b.o));
-        box.innerHTML = rows.length ? rows.map(r => recRow(r.fx, r.o, today, true)).join('') : '<p class="text-center text-slate-400 text-xs py-3">Цього місяця немає</p>';
+        box.innerHTML = rows.length ? rows.map(r => recRow(r.fx, r.o, today, true)).join('') : `<p class="text-center text-slate-400 text-xs py-3">${pr ? 'У цьому періоді немає' : 'Цього місяця немає'}</p>`;
       });
     }
 
@@ -4094,6 +4159,8 @@ const snapshotFlat = st => clone(flattenState(st));
       const today = getTodayString(), up = [], KI = { expense: 'receipt', savings: 'gem', debt: 'card', income: 'coins', contribution: 'bank' };
       (state.fixedExpenses || []).filter(visibleRec).forEach(fx => fxOccurrences(fx, addDays(today, -30), addDays(today, 14)).forEach(o => { if (!paidKeyFor(fx, o)) up.push({ fx, o }); }));
       up.sort((a, b) => a.o.localeCompare(b.o));
+      // Чий платіж: особистий — власника; спільний зі своїх — того, хто платить; спільний з картки — спільний
+      const upOwner = fx => fx.scope === 'p1' || fx.scope === 'p2' ? nameOf(fx.scope) : (fx.payer === 'p1' || fx.payer === 'p2') ? 'спільний, платить ' + nameOf(fx.payer) : 'спільний';
       const upHtml = up.length ? `
         <div class="bg-white dark:bg-slate-800/80 rounded-2xl p-4">
           <div class="flex items-center justify-between mb-1"><h3 class="text-sm">Найближчі платежі</h3><button type="button" onclick="switchTab('fixed')" class="text-xs font-semibold text-pink-600 min-h-[36px] px-2">Усі</button></div>
@@ -4101,7 +4168,7 @@ const snapshotFlat = st => clone(flattenState(st));
             const late = r.o < today, soon = !late && r.o <= addDays(today, 3), K = REC_KIND[recKindOf(r.fx)] || REC_KIND.expense;
             return `<div class="flex items-center gap-3 py-2.5 border-t">
               <span class="g-chip-ic">${ICON(KI[recKindOf(r.fx)] || 'receipt', 18)}</span>
-              <div class="flex-1 min-w-0"><div class="font-semibold truncate">${esc(r.fx.title)}</div><div class="text-xs ${late ? 'text-rose-600 font-semibold' : soon ? 'text-amber-700 font-semibold' : 'text-slate-500'}">${fmtDay(r.o)}${late ? ' · прострочено' : soon ? ' · скоро' : ''}</div></div>
+              <div class="flex-1 min-w-0"><div class="font-semibold truncate">${esc(r.fx.title)}</div><div class="text-xs ${late ? 'text-rose-600 font-semibold' : soon ? 'text-amber-700 font-semibold' : 'text-slate-500'}">${fmtDay(r.o)}${late ? ' · прострочено' : soon ? ' · скоро' : ''} · ${esc(upOwner(r.fx))}</div></div>
               <span class="g-num" style="font-size:14px">${K.sign}${r.fx.amount.toLocaleString(APP_LOCALE)}</span>
               <button type="button" class="g-btn-sm" style="padding:0 14px;font-size:13px" onclick="payOccurrence('${r.fx.id}', '${r.o}')">${K.pay}</button>
             </div>`;

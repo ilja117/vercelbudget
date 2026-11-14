@@ -153,6 +153,12 @@
     'перед переходом на модель внесків': 'before switching to contributions', 'перед масовою зміною': 'before a bulk change', 'щоденна': 'daily',
     'Повернути внески': 'Restore contributions', 'Відновити все': 'Restore everything', 'Тема оформлення': 'Theme', 'Зайчик': 'Bunny', 'Хом\u2019ячок': 'Hamster', 'Мочі': 'Mochi', 'Щічки повні заощаджень': 'Cheeks full of savings', 'Круглий і солодкий': 'Round and sweet', 'Кошеня': 'Kitten', 'Цукерка': 'Candy', 'М\u2019яко, як зефір': 'Soft as marshmallow', 'Тепло й мурчно': 'Warm and purring', 'Солодкий бюджет': 'Sweet budget', 'Вибір зберігається на цьому пристрої.': 'Saved on this device.',
     'Авто за календарем': 'Auto by calendar', 'Без сезонності': 'No seasonal colours', 'стандартна тема': 'standard theme', 'Позначки партнерів': 'Partner markers', 'Ініціали': 'Initials', 'Емодзі': 'Emoji',
+    'Свій період': 'Custom period', 'Рахувати особистий бюджет з дати й до дати, а не за календарний місяць': 'Count the personal budget between two dates instead of a calendar month',
+    'З': 'From', 'До': 'To', 'У цьому періоді немає': 'None in this period',
+    'Дата «до» раніша за «з». Поки рахується вибраний місяць.': 'The “to” date is before the “from” date. The selected month is used for now.',
+    'Вкажіть дату «з». Поки рахується вибраний місяць.': 'Set the “from” date. The selected month is used for now.',
+    'Показувати особисті платежі': 'Show personal payments', 'Особисті видно у вкладках партнерів': 'Personal ones are in each partner’s tab',
+    'Особисті платежі партнерів теж у списку': 'Partners’ personal payments are in the list too',
     'Анімації': 'Animations', 'Плавні переходи, хвиля при натисканні, анімовані графіки й числа': 'Smooth transitions, tap ripple, animated charts and numbers',
     'Застосунок і сповіщення': 'App and notifications', 'Встановіть UsBudget на головний екран і отримуйте нагадування про платежі.': 'Install UsBudget on your home screen and get payment reminders.',
     'У меню браузера виберіть': 'In the browser menu choose', '«Встановити застосунок»': '“Install app”', 'або': 'or', '«Додати на головний екран»': '“Add to Home Screen”',
@@ -237,6 +243,10 @@
   };
 
   var P = [
+    [/^Рахується з (.+) до (.+) включно\. Перемикач місяців на цю вкладку не діє\.$/, 'Counted from $1 to $2 inclusive. The month switcher does not apply to this tab.'],
+    [/^Рахується з (.+) без кінцевої дати\. Перемикач місяців на цю вкладку не діє\.$/, 'Counted from $1 with no end date. The month switcher does not apply to this tab.'],
+    [/^Приховано особистих: (\d+)\. Їх видно у вкладках партнерів$/, 'Personal hidden: $1. They are in each partner’s tab'],
+    [/^спільний, платить (.+)$/, 'shared, paid by $1'],
     [/^(\d{2}\.\d{2}) · (.+)$/, function (m, d, a) { var N = { 'між своїми картками': 'between your own cards', 'надходження — вирішіть': 'incoming — your call', 'переказ — вирішіть': 'transfer — your call', 'може бути змішано': 'may be mixed', 'ваше правило': 'your rule', 'гроші на спільну картку додайте як внесок': 'add money on the shared card as a contribution' }; var parts = a.split(' · ').map(function (x) { return N[x]; }); return parts.indexOf(undefined) >= 0 ? null : d + ' · ' + parts.join(' · '); }],
     [/^Додати (\d+) · витрати (.+?)( · доходи (.+))?$/, function (m, n, a, x, b) { return 'Add ' + n + ' · spending ' + a + (b ? ' · income ' + b : ''); }],
     [/^(.+) · операцій: (\d+)(.*)$/, function (m, b, n, rest) { return b.replace('Монобанк', 'Monobank').replace('ПриватБанк', 'PrivatBank').replace(/^Банк$/, 'Bank') + ' · transactions: ' + n + rest.replace('уже імпортовано раніше', 'already imported'); }],

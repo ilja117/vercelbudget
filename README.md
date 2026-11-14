@@ -12,7 +12,7 @@
 - `tools/preview/` — локальний перегляд без CDN і живої бази (для розробки).
 - `CLAUDE.md`, `PRODUCT.md`, `DESIGN.md` — правила роботи, опис продукту, дизайн-система.
 
-Ключі йдуть окремим файлом `UsBudget-ключі-Vercel.txt`. **Не завантажуйте його в GitHub.**
+Ключі (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_CONTACT`, `CRON_SECRET`, `FIREBASE_SERVICE_ACCOUNT`, `REQUIRE_AUTH`) лежать лише в Vercel → Settings → Environment Variables; у репозиторій їх не додавайте. Публічний ключ сповіщень дублюється в `public/index.html` (`VAPID_PUBLIC`) і має збігатися з `VAPID_PUBLIC_KEY` на Vercel. Втратили приватний ключ: `npx web-push generate-vapid-keys`, нові значення на Vercel й у `VAPID_PUBLIC`, Redeploy, і на телефонах заново ввімкнути сповіщення.
 
 ## Розгортання з нуля (вже зроблено, для відновлення)
 1. **GitHub.** Код уже в приватному репозиторії `vercelbudget`. Файл із ключами туди не додавайте.

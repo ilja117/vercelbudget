@@ -138,7 +138,6 @@
     'Підробіток': 'Side job', 'Покупка': 'Purchase', 'Нова категорія...': 'New category…', 'розділ заблоковано': 'section locked', 'Розблокувати': 'Unlock', 'Розділ заблоковано': 'Section locked',
     // Ми: баланс
     'Баланс': 'Balance', 'Баланс між партнерами': 'Balance between partners',
-    'Рахується накопичувально: внески на картку плюс спільні витрати, оплачені зі своїх, порівнюються з вашими частками. Витрати з картки цей баланс не змінюють, бо картку ви наповнюєте у своїх частках; вони зменшують баланс картки.': 'Cumulative: card top-ups plus shared expenses paid with your own money are compared with your shares. Card spending does not change this balance, because you fill the card in your shares; it lowers the card balance.',
     'вклав': 'paid in', 'Історія переказів між вами': 'Transfers between you', 'Підтверджених розрахунків ще немає': 'No confirmed settlements yet',
     // Ми: налаштування
     'Аналітика за місяцями': 'Monthly analytics', 'Графіки й підсумки': 'Charts and totals', 'Налаштування пари та бюджету': 'Couple and budget settings',

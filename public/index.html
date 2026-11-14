@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.5.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.6.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1787,9 +1787,9 @@ const snapshotFlat = st => clone(flattenState(st));
     // ==== AUTH ====
     // Синхронізація стартує лише після входу. Без Firebase Auth (наприклад, SDK не завантажився) працюємо з локальною копією.
     const authApi = () => (window.firebase && firebase.auth) ? firebase.auth() : null;
-    // Вхід поки вимкнено за рішенням власника: база працює як раніше.
-    // Щоб увімкнути: true тут, кроки з README («Вхід і захист даних») і REQUIRE_AUTH=1 на Vercel.
-    const AUTH_REQUIRED = false;
+    // Вхід увімкнено (v6.6): база доступна лише учасникам зі списку members (database.rules.json).
+    // Вимкнути вхід: false тут і відкриті правила в базі — лише за прямим проханням власника.
+    const AUTH_REQUIRED = true;
     function initAuthGate() {
       const auth = db && authApi();
       if (!AUTH_REQUIRED || !auth) {

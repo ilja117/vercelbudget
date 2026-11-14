@@ -243,6 +243,7 @@
   };
 
   var P = [
+    [/^Не вдалося увійти\. Спробуйте ще раз\. \((.+)\)$/, 'Could not sign in. Try again. ($1)'],
     [/^Рахується з (.+) до (.+) включно\. Перемикач місяців на цю вкладку не діє\.$/, 'Counted from $1 to $2 inclusive. The month switcher does not apply to this tab.'],
     [/^Рахується з (.+) без кінцевої дати\. Перемикач місяців на цю вкладку не діє\.$/, 'Counted from $1 with no end date. The month switcher does not apply to this tab.'],
     [/^Приховано особистих: (\d+)\. Їх видно у вкладках партнерів$/, 'Personal hidden: $1. They are in each partner’s tab'],

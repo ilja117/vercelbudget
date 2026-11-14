@@ -152,6 +152,12 @@
     'перед переходом на модель внесків': 'before switching to contributions', 'перед масовою зміною': 'before a bulk change', 'щоденна': 'daily',
     'Повернути внески': 'Restore contributions', 'Відновити все': 'Restore everything', 'Тема оформлення': 'Theme', 'Зайчик': 'Bunny', 'Хом\u2019ячок': 'Hamster', 'Мочі': 'Mochi', 'Щічки повні заощаджень': 'Cheeks full of savings', 'Круглий і солодкий': 'Round and sweet', 'Кошеня': 'Kitten', 'Цукерка': 'Candy', 'М\u2019яко, як зефір': 'Soft as marshmallow', 'Тепло й мурчно': 'Warm and purring', 'Солодкий бюджет': 'Sweet budget', 'Вибір зберігається на цьому пристрої.': 'Saved on this device.',
     'Авто за календарем': 'Auto by calendar', 'Без сезонності': 'No seasonal colours', 'стандартна тема': 'standard theme', 'Позначки партнерів': 'Partner markers', 'Ініціали': 'Initials', 'Емодзі': 'Emoji',
+    'Конвертер': 'Converter', 'Конвертер валют': 'Currency converter', 'Віддаю': 'You give', 'Отримую': 'You get', 'Закрити': 'Close', 'Назад': 'Back', 'Поміняти місцями': 'Swap', 'Пошук': 'Search', 'Пошук: USD, біткоїн, Apple…': 'Search: USD, bitcoin, Apple…', 'Нічого не знайдено': 'Nothing found', 'Ціни ще не завантажено': 'Prices not loaded yet', 'Завантажую ціни…': 'Loading prices…', 'Немає ціни для цієї пари': 'No price for this pair',
+    'Обрані': 'Favourites', 'Валюти': 'Currencies', 'Криптовалюти': 'Cryptocurrencies', 'Метали': 'Metals', 'Акції та ETF': 'Stocks and ETFs',
+    'Не вдалося отримати ціни, а збережених ще немає. Перевірте інтернет і відкрийте ще раз.': 'Could not get prices and none are saved yet. Check your internet and open again.',
+    'Це середній ринковий курс, в обміннику чи банку він інший. Акції — із затримкою близько 15 хвилин.': 'This is the mid-market rate; a bank or exchange office uses a different one. Stocks are delayed by about 15 minutes.',
+    'валюти й метали': 'currencies and metals', 'криптовалюти': 'cryptocurrencies', 'акції': 'stocks', 'валюти й метали, акції': 'currencies and metals, stocks',
+    'Гривня': 'Hryvnia', 'Долар США': 'US dollar', 'Євро': 'Euro', 'Злотий': 'Zloty', 'Фунт стерлінгів': 'Pound sterling', 'Швейцарський франк': 'Swiss franc', 'Чеська крона': 'Czech koruna', 'Канадський долар': 'Canadian dollar', 'Єна': 'Yen', 'Турецька ліра': 'Turkish lira', 'Золото (унція)': 'Gold (ounce)', 'Срібло (унція)': 'Silver (ounce)', 'Платина (унція)': 'Platinum (ounce)', 'Паладій (унція)': 'Palladium (ounce)', 'Біткоїн': 'Bitcoin', 'Ефіріум': 'Ethereum',
     'Свій період': 'Custom period', 'Рахувати особистий бюджет з дати й до дати, а не за календарний місяць': 'Count the personal budget between two dates instead of a calendar month',
     'З': 'From', 'До': 'To', 'У цьому періоді немає': 'None in this period',
     'Дата «до» раніша за «з». Поки рахується вибраний місяць.': 'The “to” date is before the “from” date. The selected month is used for now.',
@@ -243,6 +249,9 @@
 
   var P = [
     [/^Не вдалося увійти\. Спробуйте ще раз\. \((.+)\)$/, 'Could not sign in. Try again. ($1)'],
+    [/^Ціни на (.+)$/, 'Prices as of $1'],
+    [/^Застарілі ціни від (.+) — немає зв’язку$/, 'Outdated prices from $1 — no connection'],
+    [/^Немає даних: (.+)$/, 'No data: $1'],
     [/^Рахується з (.+) до (.+) включно\. Перемикач місяців на цю вкладку не діє\.$/, 'Counted from $1 to $2 inclusive. The month switcher does not apply to this tab.'],
     [/^Рахується з (.+) без кінцевої дати\. Перемикач місяців на цю вкладку не діє\.$/, 'Counted from $1 with no end date. The month switcher does not apply to this tab.'],
     [/^Приховано особистих: (\d+)\. Їх видно у вкладках партнерів$/, 'Personal hidden: $1. They are in each partner’s tab'],

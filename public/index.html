@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.6.3</title>
+  <title>UsBudget — Спільний бюджет пари · v6.7.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -627,6 +627,9 @@
           <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
           <span class="hidden sm:inline">Підключення...</span>
         </div>
+        <button onclick="openConverter()" aria-label="Конвертер валют" title="Конвертер валют" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition">
+          <span class="flex"><svg class="g-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13m0 0l-3-3m3 3l-3 3M17 17H4m0 0l3-3m-3 3l3 3"/></svg></span>
+        </button>
         <button onclick="toggleDarkMode()" aria-label="Світла або темна тема" title="Світла / темна тема" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition" title="Змінити тему">
           <span id="theme-icon" class="flex"><svg class="g-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></span>
         </button>
@@ -5455,6 +5458,142 @@ const snapshotFlat = st => clone(flattenState(st));
       const renderAllV58 = renderAll;
       renderAll = function () { renderAllV58(); homeLayout(); arm(); };
       homeLayout(); arm();
+    })();
+  </script>
+  <script id="usbudget-convert">
+    // Конвертер: валюти НБУ, метали, крипто, акції. Ціни з /api/rates, останні — у пам'яті пристрою.
+    (function () {
+      const KEY = 'usbudget_rates', PAIR = 'usbudget_conv_pair', TTL = 5 * 60 * 1000;
+      const NAMES = { UAH: 'Гривня', USD: 'Долар США', EUR: 'Євро', PLN: 'Злотий', GBP: 'Фунт стерлінгів', CHF: 'Швейцарський франк', CZK: 'Чеська крона', CAD: 'Канадський долар', JPY: 'Єна', TRY: 'Турецька ліра', XAU: 'Золото (унція)', XAG: 'Срібло (унція)', XPT: 'Платина (унція)', XPD: 'Паладій (унція)', BTC: 'Біткоїн', ETH: 'Ефіріум', USDT: 'Tether', BNB: 'BNB', SOL: 'Solana', XRP: 'XRP', DOGE: 'Dogecoin', TON: 'Toncoin', ADA: 'Cardano', LTC: 'Litecoin', TRX: 'TRON', AAPL: 'Apple', MSFT: 'Microsoft', GOOGL: 'Alphabet', AMZN: 'Amazon', TSLA: 'Tesla', NVDA: 'NVIDIA', META: 'Meta', SPY: 'S&P 500 ETF', QQQ: 'Nasdaq-100 ETF', VOO: 'Vanguard S&P 500 ETF' };
+      const FAV = ['UAH', 'USD', 'EUR', 'PLN', 'BTC', 'ETH', 'XAU'];
+      const GROUPS = [['fav', 'Обрані'], ['fiat', 'Валюти'], ['crypto', 'Криптовалюти'], ['metal', 'Метали'], ['stock', 'Акції та ETF']];
+      const EN = window.USB_LANG === 'en';
+      const MISS = EN ? { nbu: 'currencies and metals', crypto: 'cryptocurrencies', stocks: 'stocks' } : { nbu: 'валюти й метали', crypto: 'криптовалюти', stocks: 'акції' };
+      const ALIAS = { UAH: 'hryvnia', USD: 'dollar', EUR: 'euro', PLN: 'zloty', GBP: 'pound', CHF: 'franc', JPY: 'yen', XAU: 'gold', XAG: 'silver', XPT: 'platinum', XPD: 'palladium', BTC: 'bitcoin', ETH: 'ethereum' };
+      const S = { items: null, ts: 0, stale: false, missing: [], err: false, from: 'USD', to: 'UAH', amt: '1', side: 'from', view: 'main', q: '', pick: 'from' };
+      try { const p = JSON.parse(localStorage.getItem(PAIR) || 'null'); if (p && p.from && p.to) { S.from = p.from; S.to = p.to; } } catch (e) {}
+
+      // Та сама математика, що в lib/rates.mjs (там її перевіряють тести)
+      const conv = (a, f, t) => { const x = S.items[f], y = S.items[t]; return (x && y && isFinite(a)) ? a * x.usd / y.usd : null; };
+      const parse = s => { const v = String(s).replace(/[\s ]/g, '').replace(',', '.'); return v === '' ? NaN : Number(v); };
+      const dec = c => (S.items && S.items[c] && S.items[c].kind === 'crypto') ? 8 : 2;
+      const plain = (n, c) => { if (n === null || !isFinite(n)) return ''; const small = n !== 0 && Math.abs(n) < 0.01; const s = small ? Number(n.toPrecision(4)).toString() : n.toFixed(dec(c)); return (s.indexOf('e') > -1 ? n.toFixed(8) : s).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, ''); };
+      const grp = (n, c) => { const p = plain(n, c); if (!p) return ''; const [i, f] = p.split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (f ? (EN ? '.' : ',') + f : ''); };
+      const kind = c => (S.items && S.items[c]) ? S.items[c].kind : '';
+      const hm = t => new Date(t).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+      const dm = t => new Date(t).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' });
+
+      function read() { try { const c = JSON.parse(localStorage.getItem(KEY) || 'null'); return c && c.items ? c : null; } catch (e) { return null; } }
+      async function load() {
+        const c = read();
+        if (c) { S.items = c.items; S.ts = c.ts; S.missing = c.missing || []; }
+        if (c && Date.now() - c.ts < TTL) { S.stale = false; S.err = false; return paint(); }
+        try {
+          const r = await fetch('/api/rates', { cache: 'no-store' });
+          if (!r.ok) throw new Error(r.status);
+          const d = await r.json();
+          if (!d || !d.items) throw new Error('bad');
+          S.items = d.items; S.ts = d.ts; S.missing = d.missing || []; S.stale = false; S.err = false;
+          try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+        } catch (e) { if (c) { S.stale = true; S.err = false; } else S.err = true; }
+        paint();
+      }
+
+      function ov() { return document.getElementById('fx-ov'); }
+      function build() {
+        if (ov()) return;
+        const d = document.createElement('div');
+        d.id = 'fx-ov';
+        d.className = 'fixed inset-0 z-[60] hidden items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-xs';
+        d.innerHTML = '<div id="fx-sheet" role="dialog" aria-modal="true" aria-labelledby="fx-title" class="w-full sm:max-w-md max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-t-3xl sm:rounded-3xl shadow-2xl px-5 pb-6 pt-3" style="transition:transform .2s ease"></div>';
+        document.body.appendChild(d);
+        d.addEventListener('click', e => { if (e.target === d) close(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && ov() && !ov().classList.contains('hidden')) close(); });
+        const sh = d.firstChild; let y0 = null, dy = 0;
+        sh.addEventListener('touchstart', e => { if (e.target.closest('[data-grip]')) { y0 = e.touches[0].clientY; dy = 0; } }, { passive: true });
+        sh.addEventListener('touchmove', e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+        sh.addEventListener('touchend', () => { if (y0 === null) return; y0 = null; if (dy > 100) close(); sh.style.transform = ''; });
+      }
+      function open() {
+        build(); S.view = 'main'; S.q = '';
+        const o = ov(); o.classList.remove('hidden'); o.classList.add('flex'); paint();
+        const i = document.getElementById('fx-from'); if (i) i.focus();
+        load();
+      }
+      function close() { const o = ov(); if (o) { o.classList.add('hidden'); o.classList.remove('flex'); } }
+
+      const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const lbl = c => '<span class="font-semibold">' + esc(c) + '</span>';
+      function head(title, back) {
+        return '<div data-grip class="pt-1 pb-3 cursor-grab"><div class="mx-auto w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div></div>' +
+          '<div class="flex items-center justify-between mb-4"><h2 id="fx-title" class="text-lg font-bold">' + esc(title) + '</h2>' +
+          '<button type="button" data-fx="' + (back ? 'back' : 'close') + '" aria-label="' + (back ? 'Назад' : 'Закрити') + '" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">' +
+          (back ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>') + '</button></div>';
+      }
+      function row(side, code) {
+        return '<div class="flex gap-2 items-stretch"><input id="fx-' + side + '" inputmode="decimal" autocomplete="off" aria-label="' + (side === 'from' ? 'Віддаю' : 'Отримую') + '" class="min-w-0 flex-1 text-2xl font-semibold rounded-2xl px-4 py-3 bg-slate-100 dark:bg-slate-700/60 border border-transparent focus:border-pink-400 outline-none" />' +
+          '<button type="button" data-fx="pick" data-side="' + side + '" class="shrink-0 min-w-[88px] rounded-2xl px-3 bg-slate-100 dark:bg-slate-700/60 text-left"><span class="block text-base font-semibold">' + esc(code) + ' ▾</span><span class="block text-xs text-slate-500 dark:text-slate-400 max-w-[110px] truncate">' + esc(NAMES[code] || '') + '</span></button></div>';
+      }
+      function paint() {
+        const o = ov(); if (!o) return; const sh = o.firstChild;
+        if (S.view === 'pick') return paintPick(sh);
+        let st;
+        if (S.err) st = '<p class="text-sm text-rose-600 dark:text-rose-400">Не вдалося отримати ціни, а збережених ще немає. Перевірте інтернет і відкрийте ще раз.</p>';
+        else if (!S.items) st = '<p class="text-sm text-slate-500 dark:text-slate-400">Завантажую ціни…</p>';
+        else st = '<p class="text-xs text-slate-500 dark:text-slate-400">' + (S.stale ? 'Застарілі ціни від ' + dm(S.ts) + ', ' + hm(S.ts) + ' — немає зв’язку' : 'Ціни на ' + hm(S.ts)) + (S.missing.length ? ' · Немає даних: ' + S.missing.map(k => MISS[k] || k).join(', ') : '') + '</p>';
+        sh.innerHTML = head('Конвертер') + '<div class="space-y-2">' + row('from', S.from) +
+          '<div class="flex items-center justify-between"><button type="button" data-fx="swap" aria-label="Поміняти місцями" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4v16m0 0l-4-4m4 4l4-4M16 20V4m0 0l-4 4m4-4l4 4"/></svg></button><span id="fx-rate" class="text-sm text-slate-600 dark:text-slate-300 text-right"></span></div>' +
+          row('to', S.to) + '</div><div class="mt-4 space-y-1">' + st +
+          '<p class="text-xs text-slate-500 dark:text-slate-400">Це середній ринковий курс, в обміннику чи банку він інший. Акції — із затримкою близько 15 хвилин.</p></div>';
+        const a = document.getElementById('fx-from'), b = document.getElementById('fx-to');
+        a.value = S.side === 'from' ? S.amt : ''; b.value = S.side === 'to' ? S.amt : '';
+        a.addEventListener('input', () => { S.side = 'from'; S.amt = a.value; calc(); });
+        b.addEventListener('input', () => { S.side = 'to'; S.amt = b.value; calc(); });
+        calc();
+      }
+      function calc() {
+        const a = document.getElementById('fx-from'), b = document.getElementById('fx-to'), r = document.getElementById('fx-rate');
+        if (!a || !S.items) return;
+        const v = parse(S.amt);
+        if (S.side === 'from') { const x = isNaN(v) ? null : conv(v, S.from, S.to); b.value = x === null ? '' : plain(x, S.to); }
+        else { const x = isNaN(v) ? null : conv(v, S.to, S.from); a.value = x === null ? '' : plain(x, S.from); }
+        const one = conv(1, S.from, S.to);
+        r.textContent = one === null ? 'Немає ціни для цієї пари' : '1 ' + S.from + ' = ' + grp(one, S.to) + ' ' + S.to;
+      }
+      function paintPick(sh) {
+        const q = S.q.trim().toLowerCase();
+        const codes = S.items ? Object.keys(S.items) : [];
+        const match = c => !q || c.toLowerCase().indexOf(q) > -1 || (NAMES[c] || '').toLowerCase().indexOf(q) > -1 || (ALIAS[c] || '').indexOf(q) > -1;
+        let html = head(S.pick === 'from' ? 'Віддаю' : 'Отримую', true) + '<input id="fx-q" type="search" placeholder="Пошук: USD, біткоїн, Apple…" aria-label="Пошук" value="' + esc(S.q) + '" class="w-full mb-3 rounded-2xl px-4 py-3 bg-slate-100 dark:bg-slate-700/60 outline-none" />';
+        let n = 0;
+        for (const [g, title] of GROUPS) {
+          const list = g === 'fav' ? (q ? [] : FAV.filter(c => S.items && S.items[c])) : codes.filter(c => kind(c) === g && match(c)).sort();
+          if (!list.length) continue;
+          n += list.length;
+          html += '<h3 class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mt-3 mb-1">' + esc(title) + '</h3>' +
+            list.map(c => '<button type="button" data-fx="set" data-code="' + esc(c) + '" class="w-full flex items-baseline gap-3 text-left rounded-xl px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700/60">' + lbl(c) + '<span class="text-sm text-slate-500 dark:text-slate-400 truncate">' + esc(NAMES[c] || '') + '</span></button>').join('');
+        }
+        if (!n) html += '<p class="text-sm text-slate-500 dark:text-slate-400">' + (S.items ? 'Нічого не знайдено' : 'Ціни ще не завантажено') + '</p>';
+        sh.innerHTML = html;
+        const qi = document.getElementById('fx-q');
+        qi.addEventListener('input', () => { S.q = qi.value; const p = qi.selectionStart; paint(); const x = document.getElementById('fx-q'); x.focus(); x.setSelectionRange(p, p); });
+      }
+      document.addEventListener('click', e => {
+        const t = e.target.closest('[data-fx]'); if (!t || !ov() || !ov().contains(t)) return;
+        const k = t.dataset.fx;
+        if (k === 'close') close();
+        else if (k === 'back') { S.view = 'main'; paint(); }
+        else if (k === 'swap') { const f = S.from; S.from = S.to; S.to = f; S.side = S.side === 'from' ? 'to' : 'from'; save(); paint(); }
+        else if (k === 'pick') { S.pick = t.dataset.side; S.view = 'pick'; S.q = ''; paint(); }
+        else if (k === 'set') {
+          const c = t.dataset.code, other = S.pick === 'from' ? S.to : S.from;
+          if (c === other) { const old = S.pick === 'from' ? S.from : S.to; if (S.pick === 'from') { S.from = c; S.to = old; } else { S.to = c; S.from = old; } }
+          else if (S.pick === 'from') S.from = c; else S.to = c;
+          S.view = 'main'; save(); paint();
+        }
+      });
+      function save() { try { localStorage.setItem(PAIR, JSON.stringify({ from: S.from, to: S.to })); } catch (e) {} }
+      window.openConverter = open;
     })();
   </script>
 </body>

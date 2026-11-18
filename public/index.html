@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.8.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.9.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -5499,7 +5499,7 @@ const snapshotFlat = st => clone(flattenState(st));
         const forOpts = [['shared:' + it.who, 'Спільне · платив(ла) ' + nameOf(it.who)], ['shared:card', 'Спільне · зі спільної картки'], ['own', 'Особисте · ' + nameOf(it.who)]];
         return `<div class="py-3 border-t" data-ib="${e(it.id)}">
           <div class="flex items-baseline gap-3"><div class="flex-1 min-w-0"><div class="font-semibold truncate">${e(it.merchant)}</div>
-            <div class="text-xs text-slate-500">${e(whenOf(it.ts))} · ${e(nameOf(it.who))}${it.card ? ' · ' + e(it.card) : ''}${foreign ? ' · ' + e(it.amount + ' ' + it.currency) + ' — перевірте суму' : ''}</div></div>
+            <div class="text-xs text-slate-500">${e(whenOf(it.ts))} · ${e(nameOf(it.who))}${it.card ? ' · ' + e(it.card) : ''}${foreign ? ' · ' + e(it.amount + ' ' + it.currency) + ' — перевірте суму' : ''}</div>${it.raw ? `<div class="text-xs text-slate-500 truncate" title="${e(it.raw)}">${e(it.raw)}</div>` : ''}</div>
             <input type="number" step="any" inputmode="decimal" data-ib-amt value="${e(d.amount)}" aria-label="Сума" class="w-24 p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm text-right g-num min-h-[40px]"></div>
           <div class="pt-2 flex flex-wrap gap-2 items-center">${sel('data-ib-cat', catsFor(it, d.for).map(c => [c, c]), d.cat, 'Категорія')}${sel('data-ib-for', forOpts, d.for, 'Чиє')}
             <button type="button" data-ib-ok class="g-btn-sm" style="padding:0 16px;font-size:13px">Додати</button>
@@ -5576,6 +5576,18 @@ const snapshotFlat = st => clone(flattenState(st));
       // «Ще» → «Налаштування»: ключі для телефонів
       const genKey = () => { const a = new Uint8Array(32); crypto.getRandomValues(a); return Array.from(a, b => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[b % 62]).join(''); };
       const linkOf = k => location.origin + '/api/inbox?k=' + k;
+      const send = (k, body, dry) => fetch('/api/inbox?k=' + encodeURIComponent(k) + (dry ? '&dry=1' : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json());
+      document.addEventListener('click', ev => {
+        if (!ev.target.closest('#ib-setup [data-ib-try]')) return;
+        const out = document.getElementById('ib-try-out'), txt = (document.getElementById('ib-try').value || '').trim();
+        const keys = state.settings.inboxKeys || {}, k = keys.p1 || keys.p2;
+        if (!txt) { out.textContent = 'Вставте текст сповіщення.'; return; }
+        if (!k) { out.textContent = 'Спершу створіть посилання.'; return; }
+        out.textContent = 'Перевіряю…';
+        send(k, { text: txt, src: 'android' }, true).then(j => {
+          out.textContent = j.ignored ? 'Це не покупка — буде пропущено.' : j.item ? 'Сума ' + j.item.amount + (j.item.currency ? ' ' + j.item.currency : '') + ', магазин: ' + j.item.merchant : j.error === 'bad key' ? 'Сервер ще не бачить ключ. Зачекайте хвилину.' : 'Суму не знайдено.';
+        }, () => { out.textContent = 'Немає зв’язку з сервером.'; });
+      });
       function renderSetup() {
         const tab = document.getElementById('tab-settings'); if (!tab) return;
         let card = document.getElementById('ib-setup');
@@ -5585,10 +5597,13 @@ const snapshotFlat = st => clone(flattenState(st));
           const head = tab.firstElementChild; if (head) head.after(card); else tab.prepend(card);
         }
         const keys = (state.settings || {}).inboxKeys || {};
+        const sig = JSON.stringify(keys) + nameOf('p1') + nameOf('p2');
+        if (card.dataset.sig === sig) return;
+        card.dataset.sig = sig;
         card.innerHTML = `<h3 class="text-base sm:text-lg font-bold">Автоплатежі з телефона</h3>
           <p class="text-xs text-slate-500 mt-1 mb-3">Оплата Apple Pay чи Google Pay сама з'являється на головній у «Нові з картки». Кожен налаштовує свій телефон своїм посиланням.</p>
           ${['p1', 'p2'].map(k => `<div class="py-3 border-t flex flex-wrap items-center gap-2" data-ibk="${k}"><span class="font-semibold flex-1 min-w-[120px]">${e(nameOf(k))}</span>
-            ${keys[k] ? `<button type="button" data-ibk-copy class="g-btn-sm" style="padding:0 14px;font-size:13px">Скопіювати посилання</button><button type="button" data-ibk-new class="px-3 rounded-lg border text-sm min-h-[40px]">Новий ключ</button>`
+            ${keys[k] ? `<button type="button" data-ibk-copy class="g-btn-sm" style="padding:0 14px;font-size:13px">Скопіювати посилання</button><button type="button" data-ibk-test class="px-3 rounded-lg border text-sm min-h-[40px]">Перевірити</button><button type="button" data-ibk-new class="px-3 rounded-lg border text-sm min-h-[40px]">Новий ключ</button><span data-ibk-msg class="basis-full text-xs text-slate-500"></span>`
               : `<button type="button" data-ibk-new class="g-btn-sm" style="padding:0 14px;font-size:13px">Створити посилання</button>`}</div>`).join('')}
           <details class="mt-3 border-t pt-3"><summary class="font-semibold text-sm cursor-pointer min-h-[36px]">Як налаштувати iPhone</summary>
             <ol class="list-decimal pl-5 mt-2 space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
@@ -5601,6 +5616,23 @@ const snapshotFlat = st => clone(flattenState(st));
               <li>Додайте 4 поля (Додати нове поле → Текст): amount = змінна «Сума» (Amount), merchant = «Продавець» (Merchant), card = «Картка або пропуск» (Card or Pass), src = iphone.</li>
               <li>«Готово». Заплатіть будь-що через Apple Pay — за кілька секунд платіж буде на головній.</li>
             </ol></details>
+          <details class="mt-3 border-t pt-3"><summary class="font-semibold text-sm cursor-pointer min-h-[36px]">Як налаштувати Android</summary>
+            <ol class="list-decimal pl-5 mt-2 space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
+              <li>Встановіть MacroDroid із Google Play (безкоштовної версії досить).</li>
+              <li>Натисніть «Скопіювати посилання» біля свого імені.</li>
+              <li>У MacroDroid: «Додати макрос» (Add Macro). Назвіть його UsBudget.</li>
+              <li>Тригер «+» → «Пристрій» → «Сповіщення» (Notification) → «Сповіщення отримано» (Notification Received). Оберіть застосунки банків, якими платите, і «Будь-який вміст». Дозвольте MacroDroid доступ до сповіщень.</li>
+              <li>Дія «+» → «Мережа» (Connectivity / Web) → «HTTP-запит» (HTTP Request). Метод POST, у поле URL вставте скопійоване посилання.</li>
+              <li>У «Параметри запиту» (Query parameters) додайте три: src = android; title = кнопка «…» (Magic text) → «Заголовок сповіщення» (Notification title); text = «…» → «Текст сповіщення» (Notification text).</li>
+              <li>Збережіть макрос (галочка).</li>
+              <li>Налаштування телефона → Батарея → MacroDroid → «Без обмежень», щоб телефон його не присипляв.</li>
+              <li>Заплатіть будь-що: за кілька секунд платіж буде на головній. Зарахування, коди й повідомлення без суми сервер пропускає сам.</li>
+            </ol>
+            <div class="mt-3"><label for="ib-try" class="block text-sm font-semibold mb-1">Перевірити текст сповіщення</label>
+              <p class="text-xs text-slate-500 mb-2">Вставте текст сповіщення банку, щоб побачити, що з нього вийде. Нічого не записується.</p>
+              <textarea id="ib-try" rows="2" class="w-full p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm" placeholder="Покупка 482.00 UAH Сільпо"></textarea>
+              <div class="flex items-center gap-3 mt-2"><button type="button" data-ib-try class="g-btn-sm" style="padding:0 14px;font-size:13px">Перевірити текст</button><span id="ib-try-out" class="text-sm"></span></div></div>
+          </details>
           <p class="text-xs text-slate-500 mt-3">«Новий ключ» вимикає старе посилання: тоді його треба вставити в телефон заново. Посилання нікому не пересилайте.</p>`;
       }
       document.addEventListener('click', ev => {
@@ -5610,6 +5642,11 @@ const snapshotFlat = st => clone(flattenState(st));
           const make = () => { keys[k] = genKey(); state.settings.inboxKeys = keys; saveToCloud(); renderSetup(); };
           if (keys[k]) showConfirmModal('Новий ключ', 'Старе посилання на телефоні ' + nameOf(k) + ' перестане працювати. Створити нове?', make, 'Створити');
           else make();
+        } else if (ev.target.closest('[data-ibk-test]')) {
+          const msg = row.querySelector('[data-ibk-msg]'); msg.textContent = 'Надсилаю…';
+          send(keys[k], { amount: 1, merchant: 'Перевірка зв’язку', src: 'test' }).then(j => {
+            msg.textContent = j.ok ? 'Працює: тестовий платіж 1 ₴ з’явиться на головній. Його можна пропустити.' : j.error === 'bad key' ? 'Сервер ще не бачить цей ключ. Зачекайте хвилину й спробуйте знову.' : 'Помилка сервера: ' + (j.error || '?');
+          }, () => { msg.textContent = 'Немає зв’язку з сервером.'; });
         } else if (ev.target.closest('[data-ibk-copy]')) {
           const url = linkOf(keys[k]), b = ev.target.closest('button');
           const ok = () => { b.textContent = 'Скопійовано'; setTimeout(() => { b.textContent = 'Скопіювати посилання'; }, 2000); };

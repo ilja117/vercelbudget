@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseMoney, normalize, whoByKey, itemId } from '../lib/inbox.mjs';
+import { parseMoney, normalize, whoByKey, itemId, isDuplicate } from '../lib/inbox.mjs';
 
 test('суми з iPhone і Android у різних форматах', () => {
   const c = (s, a, cur) => { const r = parseMoney(s); assert.equal(r.amount, a, s); if (cur !== undefined) assert.equal(r.currency, cur, s); };
@@ -69,5 +69,49 @@ test('приймач: ключ → запис у inbox; чужий ключ → 
   r = await POST(req('K'.repeat(32), { merchant: 'без суми' }));
   assert.equal(r.status, 400);
   assert.equal(puts.length, 1);
+  delete process.env.FIREBASE_SERVICE_ACCOUNT;
+});
+
+test('Android: сирий текст сповіщення різних банків', () => {
+  const n = (title, text) => normalize({ title, text, src: 'android' });
+  let r = n('Приват24', 'Покупка 482.00 UAH Сільпо. Картка *1234. Бал. 10 234.56 UAH');
+  assert.equal(r.amount, 482); assert.equal(r.merchant, 'Сільпо'); assert.equal(r.currency, 'UAH'); assert.match(r.raw, /Приват24/);
+  r = n('monobank', '🛒 Сільпо -482.00₴ Баланс 5 000.00₴'); assert.equal(r.amount, 482); assert.equal(r.merchant, 'Сільпо');
+  r = n('ПриватБанк', 'Списання 1 200,00 UAH. NOVA POSHTA. Залишок 3 400,00 UAH'); assert.equal(r.amount, 1200); assert.equal(r.merchant, 'NOVA POSHTA');
+  r = n('Starbucks', '₴155.00 with Visa •••• 1234'); assert.equal(r.amount, 155); assert.equal(r.merchant, 'Starbucks');
+  r = n('', 'Оплата 89,90 грн, АТБ-маркет, картка **5678 14:32'); assert.equal(r.amount, 89.9); assert.equal(r.merchant, 'АТБ-маркет');
+  assert.equal(n('Приват24', 'Зарахування 5000.00 UAH від Іван').error, 'not purchase');
+  assert.equal(n('monobank', 'Код підтвердження 1234').error, 'not purchase');
+  assert.equal(n('monobank', 'Вітаємо!').error, 'amount');
+});
+
+test('дубль: та сама сума тієї ж людини за 2 хвилини', () => {
+  const ex = { a: { who: 'p1', amount: 482, ts: 1000000 } };
+  assert.equal(isDuplicate(ex, 'p1', { amount: 482 }, 1000000 + 90000), true);
+  assert.equal(isDuplicate(ex, 'p1', { amount: 482 }, 1000000 + 180000), false);
+  assert.equal(isDuplicate(ex, 'p2', { amount: 482 }, 1000000 + 1000), false);
+  assert.equal(isDuplicate(ex, 'p1', { amount: 483 }, 1000000 + 1000), false);
+});
+
+test('приймач Android: параметри з посилання, dry, дубль', async () => {
+  const { generateKeyPairSync } = await import('node:crypto');
+  const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+  process.env.FIREBASE_SERVICE_ACCOUNT = JSON.stringify({ client_email: 't@t', private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }) });
+  const db = { 'shared_budget_data/settings/inboxKeys': { p1: 'K'.repeat(32) }, 'shared_budget_data/inbox': {} };
+  const puts = [];
+  globalThis.fetch = async (url, o = {}) => {
+    if (url.startsWith('https://oauth2')) return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }));
+    const path = new URL(url).pathname.slice(1).replace(/\.json$/, '');
+    if (o.method === 'PUT') { const v = JSON.parse(o.body); puts.push(v); db['shared_budget_data/inbox'][v.id] = v; return new Response('{}'); }
+    return new Response(JSON.stringify(db[path] ?? null));
+  };
+  const { POST } = await import('../api/inbox.js?android');
+  const q = (extra) => new Request('https://x.test/api/inbox?k=' + 'K'.repeat(32) + '&src=android&title=' + encodeURIComponent('Приват24') + '&text=' + encodeURIComponent('Покупка 482.00 UAH Сільпо. Бал. 9 000.00 UAH') + extra, { method: 'POST' });
+  let j = await (await POST(q('&dry=1'))).json();
+  assert.equal(j.dry, true); assert.equal(j.item.amount, 482); assert.equal(j.item.merchant, 'Сільпо'); assert.equal(puts.length, 0);
+  j = await (await POST(q(''))).json();
+  assert.equal(j.ok, true); assert.equal(puts.length, 1); assert.equal(puts[0].src, 'android');
+  j = await (await POST(q(''))).json();
+  assert.equal(j.ignored, 'duplicate'); assert.equal(puts.length, 1);
   delete process.env.FIREBASE_SERVICE_ACCOUNT;
 });

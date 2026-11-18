@@ -1,4 +1,4 @@
-# UsBudget v6.13 — розгортання на Vercel (безкоштовно)
+# UsBudget v6.14 — розгортання на Vercel (безкоштовно)
 
 ## Що всередині
 - `public/` — застосунок: `index.html`, маніфест, service worker, іконки.

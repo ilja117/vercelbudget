@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.13.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.14.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -5533,7 +5533,10 @@ const snapshotFlat = st => clone(flattenState(st));
   <script id="usbudget-inbox">
     // «Нові з картки» (v6.8): платежі з телефона (api/inbox.js) чекають у shared_budget_data/inbox, доки їх не підтвердять.
     (function () {
-      let inbox = {}, listening = false, showAll = false;
+      let inbox = {}, listening = false, showAll = false, showOthers = false;
+      // v6.14: кожен бачить свої платежі; «чий телефон» — той самий вибір, що й для нагадувань
+      const ME = 'usbudget_push_owner';
+      const me = () => { try { return localStorage.getItem(ME); } catch (e) { return null; } };
       const CODE = { '₴': 'UAH', '$': 'USD', '€': 'EUR', 'zł': 'PLN' };
       const appCode = () => CODE[(state.settings || {}).currency] || 'UAH';
       const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -5585,17 +5588,22 @@ const snapshotFlat = st => clone(flattenState(st));
       function render() {
         const tab = document.getElementById('tab-dashboard'), recent = document.getElementById('g-recent');
         let box = document.getElementById('g-inbox');
-        const list = items();
-        if (!list.length) { if (box) box.remove(); return; }
+        const all = items(), mine = me(), other = mine === 'p1' ? 'p2' : 'p1';
+        const own = mine ? all.filter(x => x.who === mine) : all, others = mine ? all.filter(x => x.who !== mine) : [];
+        const list = own.concat(showOthers ? others : []);
+        if (!own.length) { if (box) box.remove(); return; }
         if (!tab || !recent) return;
         if (!box) { box = document.createElement('div'); box.id = 'g-inbox'; box.dataset.fold = '0'; box.className = 'bg-white dark:bg-slate-800/80 rounded-2xl p-4'; }
         if (box.nextElementSibling !== recent) recent.before(box);
         const act = document.activeElement && box.contains(document.activeElement) ? document.activeElement : null;
         if (act && act.matches('input')) return; // не заважати, поки людина вводить суму
         const shown = showAll ? list : list.slice(0, 3);
-        box.innerHTML = `<div class="flex items-center justify-between mb-1"><h3 class="text-sm">Нові з картки · ${list.length}</h3></div>
+        box.innerHTML = `<div class="flex items-center justify-between mb-1"><h3 class="text-sm">Нові з картки · ${own.length}</h3></div>
           <p class="text-xs text-slate-500 mb-1">Прийшли з телефона. У бюджет потрапить лише те, що ви додасте.</p>
+          ${mine ? `<p class="text-xs text-slate-500 mb-1"><span>Телефон: ${e(nameOf(mine))}</span> · <button type="button" data-ib-me="${other}" class="underline min-h-[32px]">змінити</button></p>`
+            : `<div class="flex flex-wrap items-center gap-2 text-sm py-1"><span>Чий це телефон?</span>${['p1', 'p2'].map(k => `<button type="button" data-ib-me="${k}" class="px-3 rounded-lg border min-h-[36px]">${e(nameOf(k))}</button>`).join('')}</div>`}
           ${shown.map(rowHtml).join('')}
+          ${others.length ? `<button type="button" data-ib-others class="text-xs font-semibold text-pink-600 min-h-[36px] px-2">${showOthers ? 'Сховати інший телефон' : 'Інший телефон: ' + e(nameOf(other)) + ' (' + others.length + ')'}</button>` : ''}
           ${list.length > 3 ? `<button type="button" data-ib-more class="text-xs font-semibold text-pink-600 min-h-[36px] px-2">${showAll ? 'Згорнути' : 'Показати всі (' + list.length + ')'}</button>` : ''}`;
       }
 
@@ -5632,6 +5640,9 @@ const snapshotFlat = st => clone(flattenState(st));
       document.addEventListener('click', ev => {
         const box = ev.target.closest('#g-inbox'); if (!box) return;
         if (ev.target.closest('[data-ib-more]')) { showAll = !showAll; render(); return; }
+        if (ev.target.closest('[data-ib-others]')) { showOthers = !showOthers; render(); return; }
+        const meBtn = ev.target.closest('[data-ib-me]');
+        if (meBtn) { try { localStorage.setItem(ME, meBtn.dataset.ibMe); } catch (err) {} showOthers = false; render(); return; }
         const row = ev.target.closest('[data-ib]'); if (!row) return;
         if (ev.target.closest('[data-ib-ok]')) accept(row.dataset.ib);
         else if (ev.target.closest('[data-ib-skip]')) skip(row.dataset.ib);

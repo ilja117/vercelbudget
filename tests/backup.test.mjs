@@ -42,3 +42,14 @@ test('api/backup: без сервісного акаунта — 503, без в�
   assert.equal((await GET(new Request('http://x/api/backup'))).status, 503);
   assert.equal((await POST(new Request('http://x/api/backup', { method: 'POST' }))).status, 503);
 });
+
+test('ранкове сповіщення: «Нові з картки», що чекають з учора', async () => {
+  const { messageFor } = await import('../lib/schedule.mjs');
+  const t = '2026-11-18', ts = d => new Date(d + 'T10:00:00Z').getTime();
+  const data = { inbox: { a: { who: 'p1', ts: ts('2026-11-16') }, b: { who: 'p1', ts: ts('2026-11-17') }, c: { who: 'p1', ts: ts(t) }, d: { who: 'p2', ts: ts('2026-10-28') } } };
+  assert.equal(messageFor(data, 'p1', t).body, 'Нові з картки: 2 чекають, найстаріший — 2 дні');
+  assert.equal(messageFor(data, 'p2', t).body, 'Нові з картки: 1 чекає, найстаріший — 21 день');
+  assert.equal(messageFor({ inbox: { c: { who: 'p1', ts: ts(t) } } }, 'p1', t), null); // сьогоднішні не нагадуємо
+  const withRent = { ...data, fixedExpenses: { a: { id: 'a', title: 'Оренда', amount: 100, frequency: 'month', startDate: '2026-01-18', scope: 'shared' } } };
+  assert.equal(messageFor(withRent, 'p1', t).body, 'Сьогодні: Оренда — 100 ₴\nНові з картки: 2 чекають, найстаріший — 2 дні');
+});

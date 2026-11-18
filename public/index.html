@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.7.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.8.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -5054,6 +5054,14 @@ const snapshotFlat = st => clone(flattenState(st));
       const seen = new Set([].concat(state.expenses || [], state.personalExpenses || [], state.personalIncomes || []).map(r => r.bank).filter(Boolean));
       imp.bank = p.bank;
       imp.items = p.items.filter(t => !seen.has(t.bank)).map(t => impClassify(t, imp.owner));
+      // v6.8: платіж, уже доданий із телефона («Нові з картки»), не дублювати — вимкнути з приміткою
+      const phone = [].concat(state.expenses || [], state.personalExpenses || []).filter(r => String(r.bank || '').indexOf('inbox:') === 0);
+      const near = (a, b) => Math.abs(new Date(a) - new Date(b)) <= 86400000;
+      imp.items.forEach(it => {
+        if (it.isIn) return;
+        const j = phone.findIndex(r => Math.abs(r.amount - it.amount) < 0.01 && near(r.date, it.date));
+        if (j >= 0) { phone.splice(j, 1); it.on = false; it.notes.push('схоже, вже додано з телефона'); }
+      });
       imp.dups = p.items.length - imp.items.length;
       const dates = p.items.map(t => t.date).sort();
       document.getElementById('imp-info').textContent = `${p.bank} · операцій: ${p.items.length}` + (dates.length ? ` · ${fmtD(dates[0])}–${fmtD(dates[dates.length - 1])}` : '') + (imp.dups ? ` · уже імпортовано раніше: ${imp.dups}` : '');
@@ -5458,6 +5466,160 @@ const snapshotFlat = st => clone(flattenState(st));
       const renderAllV58 = renderAll;
       renderAll = function () { renderAllV58(); homeLayout(); arm(); };
       homeLayout(); arm();
+    })();
+  </script>
+  <script id="usbudget-inbox">
+    // «Нові з картки» (v6.8): платежі з телефона (api/inbox.js) чекають у shared_budget_data/inbox, доки їх не підтвердять.
+    (function () {
+      let inbox = {}, listening = false, showAll = false;
+      const CODE = { '₴': 'UAH', '$': 'USD', '€': 'EUR', 'zł': 'PLN' };
+      const appCode = () => CODE[(state.settings || {}).currency] || 'UAH';
+      const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const pad = n => String(n).padStart(2, '0');
+      const isoOf = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+      const whenOf = ts => { const d = new Date(ts), t = pad(d.getHours()) + ':' + pad(d.getMinutes()); return isoOf(ts) === getTodayString() ? 'сьогодні ' + t : pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + ' ' + t; };
+      const items = () => Object.values(inbox || {}).filter(x => x && x.id && x.amount > 0).sort((a, b) => b.ts - a.ts);
+      const ref = id => db.ref(DB_ROOT + '/inbox' + (id ? '/' + id : ''));
+
+      // Підказка категорії: правила й слова імпорту виписок
+      function guess(it) {
+        const rule = (typeof impRules === 'function' ? impRules() : []).find(r => r.k === impKey(it.merchant));
+        const forW = rule && (rule.for === 'shared' || rule.for === it.who) ? rule.for : 'shared';
+        const list = forW === 'shared' ? (state.settings.categories || []) : (((state.personalCategories || {})[forW] || []).concat(['Інше']));
+        const g = rule && rule.cat ? rule.cat : impGuess({ title: it.merchant, mcc: '', bcat: '' });
+        return { cat: impCatName(g, list), for: forW === 'shared' ? 'shared:' + it.who : 'own' };
+      }
+      const catsFor = (it, f) => f === 'own' ? (((state.personalCategories || {})[it.who] || []).concat(['Інше'])) : (state.settings.categories || []);
+      const sel = (attr, opts, cur, label) => `<select ${attr} aria-label="${e(label)}" class="p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm min-h-[40px] max-w-full">${opts.map(o => `<option value="${e(o[0])}"${o[0] === cur ? ' selected' : ''}>${e(o[1])}</option>`).join('')}</select>`;
+      const draft = {};
+
+      function rowHtml(it) {
+        const d = draft[it.id] = draft[it.id] || Object.assign({ amount: it.amount }, guess(it));
+        const foreign = it.currency && it.currency !== appCode();
+        const forOpts = [['shared:' + it.who, 'Спільне · платив(ла) ' + nameOf(it.who)], ['shared:card', 'Спільне · зі спільної картки'], ['own', 'Особисте · ' + nameOf(it.who)]];
+        return `<div class="py-3 border-t" data-ib="${e(it.id)}">
+          <div class="flex items-baseline gap-3"><div class="flex-1 min-w-0"><div class="font-semibold truncate">${e(it.merchant)}</div>
+            <div class="text-xs text-slate-500">${e(whenOf(it.ts))} · ${e(nameOf(it.who))}${it.card ? ' · ' + e(it.card) : ''}${foreign ? ' · ' + e(it.amount + ' ' + it.currency) + ' — перевірте суму' : ''}</div></div>
+            <input type="number" step="any" inputmode="decimal" data-ib-amt value="${e(d.amount)}" aria-label="Сума" class="w-24 p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm text-right g-num min-h-[40px]"></div>
+          <div class="pt-2 flex flex-wrap gap-2 items-center">${sel('data-ib-cat', catsFor(it, d.for).map(c => [c, c]), d.cat, 'Категорія')}${sel('data-ib-for', forOpts, d.for, 'Чиє')}
+            <button type="button" data-ib-ok class="g-btn-sm" style="padding:0 16px;font-size:13px">Додати</button>
+            <button type="button" data-ib-skip class="px-3 rounded-lg border text-sm min-h-[40px]">Пропустити</button></div></div>`;
+      }
+
+      function render() {
+        const tab = document.getElementById('tab-dashboard'), recent = document.getElementById('g-recent');
+        let box = document.getElementById('g-inbox');
+        const list = items();
+        if (!list.length) { if (box) box.remove(); return; }
+        if (!tab || !recent) return;
+        if (!box) { box = document.createElement('div'); box.id = 'g-inbox'; box.dataset.fold = '0'; box.className = 'bg-white dark:bg-slate-800/80 rounded-2xl p-4'; }
+        if (box.nextElementSibling !== recent) recent.before(box);
+        const act = document.activeElement && box.contains(document.activeElement) ? document.activeElement : null;
+        if (act && act.matches('input')) return; // не заважати, поки людина вводить суму
+        const shown = showAll ? list : list.slice(0, 3);
+        box.innerHTML = `<div class="flex items-center justify-between mb-1"><h3 class="text-sm">Нові з картки · ${list.length}</h3></div>
+          <p class="text-xs text-slate-500 mb-1">Прийшли з телефона. У бюджет потрапить лише те, що ви додасте.</p>
+          ${shown.map(rowHtml).join('')}
+          ${list.length > 3 ? `<button type="button" data-ib-more class="text-xs font-semibold text-pink-600 min-h-[36px] px-2">${showAll ? 'Згорнути' : 'Показати всі (' + list.length + ')'}</button>` : ''}`;
+      }
+
+      function accept(id) {
+        const it = inbox[id], d = draft[id]; if (!it || !d) return;
+        const amount = Math.round(Number(String(d.amount).replace(',', '.')) * 100) / 100;
+        if (!(amount > 0)) { showModal('Сума', 'Вкажіть суму більше нуля.'); return; }
+        const before = clone(flattenState(state));
+        const rec = { id: 'ib_' + id, date: isoOf(it.ts), title: it.merchant, amount, category: d.cat, bank: 'inbox:' + id };
+        if (d.for === 'own') (state.personalExpenses = state.personalExpenses || []).push(Object.assign(rec, { owner: it.who, fromCard: false }));
+        else state.expenses.push(Object.assign(rec, { payer: d.for === 'shared:card' ? 'card' : it.who }));
+        const after = flattenState(state), touched = {};
+        Object.keys(Object.assign({}, before, after)).forEach(k => { if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) touched[k] = before[k]; });
+        drop(id, it); saveToCloud(); renderAll();
+        showUndo(touched, 'Додано: ' + it.merchant);
+        restoreOnUndo(id, it);
+      }
+      function skip(id) {
+        const it = inbox[id]; if (!it) return;
+        drop(id, it); render();
+        showUndo({}, 'Пропущено: ' + it.merchant);
+        restoreOnUndo(id, it);
+      }
+      function drop(id) { delete inbox[id]; delete draft[id]; try { ref(id).remove(); } catch (err) {} }
+      function restoreOnUndo(id, it) {
+        const b = document.querySelector('#undo-toast button'); if (!b) return;
+        const prev = b.onclick;
+        b.onclick = () => { prev(); inbox[id] = it; try { ref(id).set(it); } catch (err) {} render(); };
+      }
+
+      document.addEventListener('click', ev => {
+        const box = ev.target.closest('#g-inbox'); if (!box) return;
+        if (ev.target.closest('[data-ib-more]')) { showAll = !showAll; render(); return; }
+        const row = ev.target.closest('[data-ib]'); if (!row) return;
+        if (ev.target.closest('[data-ib-ok]')) accept(row.dataset.ib);
+        else if (ev.target.closest('[data-ib-skip]')) skip(row.dataset.ib);
+      });
+      document.addEventListener('change', ev => {
+        const row = ev.target.closest('#g-inbox [data-ib]'); if (!row) return;
+        const id = row.dataset.ib, d = draft[id], it = inbox[id]; if (!d || !it) return;
+        if (ev.target.matches('[data-ib-cat]')) d.cat = ev.target.value;
+        else if (ev.target.matches('[data-ib-for]')) { d.for = ev.target.value; const cs = catsFor(it, d.for); if (cs.indexOf(d.cat) < 0) d.cat = impCatName(d.cat, cs); render(); }
+      });
+      document.addEventListener('input', ev => { const row = ev.target.closest('#g-inbox [data-ib]'); if (row && ev.target.matches('[data-ib-amt]') && draft[row.dataset.ib]) draft[row.dataset.ib].amount = ev.target.value; });
+      document.addEventListener('focusout', ev => { if (ev.target.matches && ev.target.matches('#g-inbox [data-ib-amt]')) setTimeout(render, 0); });
+
+      function listen() {
+        if (listening || typeof db === 'undefined' || !db) return;
+        listening = true;
+        ref().on('value', s => { inbox = s.val() || {}; Object.keys(draft).forEach(k => { if (!inbox[k]) delete draft[k]; }); render(); });
+      }
+      window.__inboxSet = v => { inbox = v || {}; render(); }; // для перевірок у перегляді
+
+      // «Ще» → «Налаштування»: ключі для телефонів
+      const genKey = () => { const a = new Uint8Array(32); crypto.getRandomValues(a); return Array.from(a, b => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[b % 62]).join(''); };
+      const linkOf = k => location.origin + '/api/inbox?k=' + k;
+      function renderSetup() {
+        const tab = document.getElementById('tab-settings'); if (!tab) return;
+        let card = document.getElementById('ib-setup');
+        if (!card) {
+          card = document.createElement('div'); card.id = 'ib-setup'; card.dataset.fold = '0';
+          card.className = 'bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs';
+          const head = tab.firstElementChild; if (head) head.after(card); else tab.prepend(card);
+        }
+        const keys = (state.settings || {}).inboxKeys || {};
+        card.innerHTML = `<h3 class="text-base sm:text-lg font-bold">Автоплатежі з телефона</h3>
+          <p class="text-xs text-slate-500 mt-1 mb-3">Оплата Apple Pay чи Google Pay сама з'являється на головній у «Нові з картки». Кожен налаштовує свій телефон своїм посиланням.</p>
+          ${['p1', 'p2'].map(k => `<div class="py-3 border-t flex flex-wrap items-center gap-2" data-ibk="${k}"><span class="font-semibold flex-1 min-w-[120px]">${e(nameOf(k))}</span>
+            ${keys[k] ? `<button type="button" data-ibk-copy class="g-btn-sm" style="padding:0 14px;font-size:13px">Скопіювати посилання</button><button type="button" data-ibk-new class="px-3 rounded-lg border text-sm min-h-[40px]">Новий ключ</button>`
+              : `<button type="button" data-ibk-new class="g-btn-sm" style="padding:0 14px;font-size:13px">Створити посилання</button>`}</div>`).join('')}
+          <details class="mt-3 border-t pt-3"><summary class="font-semibold text-sm cursor-pointer min-h-[36px]">Як налаштувати iPhone</summary>
+            <ol class="list-decimal pl-5 mt-2 space-y-1.5 text-sm text-slate-600 dark:text-slate-300">
+              <li>Натисніть «Скопіювати посилання» біля свого імені.</li>
+              <li>Відкрийте застосунок «Команди» → вкладка «Автоматизація» → «+» (або «Нова автоматизація»).</li>
+              <li>Оберіть «Транзакція» (Transaction), позначте свої картки, «Запускати одразу» (Run Immediately) → «Далі».</li>
+              <li>«Нова пуста автоматизація» → «Додати дію» → знайдіть «Отримати вміст URL» (Get Contents of URL).</li>
+              <li>У поле URL вставте скопійоване посилання.</li>
+              <li>Розкрийте стрілку біля дії: Метод — POST, Тіло запиту — JSON.</li>
+              <li>Додайте 4 поля (Додати нове поле → Текст): amount = змінна «Сума» (Amount), merchant = «Продавець» (Merchant), card = «Картка або пропуск» (Card or Pass), src = iphone.</li>
+              <li>«Готово». Заплатіть будь-що через Apple Pay — за кілька секунд платіж буде на головній.</li>
+            </ol></details>
+          <p class="text-xs text-slate-500 mt-3">«Новий ключ» вимикає старе посилання: тоді його треба вставити в телефон заново. Посилання нікому не пересилайте.</p>`;
+      }
+      document.addEventListener('click', ev => {
+        const row = ev.target.closest('#ib-setup [data-ibk]'); if (!row) return;
+        const k = row.dataset.ibk, keys = Object.assign({}, state.settings.inboxKeys || {});
+        if (ev.target.closest('[data-ibk-new]')) {
+          const make = () => { keys[k] = genKey(); state.settings.inboxKeys = keys; saveToCloud(); renderSetup(); };
+          if (keys[k]) showConfirmModal('Новий ключ', 'Старе посилання на телефоні ' + nameOf(k) + ' перестане працювати. Створити нове?', make, 'Створити');
+          else make();
+        } else if (ev.target.closest('[data-ibk-copy]')) {
+          const url = linkOf(keys[k]), b = ev.target.closest('button');
+          const ok = () => { b.textContent = 'Скопійовано'; setTimeout(() => { b.textContent = 'Скопіювати посилання'; }, 2000); };
+          (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(ok, () => showModal('Посилання', url));
+        }
+      });
+
+      const prevRender = renderAll;
+      renderAll = function () { prevRender(); listen(); render(); renderSetup(); };
+      listen(); render(); renderSetup();
     })();
   </script>
   <script id="usbudget-convert">

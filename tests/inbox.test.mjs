@@ -115,3 +115,26 @@ test('приймач Android: параметри з посилання, dry, д�
   assert.equal(j.ignored, 'duplicate'); assert.equal(puts.length, 1);
   delete process.env.FIREBASE_SERVICE_ACCOUNT;
 });
+
+test('справжні сповіщення monobank, Privat24 і Google Гаманця', () => {
+  const n = (title, text) => normalize({ title, text, src: 'android' });
+  // вхідний переказ — пропустити
+  assert.equal(n('👉💳 0.50₴', 'Від: Сергій Зоммер\nБаланс 9 247.64₴ 🥷').error, 'not purchase');
+  assert.equal(n('Privat24', '+500₴ Переказ з картки. 5*36 10:00 Бал. 900₴').error, 'not purchase');
+  // реакція на переказ — без суми
+  assert.equal(n('Відповідь на ваш переказ', 'Сергій З. реагує: «🐷»').error, 'amount');
+  // вихідний переказ людині: ініціал не губиться
+  let r = n('👈💳 1.00₴', 'Сергій З.\nБаланс 9 247.14₴ 🥷');
+  assert.equal(r.amount, 1); assert.equal(r.merchant, 'Сергій З');
+  // покупка в monobank: сума з назви, баланс відкинуто
+  r = n('📦 2 006.13₴', 'AliExpress\nБаланс 9 248.14₴ 🥷');
+  assert.equal(r.amount, 2006.13); assert.equal(r.merchant, 'AliExpress');
+  // Privat24: категорія банку, маска картки, час, баланс і ліміт відкинуто
+  r = n('Privat24', '-30₴ Транспорт. IPAY   *KYIVTR, KYIV\n5*36 22:30\nБал. 23 824.68₴\nКред. ліміт 20 000₴');
+  assert.equal(r.amount, 30); assert.equal(r.merchant, 'IPAY *KYIVTR KYIV');
+  // Google Гаманець: магазин у заголовку, картка в тексті
+  r = n('IPAY   *KYIVTR', '30,00 грн – Mastercard PrivatBank ••9236');
+  assert.equal(r.amount, 30); assert.equal(r.merchant, 'IPAY *KYIVTR');
+  // той самий платіж від банку й Гаманця — дубль
+  assert.equal(isDuplicate({ a: { who: 'p1', amount: 30, ts: 1000 } }, 'p1', { amount: 30 }, 1000 + 20000), true);
+});

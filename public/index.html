@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.10.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.11.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1094,8 +1094,10 @@
       <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
         <div>
           <h3 class="text-base sm:text-lg font-bold flex items-center gap-2"><span>🛟</span> Автокопії</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Раз на день і перед масовими змінами на цьому пристрої зберігається копія (останні 7). Це страховка від випадкового видалення.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Страховка від випадкового видалення. Сервер щоночі зберігає копію всього бюджету (30 днів), а цей пристрій — раз на день і перед масовими змінами (останні 7).</p>
         </div>
+        <div id="srv-backups"></div>
+        <h4 class="text-sm font-semibold pt-3 border-t border-slate-100 dark:border-slate-800/60">На цьому пристрої</h4>
         <div id="backups-list"></div>
       </div>
 
@@ -1902,6 +1904,7 @@ const snapshotFlat = st => clone(flattenState(st));
       pushBackup('щоденна');
     }
     function renderBackups() {
+      renderServerBackups();
       const box = document.getElementById('backups-list');
       if (!box) return;
       const list = readBackups();
@@ -1921,6 +1924,61 @@ const snapshotFlat = st => clone(flattenState(st));
         protectLocked(prev, locked);
         saveToCloud(); renderAll();
         showModal('Готово', 'Копію відновлено.');
+      }, 'Відновити', true);
+    }
+
+    // --- v6.11: копії на сервері (api/backup.js): щоночі, «Зробити копію зараз», «Відновити» ---
+    const srvBk = { list: null, at: 0, busy: false, msg: '', all: false };
+    const BK_REASON = { auto: 'щоночі', manual: 'вручну', 'before-restore': 'перед відновленням' };
+    async function srvBkCall(path, opts) {
+      const r = await fetch('/api/backup' + path, Object.assign({}, opts, { headers: Object.assign({ 'Content-Type': 'application/json' }, await authHeader()) }));
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) throw new Error(r.status === 401 ? 'Увійдіть у застосунок ще раз.' : r.status === 503 ? 'Сервер не налаштовано.' : 'Помилка сервера: ' + (j.error || r.status));
+      return j;
+    }
+    function srvBkLoad(force) {
+      if (srvBk.busy || (!force && srvBk.list && Date.now() - srvBk.at < 60000)) return;
+      srvBk.busy = true; renderServerBackups();
+      srvBkCall('').then(j => { srvBk.list = j.list; srvBk.at = Date.now(); srvBk.msg = ''; }, e => { srvBk.msg = e.message; })
+        .then(() => { srvBk.busy = false; renderServerBackups(); });
+    }
+    function renderServerBackups() {
+      const box = document.getElementById('srv-backups');
+      if (!box) return;
+      if (!srvBk.list && !srvBk.busy && !srvBk.msg) { srvBkLoad(); return; }
+      const p2 = n => String(n).padStart(2, '0');
+      const when = ts => { const d = new Date(ts); return p2(d.getDate()) + '.' + p2(d.getMonth() + 1) + ' · ' + p2(d.getHours()) + ':' + p2(d.getMinutes()); };
+      const list = srvBk.list || [], shown = srvBk.all ? list : list.slice(0, 5);
+      box.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-2"><h4 class="text-sm font-semibold">На сервері</h4>
+          <button type="button" onclick="srvBkNow()" class="text-xs font-semibold px-3 py-2 rounded-xl border min-h-[40px]"${srvBk.busy ? ' disabled' : ''}>Зробити копію зараз</button></div>
+        ${srvBk.busy ? '<p class="text-xs text-slate-500 py-2">Зачекайте…</p>' : ''}${srvBk.msg ? `<p class="text-xs text-rose-600 py-2">${esc(srvBk.msg)}</p>` : ''}
+        ${shown.map(b => `<div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 dark:border-slate-800/60 text-sm">
+          <div><div class="font-medium">${esc(when(b.ts))}</div><div class="text-xs text-slate-500">${esc(BK_REASON[b.reason] || '')} · записів: ${b.count}</div></div>
+          <button type="button" onclick="srvBkRestore('${esc(b.id)}')" class="text-xs font-semibold px-3 py-2 rounded-xl border min-h-[40px]"${srvBk.busy ? ' disabled' : ''}>Відновити</button></div>`).join('')}
+        ${srvBk.list && !list.length && !srvBk.busy ? '<p class="text-xs text-slate-500 py-2">Копій ще немає: перша з’явиться вночі або після «Зробити копію зараз».</p>' : ''}
+        ${list.length > 5 ? `<button type="button" onclick="srvBk.all=!srvBk.all;renderServerBackups()" class="text-xs font-semibold text-pink-600 min-h-[36px] px-2">${srvBk.all ? 'Згорнути' : 'Показати всі (' + list.length + ')'}</button>` : ''}`;
+    }
+    function srvBkNow() {
+      srvBk.busy = true; srvBk.msg = ''; renderServerBackups();
+      srvBkCall('', { method: 'POST', body: JSON.stringify({ reason: 'manual' }) })
+        .then(() => { srvBk.busy = false; srvBkLoad(true); }, e => { srvBk.busy = false; srvBk.msg = e.message; renderServerBackups(); });
+    }
+    function srvBkRestore(id) {
+      const b = (srvBk.list || []).find(x => x.id === id); if (!b) return;
+      const d = new Date(b.ts), at = String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + ' ' + d.toTimeString().slice(0, 5);
+      showConfirmModal('Відновити копію?', `Дані повернуться до стану на ${at}. Зміни, зроблені після цього, зникнуть. Перед цим поточний стан збережеться окремою копією. Заблоковані особисті розділи не зачіпаються.`, async () => {
+        srvBk.busy = true; srvBk.msg = ''; renderServerBackups();
+        try {
+          pushBackup('перед відновленням');
+          await srvBkCall('', { method: 'POST', body: JSON.stringify({ reason: 'before-restore' }) });
+          const j = await srvBkCall('?id=' + encodeURIComponent(id));
+          const prev = clone(state), locked = ['p1', 'p2'].filter(isLocked);
+          state = Object.assign(state, fromRemote(j.data));
+          protectLocked(prev, locked);
+          saveToCloud(); renderAll();
+          showModal('Готово', 'Копію відновлено.');
+        } catch (e) { srvBk.msg = e.message; }
+        srvBk.busy = false; srvBkLoad(true);
       }, 'Відновити', true);
     }
 
@@ -3178,6 +3236,7 @@ const snapshotFlat = st => clone(flattenState(st));
       migrateToV4();
       migrateV41();
       if (prev.settings && prev.settings.pins) state.settings.pins = prev.settings.pins; else delete state.settings.pins;
+      if (prev.settings && prev.settings.inboxKeys) state.settings.inboxKeys = prev.settings.inboxKeys; // посилання телефонів не ламати
       locked.forEach(k => {
         ['personalIncomes', 'personalExpenses'].forEach(p => { state[p] = (prev[p] || []).filter(x => x.owner === k).concat((state[p] || []).filter(x => x.owner !== k)); });
         state.goals = (prev.goals || []).filter(g => g.scope === k).concat((state.goals || []).filter(g => g.scope !== k));

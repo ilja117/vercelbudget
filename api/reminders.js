@@ -1,7 +1,8 @@
-// Щоденні нагадування про регулярні платежі. Запускає Vercel Cron (див. vercel.json)
+// Щоденні нагадування про регулярні платежі й нічна запасна копія. Запускає Vercel Cron (див. vercel.json)
 import webpush from 'web-push';
 import { kyivToday, messageFor } from '../lib/schedule.mjs';
 import { dbUrl } from '../lib/firebase-server.mjs';
+import { makeBackup } from '../lib/backup.mjs';
 
 export async function runReminders({ fetchImpl = fetch, push = webpush, now = new Date() } = {}) {
   push.setVapidDetails('mailto:' + (process.env.VAPID_CONTACT || 'usbudget@example.com'), process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
@@ -26,5 +27,7 @@ export async function runReminders({ fetchImpl = fetch, push = webpush, now = ne
 export async function GET(request) {
   const secret = process.env.CRON_SECRET;
   if (secret && request.headers.get('authorization') !== `Bearer ${secret}`) return new Response('Unauthorized', { status: 401 });
-  return Response.json(await runReminders());
+  const reminders = await runReminders();
+  const backup = await makeBackup().catch(e => ({ ok: false, error: String(e && e.message || e) })); // нічна запасна копія
+  return Response.json({ ...reminders, backup });
 }

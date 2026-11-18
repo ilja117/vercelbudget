@@ -80,7 +80,8 @@ test('Android: сирий текст сповіщення різних банк�
   r = n('ПриватБанк', 'Списання 1 200,00 UAH. NOVA POSHTA. Залишок 3 400,00 UAH'); assert.equal(r.amount, 1200); assert.equal(r.merchant, 'NOVA POSHTA');
   r = n('Starbucks', '₴155.00 with Visa •••• 1234'); assert.equal(r.amount, 155); assert.equal(r.merchant, 'Starbucks');
   r = n('', 'Оплата 89,90 грн, АТБ-маркет, картка **5678 14:32'); assert.equal(r.amount, 89.9); assert.equal(r.merchant, 'АТБ-маркет');
-  assert.equal(n('Приват24', 'Зарахування 5000.00 UAH від Іван').error, 'not purchase');
+  const inc = n('Приват24', 'Зарахування 5000.00 UAH від Іван');
+  assert.equal(inc.kind, 'in'); assert.equal(inc.amount, 5000); assert.equal(inc.merchant, 'Іван');
   assert.equal(n('monobank', 'Код підтвердження 1234').error, 'not purchase');
   assert.equal(n('monobank', 'Вітаємо!').error, 'amount');
 });
@@ -118,9 +119,17 @@ test('приймач Android: параметри з посилання, dry, д�
 
 test('справжні сповіщення monobank, Privat24 і Google Гаманця', () => {
   const n = (title, text) => normalize({ title, text, src: 'android' });
-  // вхідний переказ — пропустити
-  assert.equal(n('👉💳 0.50₴', 'Від: Сергій Зоммер\nБаланс 9 247.64₴ 🥷').error, 'not purchase');
-  assert.equal(n('Privat24', '+500₴ Переказ з картки. 5*36 10:00 Бал. 900₴').error, 'not purchase');
+  // вхідний переказ — надходження з ім'ям відправника
+  let i = n('👉💳 0.50₴', 'Від: Сергій Зоммер\nБаланс 9 247.64₴ 🥷');
+  assert.equal(i.kind, 'in'); assert.equal(i.amount, 0.5); assert.equal(i.merchant, 'Сергій Зоммер');
+  i = n('Privat24', '+2₴ Зарахування переказу: від ILLIA MIROSHNYCHENKO\n5*36 18:49\nБал. 23 825.68₴\nКред. ліміт 20 000₴');
+  assert.equal(i.kind, 'in'); assert.equal(i.amount, 2); assert.equal(i.merchant, 'ILLIA MIROSHNYCHENKO');
+  assert.equal(n('Privat24', '+500₴ Переказ з картки. 5*36 10:00 Бал. 900₴').merchant, 'Надходження');
+  // реклама банку — пропустити
+  assert.equal(n('Ви виграли промокод!', '100 грн на monoмаркеті').error, 'not purchase');
+  // вихідний переказ на картку — витрата з зрозумілою назвою
+  i = n('👈💳 2.00₴', '545708******9236\nБаланс 9 236.14₴');
+  assert.equal(i.kind, undefined); assert.equal(i.amount, 2); assert.equal(i.merchant, 'Переказ на картку');
   // реакція на переказ — без суми
   assert.equal(n('Відповідь на ваш переказ', 'Сергій З. реагує: «🐷»').error, 'amount');
   // вихідний переказ людині: ініціал не губиться
@@ -137,11 +146,15 @@ test('справжні сповіщення monobank, Privat24 і Google Гам�
   assert.equal(r.amount, 30); assert.equal(r.merchant, 'IPAY *KYIVTR');
   // той самий платіж від банку й Гаманця — дубль
   assert.equal(isDuplicate({ a: { who: 'p1', amount: 30, ts: 1000 } }, 'p1', { amount: 30 }, 1000 + 20000), true);
+  // переказ собі: −2 з mono і +2 на Приват — не дубль
+  assert.equal(isDuplicate({ a: { who: 'p1', amount: 2, ts: 1000 } }, 'p1', { amount: 2, kind: 'in' }, 1000 + 20000), false);
 });
 
 test('Privat24: «+сума» — надходження, «-сума» — витрата', () => {
   const n = t => normalize({ title: 'Privat24', text: t, src: 'android' });
-  for (const t of ['+500₴ Поповнення картки 5*36 10:00 Бал. 900₴', '+500.00 UAH Переказ з карти на карту. 5*36 Бал. 1 400₴', '+1 250,50₴ Зарплата 5*36 Бал. 9 000₴', '+30₴ Кешбек 5*36']) assert.equal(n(t).error, 'not purchase', t);
+  for (const t of ['+500₴ Поповнення картки 5*36 10:00 Бал. 900₴', '+500.00 UAH Переказ з карти на карту. 5*36 Бал. 1 400₴', '+1 250,50₴ Зарплата 5*36 Бал. 9 000₴', '+30₴ Кешбек 5*36']) assert.equal(n(t).kind, 'in', t);
+  assert.equal(n('+500.00 UAH Переказ з карти на карту. 5*36 Бал. 1 400₴').merchant, 'Надходження');
+  assert.equal(n('+1 250,50₴ Зарплата 5*36 Бал. 9 000₴').merchant, 'Зарплата');
   const r = n('-500₴ Продукти. SILPO 5*36 12:00 Бал. 400₴');
   assert.equal(r.amount, 500); assert.equal(r.merchant, 'SILPO');
 });

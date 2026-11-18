@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.9.1</title>
+  <title>UsBudget — Спільний бюджет пари · v6.10.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1932,10 +1932,12 @@ const snapshotFlat = st => clone(flattenState(st));
       if (!t) {
         t = document.createElement('div');
         t.id = 'undo-toast';
-        t.className = 'fixed left-1/2 -translate-x-1/2 bottom-24 sm:bottom-6 z-[60] items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900 text-white text-sm shadow-xl';
+        t.className = 'fixed bottom-24 sm:bottom-6 z-[60] items-center gap-3 px-4 py-3 rounded-2xl bg-slate-900 text-white text-sm shadow-xl';
+        // по центру без transform (його перебиває анімація появи); довга назва не виштовхує кнопку за екран
+        t.style.cssText = 'left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100vw - 32px)';
         document.body.appendChild(t);
       }
-      t.innerHTML = '<span></span><button type="button" class="font-semibold underline underline-offset-2 min-h-[32px]">Відмінити</button>';
+      t.innerHTML = '<span style="min-width:0;overflow-wrap:anywhere"></span><button type="button" class="font-semibold underline underline-offset-2 min-h-[32px]" style="flex-shrink:0">Відмінити</button>';
       t.firstChild.textContent = text;
       t.lastChild.onclick = () => { applyFlatToState(state, touched); saveToCloud(); renderAll(); hideUndo(); };
       t.style.display = 'flex';
@@ -5055,10 +5057,11 @@ const snapshotFlat = st => clone(flattenState(st));
       imp.bank = p.bank;
       imp.items = p.items.filter(t => !seen.has(t.bank)).map(t => impClassify(t, imp.owner));
       // v6.8: платіж, уже доданий із телефона («Нові з картки»), не дублювати — вимкнути з приміткою
-      const phone = [].concat(state.expenses || [], state.personalExpenses || []).filter(r => String(r.bank || '').indexOf('inbox:') === 0);
+      const fromPhone = r => String(r.bank || '').indexOf('inbox:') === 0;
+      const phoneOut = [].concat(state.expenses || [], state.personalExpenses || []).filter(fromPhone), phoneIn = (state.personalIncomes || []).filter(fromPhone);
       const near = (a, b) => Math.abs(new Date(a) - new Date(b)) <= 86400000;
       imp.items.forEach(it => {
-        if (it.isIn) return;
+        const phone = it.isIn ? phoneIn : phoneOut;
         const j = phone.findIndex(r => Math.abs(r.amount - it.amount) < 0.01 && near(r.date, it.date));
         if (j >= 0) { phone.splice(j, 1); it.on = false; it.notes.push('схоже, вже додано з телефона'); }
       });
@@ -5494,6 +5497,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const draft = {};
 
       function rowHtml(it) {
+        if (it.kind === 'in') return inRowHtml(it);
         const d = draft[it.id] = draft[it.id] || Object.assign({ amount: it.amount }, guess(it));
         const foreign = it.currency && it.currency !== appCode();
         const forOpts = [['shared:' + it.who, 'Спільне · платив(ла) ' + nameOf(it.who)], ['shared:card', 'Спільне · зі спільної картки'], ['own', 'Особисте · ' + nameOf(it.who)]];
@@ -5503,6 +5507,19 @@ const snapshotFlat = st => clone(flattenState(st));
             <input type="number" step="any" inputmode="decimal" data-ib-amt value="${e(d.amount)}" aria-label="Сума" class="w-24 p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm text-right g-num min-h-[40px]"></div>
           <div class="pt-2 flex flex-wrap gap-2 items-center">${sel('data-ib-cat', catsFor(it, d.for).map(c => [c, c]), d.cat, 'Категорія')}${sel('data-ib-for', forOpts, d.for, 'Чиє')}
             <button type="button" data-ib-ok class="g-btn-sm" style="padding:0 16px;font-size:13px">Додати</button>
+            <button type="button" data-ib-skip class="px-3 rounded-lg border text-sm min-h-[40px]">Пропустити</button></div></div>`;
+      }
+
+      // Надходження (v6.10): «+сума», додається як особистий дохід того, хто вибраний
+      function inRowHtml(it) {
+        const d = draft[it.id] = draft[it.id] || { amount: it.amount, owner: it.who };
+        const foreign = it.currency && it.currency !== appCode();
+        return `<div class="py-3 border-t" data-ib="${e(it.id)}">
+          <div class="flex items-baseline gap-3"><div class="flex-1 min-w-0"><div class="font-semibold truncate">${e(it.merchant)}</div>
+            <div class="text-xs text-slate-500"><b class="text-emerald-600">Надходження</b> · ${e(whenOf(it.ts))} · ${e(nameOf(it.who))}${foreign ? ' · ' + e(it.amount + ' ' + it.currency) + ' — перевірте суму' : ''}</div>${it.raw ? `<div class="text-xs text-slate-500 truncate" title="${e(it.raw)}">${e(it.raw)}</div>` : ''}</div>
+            <span class="font-bold text-emerald-600" aria-hidden="true">+</span><input type="number" step="any" inputmode="decimal" data-ib-amt value="${e(d.amount)}" aria-label="Сума" class="w-24 p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm text-right g-num min-h-[40px]"></div>
+          <div class="pt-2 flex flex-wrap gap-2 items-center">${sel('data-ib-owner', ['p1', 'p2'].map(k => [k, 'Особистий дохід · ' + nameOf(k)]), d.owner, 'Чий дохід')}
+            <button type="button" data-ib-ok class="g-btn-sm" style="padding:0 16px;font-size:13px">Додати як дохід</button>
             <button type="button" data-ib-skip class="px-3 rounded-lg border text-sm min-h-[40px]">Пропустити</button></div></div>`;
       }
 
@@ -5528,9 +5545,12 @@ const snapshotFlat = st => clone(flattenState(st));
         const amount = Math.round(Number(String(d.amount).replace(',', '.')) * 100) / 100;
         if (!(amount > 0)) { showModal('Сума', 'Вкажіть суму більше нуля.'); return; }
         const before = clone(flattenState(state));
-        const rec = { id: 'ib_' + id, date: isoOf(it.ts), title: it.merchant, amount, category: d.cat, bank: 'inbox:' + id };
-        if (d.for === 'own') (state.personalExpenses = state.personalExpenses || []).push(Object.assign(rec, { owner: it.who, fromCard: false }));
-        else state.expenses.push(Object.assign(rec, { payer: d.for === 'shared:card' ? 'card' : it.who }));
+        if (it.kind === 'in') (state.personalIncomes = state.personalIncomes || []).push({ id: 'ib_' + id, owner: d.owner, date: isoOf(it.ts), source: it.merchant, amount, bank: 'inbox:' + id });
+        else {
+          const rec = { id: 'ib_' + id, date: isoOf(it.ts), title: it.merchant, amount, category: d.cat, bank: 'inbox:' + id };
+          if (d.for === 'own') (state.personalExpenses = state.personalExpenses || []).push(Object.assign(rec, { owner: it.who, fromCard: false }));
+          else state.expenses.push(Object.assign(rec, { payer: d.for === 'shared:card' ? 'card' : it.who }));
+        }
         const after = flattenState(state), touched = {};
         Object.keys(Object.assign({}, before, after)).forEach(k => { if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) touched[k] = before[k]; });
         drop(id, it); saveToCloud(); renderAll();
@@ -5561,6 +5581,7 @@ const snapshotFlat = st => clone(flattenState(st));
         const row = ev.target.closest('#g-inbox [data-ib]'); if (!row) return;
         const id = row.dataset.ib, d = draft[id], it = inbox[id]; if (!d || !it) return;
         if (ev.target.matches('[data-ib-cat]')) d.cat = ev.target.value;
+        else if (ev.target.matches('[data-ib-owner]')) d.owner = ev.target.value;
         else if (ev.target.matches('[data-ib-for]')) { d.for = ev.target.value; const cs = catsFor(it, d.for); if (cs.indexOf(d.cat) < 0) d.cat = impCatName(d.cat, cs); render(); }
       });
       document.addEventListener('input', ev => { const row = ev.target.closest('#g-inbox [data-ib]'); if (row && ev.target.matches('[data-ib-amt]') && draft[row.dataset.ib]) draft[row.dataset.ib].amount = ev.target.value; });
@@ -5585,7 +5606,7 @@ const snapshotFlat = st => clone(flattenState(st));
         if (!k) { out.textContent = 'Спершу створіть посилання.'; return; }
         out.textContent = 'Перевіряю…';
         send(k, { text: txt, src: 'android' }, true).then(j => {
-          out.textContent = j.ignored ? 'Це не покупка — буде пропущено.' : j.item ? 'Сума ' + j.item.amount + (j.item.currency ? ' ' + j.item.currency : '') + ', магазин: ' + j.item.merchant : j.error === 'bad key' ? 'Сервер ще не бачить ключ. Зачекайте хвилину.' : 'Суму не знайдено.';
+          out.textContent = j.ignored ? 'Це не покупка — буде пропущено.' : j.item && j.item.kind === 'in' ? 'Надходження ' + j.item.amount + (j.item.currency ? ' ' + j.item.currency : '') + ', від: ' + j.item.merchant : j.item ? 'Сума ' + j.item.amount + (j.item.currency ? ' ' + j.item.currency : '') + ', магазин: ' + j.item.merchant : j.error === 'bad key' ? 'Сервер ще не бачить ключ. Зачекайте хвилину.' : 'Суму не знайдено.';
         }, () => { out.textContent = 'Немає зв’язку з сервером.'; });
       });
       function renderSetup() {

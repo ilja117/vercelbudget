@@ -138,3 +138,10 @@ test('справжні сповіщення monobank, Privat24 і Google Гам�
   // той самий платіж від банку й Гаманця — дубль
   assert.equal(isDuplicate({ a: { who: 'p1', amount: 30, ts: 1000 } }, 'p1', { amount: 30 }, 1000 + 20000), true);
 });
+
+test('Privat24: «+сума» — надходження, «-сума» — витрата', () => {
+  const n = t => normalize({ title: 'Privat24', text: t, src: 'android' });
+  for (const t of ['+500₴ Поповнення картки 5*36 10:00 Бал. 900₴', '+500.00 UAH Переказ з карти на карту. 5*36 Бал. 1 400₴', '+1 250,50₴ Зарплата 5*36 Бал. 9 000₴', '+30₴ Кешбек 5*36']) assert.equal(n(t).error, 'not purchase', t);
+  const r = n('-500₴ Продукти. SILPO 5*36 12:00 Бал. 400₴');
+  assert.equal(r.amount, 500); assert.equal(r.merchant, 'SILPO');
+});

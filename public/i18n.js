@@ -17,6 +17,7 @@
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var M_NOM = ['січень', 'лютий', 'березень', 'квітень', 'травень', 'червень', 'липень', 'серпень', 'вересень', 'жовтень', 'листопад', 'грудень'];
   var M_LOC = ['січні', 'лютому', 'березні', 'квітні', 'травні', 'червні', 'липні', 'серпні', 'вересні', 'жовтні', 'листопаді', 'грудні'];
+  var M_GEN = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
   var M_SHORT = ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
   var monthOf = function (w, list) { var i = list.indexOf(String(w).toLowerCase()); return i < 0 ? null : i; };
 
@@ -153,7 +154,7 @@
     'перед переходом на модель внесків': 'before switching to contributions', 'перед масовою зміною': 'before a bulk change', 'щоденна': 'daily',
     'Повернути внески': 'Restore contributions', 'Відновити все': 'Restore everything', 'Тема оформлення': 'Theme', 'Зайчик': 'Bunny', 'Хом\u2019ячок': 'Hamster', 'Мочі': 'Mochi', 'Щічки повні заощаджень': 'Cheeks full of savings', 'Круглий і солодкий': 'Round and sweet', 'Кошеня': 'Kitten', 'Цукерка': 'Candy', 'М\u2019яко, як зефір': 'Soft as marshmallow', 'Тепло й мурчно': 'Warm and purring', 'Солодкий бюджет': 'Sweet budget', 'Вибір зберігається на цьому пристрої.': 'Saved on this device.',
     'Авто за календарем': 'Auto by calendar', 'Без сезонності': 'No seasonal colours', 'стандартна тема': 'standard theme', 'Позначки партнерів': 'Partner markers', 'Ініціали': 'Initials', 'Емодзі': 'Emoji',
-    'Нові з картки': 'New from card', 'Прийшли з телефона. У бюджет потрапить лише те, що ви додасте.': 'Sent from a phone. Only what you add goes into the budget.', 'Додати': 'Add', 'Пропустити': 'Skip', 'Сума': 'Amount', 'Категорія': 'Category', 'Чиє': 'Whose', 'Спільне · зі спільної картки': 'Shared · from the shared card', 'Згорнути': 'Collapse', 'Надходження': 'Incoming', 'Додати як дохід': 'Add as income', 'Чий дохід': 'Whose income', 'Переказ на картку': 'Transfer to card', 'Вкажіть суму більше нуля.': 'Enter an amount above zero.', 'Скопійовано': 'Copied',
+    'Нові з картки': 'New from card', 'Прийшли з телефона. У бюджет потрапить лише те, що ви додасте.': 'Sent from a phone. Only what you add goes into the budget.', 'Додати': 'Add', 'Пропустити': 'Skip', 'Сума': 'Amount', 'Категорія': 'Category', 'Чиє': 'Whose', 'Спільне · зі спільної картки': 'Shared · from the shared card', 'Згорнути': 'Collapse', 'Надходження': 'Incoming', 'Додати як дохід': 'Add as income', 'Разом витратили': 'Spent together', 'Вніс(ла) на картку': 'Put on the card', 'Чий дохід': 'Whose income', 'Переказ на картку': 'Transfer to card', 'Вкажіть суму більше нуля.': 'Enter an amount above zero.', 'Скопійовано': 'Copied',
     'Автоплатежі з телефона': 'Payments from your phone', "Оплата Apple Pay чи Google Pay сама з'являється на головній у «Нові з картки». Кожен налаштовує свій телефон своїм посиланням.": 'An Apple Pay or Google Pay payment appears on Home under “New from card” by itself. Each of you sets up your own phone with your own link.',
     'Скопіювати посилання': 'Copy link', 'Новий ключ': 'New key', 'Створити посилання': 'Create link', 'Як налаштувати iPhone': 'How to set up an iPhone', 'Посилання': 'Link', 'Створити': 'Create',
     '«Новий ключ» вимикає старе посилання: тоді його треба вставити в телефон заново. Посилання нікому не пересилайте.': '“New key” turns off the old link, so it has to be pasted into the phone again. Do not send the link to anyone.',
@@ -311,6 +312,7 @@
     [/^(січень|лютий|березень|квітень|травень|червень|липень|серпень|вересень|жовтень|листопад|грудень)$/i, function (m, a) { return MONTHS[monthOf(a, M_NOM)]; }],
     [/^зараз: (\S+)$/, function (m, a) { var i = monthOf(a, M_NOM); return i === null ? null : 'now: ' + MONTHS[i]; }],
     [/^У (\S+) ви разом витратили$/, function (m, a) { var i = monthOf(a, M_LOC); return i === null ? null : 'In ' + MONTHS[i] + ' you spent together'; }],
+    [/^Підсумок (\S+)$/, function (m, a) { var i = monthOf(a, M_GEN); return i === null ? null : MONTHS[i] + ' summary'; }],
     [/^У (\S+) спільних витрат ще немає\.$/, function (m, a) { var i = monthOf(a, M_LOC); return i === null ? null : 'No shared expenses in ' + MONTHS[i] + ' yet.'; }],
     [/^— на (\d+)% (менше|більше), ніж у (\S+)\.$/, function (m, n, d, a) { var i = monthOf(a, M_LOC); return i === null ? null : '— ' + n + '% ' + (d === 'менше' ? 'less' : 'more') + ' than in ' + MONTHS[i] + '.'; }],
     [/^— стільки ж, як у (\S+)\.$/, function (m, a) { var i = monthOf(a, M_LOC); return i === null ? null : '— the same as in ' + MONTHS[i] + '.'; }],

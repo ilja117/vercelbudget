@@ -11,7 +11,7 @@
 - Вчитися: після помилки або зауваження користувача — коротко дописати урок у «Досвід» нижче (один рядок, лише те, що повториться). Застарілі уроки прибирати.
 
 ## Структура
-- `public/index.html` — весь застосунок (~5650 рядків, v6.12). НЕ читати цілком: шукати `grep -n` і читати `sed -n 'A,Bp'`.
+- `public/index.html` — весь застосунок (~5700 рядків, v6.13). НЕ читати цілком: шукати `grep -n` і читати `sed -n 'A,Bp'`.
   Код шарами v3→v5: `renderAll`/`switchTab` перевизначаються обгортками; нова логіка — в останніх скриптах: `#usbudget-nav-v5` (навігація, обгортки `renderAllV5`, `switchTabV5`), `#usbudget-import` (імпорт виписок), `#usbudget-fold` (згортання блоків), `#usbudget-simple` («+» → «Що сталося?», «Звідки це число?», розкладка головної, знайомство `openIntro`).
   Теми: двигун `#usbudget-theme-engine-js` (`SKINS`, `mascotSvg`, `setThemePref`; у сховищі `usbudget_theme`: `off` / `auto` / місяць / `sk-<id>`), стилі рожевих тем — `<style id="usbudget-skins">`, форма «Глина» для всіх тем — `<style id="usbudget-clay">` (`SYM`, `coinSvg`, `applyPuffs`).
   `confirmResetToDemo` у застосунку не викликається, але потрібна `tools/preview/fakefb.js` — не видаляти.
@@ -21,6 +21,7 @@
 - Конвертер (v6.7): кнопка в шапці → `openConverter()`, скрипт `#usbudget-convert`; ціни з `api/rates.js` + `lib/rates.mjs` (НБУ, CoinGecko, Yahoo; все через долар), останні курси в `usbudget_rates`. Тест: `tests/rates.test.mjs`.
 - «Нові з картки» (v6.8): телефон шле платіж на `api/inbox.js` (`lib/inbox.mjs`, ключ із `settings.inboxKeys[p1|p2]`) → `shared_budget_data/inbox/<id>`; скрипт `#usbudget-inbox` показує їх на головній над «Останні записи», «Додати» створює запис із `bank: 'inbox:<id>'` (імпорт виписок такі вимикає як дублі). Налаштування — картка `#ib-setup` у «Налаштуваннях» (кнопка «Перевірити», інструкції iPhone і Android/MacroDroid, перевірка тексту через `&dry=1`). Android шле сирий `title`/`text` у параметрах посилання; розбір — `normalize`/`merchantFrom` (сума поруч із валютою, баланс і картка відкидаються, коди й промокоди пропускаються, дубль за 2 хв). Надходження (v6.10): `kind: 'in'` → рядок «Надходження», «Додати як дохід» → `personalIncomes` з `bank: 'inbox:<id>'`. Тест: `tests/inbox.test.mjs`.
 - Копії на сервері (v6.11): `lib/backup.mjs` `makeBackup` → `backups/<id>` (дерево `shared_budget_data` без `inbox`) + `backup_meta/<id>` {ts,count,reason}; 30 днів / макс. 60. Щоночі з `api/reminders.js`; `api/backup.js` (лише учасники: GET список, GET ?id, POST копія). У застосунку — блок «На сервері» в картці «Автокопії» (`renderServerBackups`, `srvBkRestore` → `fromRemote` + `protectLocked`, що зберігає `inboxKeys`). Тест: `tests/backup.test.mjs`. Ранкове сповіщення (v6.12): `messageFor` у `lib/schedule.mjs` додає рядок про `inbox` цієї людини, що чекає з учора (тест там же).
+- «Підсумок місяця» (v6.13): скрипт `#usbudget-msum`, картка `#g-msum` на головній 1–5 числа (минулий місяць через `monthlySummary`), «Зрозуміло» → `localStorage usbudget_msum`.
 - `PRODUCT.md` — для кого і навіщо; `DESIGN.md` — дизайн-система «Цінник» (кольори, шрифти, правила); `.impeccable/` — контракт напрямку.
 
 ## Підрахунки (не ламати)

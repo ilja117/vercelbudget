@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.12.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.13.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -5739,6 +5739,50 @@ const snapshotFlat = st => clone(flattenState(st));
       listen(); render(); renderSetup();
     })();
   </script>
+  <script id="usbudget-msum">
+    // «Підсумок місяця» (v6.13): 1–5 числа на головній — минулий місяць проти позаминулого; «Зрозуміло» ховає до наступного місяця
+    (function () {
+      const GEN = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
+      const LOCM = ['січні', 'лютому', 'березні', 'квітні', 'травні', 'червні', 'липні', 'серпні', 'вересні', 'жовтні', 'листопаді', 'грудні'];
+      const SEEN = 'usbudget_msum';
+      const seen = () => { try { return localStorage.getItem(SEEN); } catch (e) { return null; } };
+      const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const pctTxt = (a, b) => b ? Math.round((a - b) / b * 100) : null;
+
+      function render() {
+        const old = document.getElementById('g-msum'), today = getTodayString();
+        const [prevKey, key] = monthKeys(today.slice(0, 7), 3).slice(0, 2), pi = Number(prevKey.slice(5, 7)) - 1, ki = Number(key.slice(5, 7)) - 1;
+        const ms = monthlySummary(state, [prevKey, key]), prev = ms[0], m = ms[1];
+        const show = Number(today.slice(8, 10)) <= 5 && seen() !== key && (m.shared > 0 || m.contrib.p1 + m.contrib.p2 > 0);
+        const recent = document.getElementById('g-recent');
+        if (!show || !recent) { if (old) old.remove(); return; }
+        let box = old;
+        if (!box) { box = document.createElement('div'); box.id = 'g-msum'; box.dataset.fold = '0'; box.className = 'bg-white dark:bg-slate-800/80 rounded-2xl p-4'; }
+        const target = document.getElementById('g-inbox') || recent;
+        if (box.nextElementSibling !== target) target.before(box);
+        const p = pctTxt(m.shared, prev.shared);
+        const cmp = p === null ? '' : p < 0 ? `— на ${-p}% менше, ніж у ${LOCM[pi]}.` : p > 0 ? `— на ${p}% більше, ніж у ${LOCM[pi]}.` : `— стільки ж, як у ${LOCM[pi]}.`;
+        const top = Object.keys(m.byCat).sort((a, b) => m.byCat[b] - m.byCat[a]).slice(0, 3);
+        const row = (l, r, x) => `<div class="flex items-baseline justify-between gap-3 py-1.5 border-t text-sm"><span class="min-w-0 truncate">${l}</span><span class="whitespace-nowrap"><b class="g-num">${r}</b>${x || ''}</span></div>`;
+        box.innerHTML = `<h3 class="text-sm">Підсумок ${GEN[ki]}</h3>
+          <p class="text-sm mt-1 mb-2"><span>Разом витратили</span> <b class="g-num">${fmtMoney(m.shared)}</b> <span>${cmp}</span></p>
+          ${top.map(c => { const q = pctTxt(m.byCat[c], prev.byCat[c] || 0); return row(e(c), fmtMoney(m.byCat[c]), q === null ? '' : ` <span class="text-xs text-slate-500">${q > 0 ? '↑' : q < 0 ? '↓' : ''}${Math.abs(q)}%</span>`); }).join('')}
+          ${['p1', 'p2'].map(k => row('Вніс(ла) на картку · ' + e(nameOf(k)), fmtMoney(m.contrib[k]))).join('')}
+          ${m.saved > 0 ? row('Відкладено', fmtMoney(m.saved)) : ''}
+          <div class="pt-3 flex flex-wrap gap-2"><button type="button" data-msum-more class="g-btn-sm" style="padding:0 16px;font-size:13px">Детальніше</button>
+            <button type="button" data-msum-ok class="px-3 rounded-lg border text-sm min-h-[40px]">Зрозуміло</button></div>`;
+      }
+      document.addEventListener('click', ev => {
+        if (!ev.target.closest('#g-msum')) return;
+        if (ev.target.closest('[data-msum-more]')) switchTab('analytics');
+        else if (ev.target.closest('[data-msum-ok]')) { try { localStorage.setItem(SEEN, monthKeys(getTodayString().slice(0, 7), 2)[0]); } catch (err) {} render(); }
+      });
+      const prevRender = renderAll;
+      renderAll = function () { prevRender(); render(); };
+      render();
+    })();
+  </script>
+
   <script id="usbudget-convert">
     // Конвертер: валюти НБУ, метали, крипто, акції. Ціни з /api/rates, останні — у пам'яті пристрою.
     (function () {

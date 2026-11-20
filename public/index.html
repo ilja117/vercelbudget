@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.15.2</title>
+  <title>UsBudget — Спільний бюджет пари · v6.15.3</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -1736,7 +1736,10 @@ const snapshotFlat = st => clone(flattenState(st));
         updateSyncBadge(netOnline);
         if (netOnline && pendingWrites === 0 && syncReady) writeBase(lastSynced);
       });
-      db.ref(DB_ROOT).on('value', (snapshot) => {
+      // v6.15.3: відмову на старті (вхід ще не підтверджено) повторюємо з оновленим входом, а не здаємося
+      let mainTries = 0;
+      const attachMain = () => db.ref(DB_ROOT).on('value', (snapshot) => {
+        mainTries = 0;
         const val = snapshot.val();
         if (!val) {  // база порожня: засіваємо поточним станом
           startupPending = null;
@@ -1746,7 +1749,6 @@ const snapshotFlat = st => clone(flattenState(st));
           updateSyncBadge(true);
           return;
         }
-        try { sessionStorage.removeItem('usbudget_denied_retry'); } catch (e) {}
         const legacy = !(val.meta && val.meta.schema >= 2);
         state = fromRemote(val);
         lastSynced = snapshotFlat(state);
@@ -1771,8 +1773,15 @@ const snapshotFlat = st => clone(flattenState(st));
         updateSyncBadge(true);
       }, (error) => {
         updateSyncBadge(false);
-        if (/permission/i.test(String((error && (error.code || error.message)) || ''))) showAccessDenied();
+        if (!/permission/i.test(String((error && (error.code || error.message)) || ''))) return;
+        if (mainTries < 3) {
+          const u = authApi() && authApi().currentUser, wait = [1000, 3000, 8000][mainTries++];
+          Promise.resolve(u && u.getIdToken(true)).catch(() => {}).then(() => setTimeout(attachMain, wait));
+          return;
+        }
+        showAccessDenied();
       });
+      attachMain();
     }
 
     // ==== AUTH ====
@@ -1846,7 +1855,7 @@ const snapshotFlat = st => clone(flattenState(st));
       }, 'Вийти', true);
     }
 
-    // v6.15.2: спершу оновлюємо вхід і пробуємо ще раз (раз за сесію), далі — пояснення з причиною
+    // v6.15.2: пояснення з причиною (повтори — у attachMain)
     async function showAccessDenied() {
       const u = authApi() && authApi().currentUser;
       const notListed = () => showModal('Немає доступу до бази', 'Цей акаунт ще не додано до списку дозволених. У Firebase Console → Realtime Database → Data створіть запис members/' + (u ? u.uid : '<UID>') + ' зі значенням true.');
@@ -1854,9 +1863,6 @@ const snapshotFlat = st => clone(flattenState(st));
       const code = e => String((e && (e.code || e.message)) || e);
       try { await u.getIdToken(true); }
       catch (e) { return showModal('Немає доступу до бази', 'Не вдалося оновити вхід (' + code(e) + '). Перевірте інтернет і відкрийте застосунок ще раз.'); }
-      let retried = false;
-      try { retried = sessionStorage.getItem('usbudget_denied_retry') === '1'; sessionStorage.setItem('usbudget_denied_retry', '1'); } catch (e) {}
-      if (!retried) { location.reload(); return; }
       let member;
       try { member = (await db.ref('members/' + u.uid).once('value')).val(); }
       catch (e) { return showModal('Немає доступу до бази', 'База не прийняла вхід (' + code(e) + '). Закрийте застосунок повністю й відкрийте знову.'); }
@@ -5659,6 +5665,7 @@ const snapshotFlat = st => clone(flattenState(st));
 
       function listen() {
         if (listening || typeof db === 'undefined' || !db) return;
+        const au = authApi(); if (AUTH_REQUIRED && au && !au.currentUser) return; // до входу база відмовить і слухач згасне назавжди
         listening = true;
         ref().on('value', s => { inbox = s.val() || {}; Object.keys(draft).forEach(k => { if (!inbox[k]) delete draft[k]; }); render(); });
         // Одноразово переносимо платежі зі старого місця (до v6.15 — shared_budget_data/inbox); старе стираємо лише після вдалого запису

@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.17.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.18.0</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -618,7 +618,7 @@
         <button onclick="toggleDarkMode()" aria-label="Світла або темна тема" title="Світла / темна тема" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition" title="Змінити тему">
           <span id="theme-icon" class="flex"><svg class="g-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></span>
         </button>
-        <button onclick="switchTab('settings')" aria-label="Налаштування" title="Налаштування" class="w-10 h-10 sm:hidden flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition" title="Налаштування">
+        <button onclick="switchTab('settings')" aria-label="Налаштування" title="Налаштування" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition" title="Налаштування">
           <span class="flex"><svg class="g-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
         </button>
       </div>
@@ -948,7 +948,7 @@
 
     <!-- TAB: НАЛАШТУВАННЯ -->
     <section id="tab-settings" class="tab-content hidden space-y-4 sm:space-y-6">
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div id="set-couple" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2">
             <span class="text-2xl">⚙️</span>
@@ -961,7 +961,7 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-5">
+      <div id="set-partners" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-5">
         <h3 class="text-base sm:text-lg font-bold flex items-center gap-2"><span>👥</span> Персоналізація партнерів</h3>
         <form id="settings-partners-form" onsubmit="savePartnerSettings(event)" class="space-y-5">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -1027,7 +1027,7 @@
         </form>
       </div>
 
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-5">
+      <div id="set-finance" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-5">
         <h3 class="text-base sm:text-lg font-bold flex items-center gap-2"><span>💵</span> Фінансові параметри</h3>
         <form id="settings-finance-form" onsubmit="saveFinanceSettings(event)" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1063,7 +1063,7 @@
         </form>
       </div>
 
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
+      <div id="set-cats" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
         <div class="flex justify-between items-center">
           <h3 class="text-base sm:text-lg font-bold">🏷️ Категорії витрат</h3>
           <button onclick="resetCategoriesToDefault()" class="text-xs text-pink-600 hover:underline">Відновити типові</button>
@@ -1075,7 +1075,7 @@
         <div id="settings-categories-list" class="flex flex-wrap gap-2 pt-1"></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
+      <div id="set-autobk" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
         <div>
           <h3 class="text-base sm:text-lg font-bold flex items-center gap-2"><span>🛟</span> Автокопії</h3>
           <p class="text-xs text-slate-500 mt-0.5">Страховка від випадкового видалення. Сервер щоночі зберігає копію всього бюджету (30 днів), а цей пристрій — раз на день і перед масовими змінами (останні 7).</p>
@@ -1085,7 +1085,7 @@
         <div id="backups-list"></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
+      <div id="set-theme" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
         <div>
           <h3 class="text-base sm:text-lg font-bold flex items-center gap-2"><span>🎨</span> Тема оформлення</h3>
           <p class="text-xs text-slate-500 mt-0.5">Вибір зберігається на цьому пристрої.</p>
@@ -1099,7 +1099,7 @@
         <button type="button" onclick="authSignOut()" class="px-4 py-2.5 rounded-xl border text-sm font-semibold min-h-[44px]">Вийти з акаунта</button>
       </div>
 
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
+      <div id="set-pin" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
         <div>
           <h3 class="text-base sm:text-lg font-bold flex items-center gap-2"><span>🔒</span> PIN-захист особистих вкладок</h3>
           <p class="text-xs text-slate-500 mt-0.5">Захистіть особисті розділи від випадкового перегляду.</p>
@@ -1107,8 +1107,8 @@
         <div id="privacy-settings" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
-        <h3 class="text-base sm:text-lg font-bold">💾 Резервне копіювання</h3>
+      <div id="set-file" class="bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs space-y-4">
+        <h3 class="text-base sm:text-lg font-bold">💾 Копія у файл</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <button onclick="exportDataToJson()" class="p-4 rounded-xl border hover:border-pink-500 bg-slate-50 dark:bg-slate-900/50 text-left transition min-h-[56px]">
             <div class="text-xl mb-1">📥</div><div class="font-semibold text-sm">Експорт у JSON</div>
@@ -2740,7 +2740,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const open = !!ppSetupOpen[k], box = document.getElementById(`pp-${k}-setup`);
       if (!box) return;
       box.hidden = !open && !rangeOn;
-      ['pin', 'cats-card'].forEach(id => { const el = document.getElementById(`pp-${k}-${id}`); if (el) el.hidden = !open; });
+      ['pin', 'cats-card'].forEach(id => { const el = document.getElementById(`pp-${k}-${id}`); if (el) el.style.display = open ? '' : 'none'; }); // клас flex перебиває hidden
     }
     function togglePersonalSetup(k) {
       ppSetupOpen[k] = !ppSetupOpen[k];
@@ -4892,7 +4892,7 @@ const snapshotFlat = st => clone(flattenState(st));
             const tabs = NAV_GROUPS[g].tabs;
       requestAnimationFrame(moveNavIndicator);
       box.classList.toggle('hidden', tabs.length < 2);
-      box.innerHTML = tabs.length < 2 ? '' : tabs.map(t =>
+      box.innerHTML = tabs.length < 2 ? '' : tabs.filter(t => t !== 'settings').map(t =>
         `<button type="button" role="tab" class="g-sub" aria-selected="${t === tab}" onclick="switchTab('${t}')">${esc(subLabel(g, t))}</button>`).join('');
     }
     // Частина блоків малюється після заміни емодзі, тож проходимо ще раз наприкінці
@@ -4978,9 +4978,6 @@ const snapshotFlat = st => clone(flattenState(st));
       if (set && !document.getElementById('g-lang')) {
         const cur = window.USB_LANG || 'uk';
         set.insertAdjacentHTML('afterbegin', `<div id="g-lang" class="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800/80"><span class="font-semibold" id="g-lang-label">Мова інтерфейсу</span><span class="flex gap-2" role="group" aria-labelledby="g-lang-label">${[['uk', 'Українська'], ['en', 'English']].map(([v, l]) => `<button type="button" class="g-sub" aria-pressed="${cur === v}" onclick="setAppLanguage('${v}')" lang="${v}">${l}</button>`).join('')}</span></div>`);
-      }
-      if (set && !document.getElementById('g-open-analytics')) {
-        set.insertAdjacentHTML('afterbegin', `<button type="button" id="g-open-analytics" onclick="switchTab('analytics')" class="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800/80 text-left min-h-[56px]"><span><span class="block font-semibold">Аналітика за місяцями</span><span class="block text-xs text-slate-500">Графіки й підсумки</span></span><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`);
       }
     });
   </script>
@@ -5965,6 +5962,31 @@ const snapshotFlat = st => clone(flattenState(st));
       });
       function save() { try { localStorage.setItem(PAIR, JSON.stringify({ from: S.from, to: S.to })); } catch (e) {} }
       window.openConverter = open;
+    })();
+  </script>
+  <script id="usbudget-settings-order">
+    // v6.18: налаштування по групах. Картки знаходимо за id (текст перекладається, id — ні).
+    (function () {
+      const GROUPS = [
+        ['Пара і бюджет', ['set-partners', 'set-finance', 'set-cats']],
+        ['Телефон і сповіщення', ['app-card', 'ib-setup']],
+        ['Вигляд', ['set-theme', 'g-lang']],
+        ['Безпека і копії', ['g-account-card', 'set-pin', 'set-autobk', 'set-file']]
+      ];
+      function orderSettings() {
+        const tab = document.getElementById('tab-settings'); if (!tab) return;
+        const head = document.getElementById('set-couple'); if (head) head.style.display = 'none'; // замість нього — заголовки груп
+        GROUPS.forEach(([title, ids], i) => {
+          let h = document.getElementById('set-g' + i);
+          if (!h) { h = document.createElement('h2'); h.id = 'set-g' + i; h.className = 'text-xs uppercase tracking-wide text-slate-500 font-semibold px-1 pt-2'; h.textContent = title; }
+          tab.appendChild(h);
+          ids.forEach(id => { const el = document.getElementById(id); if (el) tab.appendChild(el); });
+        });
+      }
+      const prevSwitch = switchTab;
+      switchTab = function (t) { const r = prevSwitch.apply(this, arguments); if (t === 'settings') orderSettings(); return r; };
+      document.addEventListener('DOMContentLoaded', () => setTimeout(orderSettings, 0));
+      window.orderSettings = orderSettings;
     })();
   </script>
 </body>

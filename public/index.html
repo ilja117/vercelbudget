@@ -5666,12 +5666,14 @@ const snapshotFlat = st => clone(flattenState(st));
         listening = true;
         ref().on('value', s => { inbox = s.val() || {}; Object.keys(draft).forEach(k => { if (!inbox[k]) delete draft[k]; }); render(); });
         // Одноразово переносимо платежі зі старого місця (до v6.15 — shared_budget_data/inbox); старе стираємо лише після вдалого запису
-        const old = db.ref(DB_ROOT + '/inbox');
-        old.once('value').then(s => {
-          const v = s.val();
-          if (!v || typeof v !== 'object') return;
-          return ref().update(v).then(() => { saveToCloud(); return old.remove(); });
-        }).catch(err => console.warn('inbox move:', err));
+        try {
+          const old = db.ref(DB_ROOT + '/inbox');
+          old.once('value').then(s => {
+            const v = s.val();
+            if (!v || typeof v !== 'object') return;
+            return ref().update(v).then(() => { saveToCloud(); return old.remove(); });
+          }).catch(err => console.warn('inbox move:', err));
+        } catch (err) { console.warn('inbox move:', err); }
       }
       window.__inboxSet = v => { inbox = v || {}; render(); }; // для перевірок у перегляді
 

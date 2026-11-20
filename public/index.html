@@ -11,10 +11,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.15.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.15.1</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
@@ -23,24 +21,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#fdf2f8',
-              100: '#fce7f3',
-              500: '#ec4899',
-              600: '#db2777',
-              700: '#be185d',
-            }
-          }
-        }
-      }
-    }
-  </script>
 
   <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -607,6 +587,8 @@
       document.addEventListener('DOMContentLoaded', function () { apply(); buildPicker(); });
     }());
   </script>
+  <!-- Tailwind: готові стилі (npm run css), після власних — як раніше робив CDN -->
+  <link rel="stylesheet" href="tw.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
 

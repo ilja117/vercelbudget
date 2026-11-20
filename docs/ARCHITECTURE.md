@@ -1,16 +1,17 @@
 # UsBudget — карта проєкту (щоб не перечитувати код)
 
-Версія на момент запису: v6.15.0 (точна — у `<title>` index.html і `CACHE` у sw.js). Номери рядків `public/index.html` змінюються — перед правкою шукати `grep -n "назва"` і читати `sed -n 'A,Bp'`.
+Версія на момент запису: v6.15.1 (точна — у `<title>` index.html і `CACHE` у sw.js). Номери рядків `public/index.html` змінюються — перед правкою шукати `grep -n "назва"` і читати `sed -n 'A,Bp'`.
 Правила роботи й підрахунки — у `CLAUDE.md`; дизайн — `DESIGN.md`; для кого — `PRODUCT.md`.
 
 ## 1. Що це
-PWA «бюджет для двох» (пара). Один файл `public/index.html` (~5900 рядків, без збірки, Tailwind і Chart.js з CDN), англійська поверх нього — `public/i18n.js`, офлайн — `public/sw.js`. Дані — Firebase Realtime DB, функції — Vercel (`api/`, `lib/`). Сайт: usbudget-groshi.vercel.app. Репозиторій: ilja117/vercelbudget.
+PWA «бюджет для двох» (пара). Один файл `public/index.html` (~5900 рядків, Chart.js і Firebase з CDN; стилі Tailwind зібрані заздалегідь у `public/tw.css`), англійська поверх нього — `public/i18n.js`, офлайн — `public/sw.js`. Дані — Firebase Realtime DB, функції — Vercel (`api/`, `lib/`). Сайт: usbudget-groshi.vercel.app. Репозиторій: ilja117/vercelbudget.
 
 ## 2. Файли
 | Файл | Для чого |
 |---|---|
 | `public/index.html` | весь застосунок (HTML + CSS + 8 inline-скриптів + головний скрипт) |
 | `public/i18n.js` | переклад en: словник `D`, шаблони `P` (регулярки, замінник може бути функцією), масиви місяців `MONTHS/M_NOM/M_LOC/M_GEN/M_SHORT` |
+| `public/tw.css`, `tailwind.config.cjs`, `tailwind.in.css` | готові стилі Tailwind (з v6.15.1 замість CDN): `npm run css` після нових класів у index.html; `tests/css.test.mjs` перевіряє, що файл свіжий |
 | `public/sw.js` | кеш `CACHE='usbudget-vX.Y.Z'`; сторінка — спершу мережа; Firebase/API завжди з мережі; share-target для виписок |
 | `public/manifest.webmanifest`, `public/icons/` | PWA |
 | `api/inbox.js` | прийом платежів з телефона (`POST ?k=ключ`, `&dry=1` — лише розбір) |
@@ -23,7 +24,7 @@ PWA «бюджет для двох» (пара). Один файл `public/index
 | `lib/backup.mjs` | `makeBackup`, `toPrune`, `countRecords`; 30 днів / макс. 60 |
 | `lib/schedule.mjs` | регулярні платежі `fxOccurrences`, `messageFor` (текст ранкового push) |
 | `lib/rates.mjs` | `parseNbu/parseGecko/parseYahoo`, `convert`, `loadRates` |
-| `tests/*.test.mjs` | `npm test` (28 тестів: balance, inbox, backup, rates, server) |
+| `tests/*.test.mjs` | `npm test` (30 тестів: balance, inbox, backup, rates, server, css) |
 | `database.rules.json` | правила Firebase: усе закрито; `shared_budget_data`, `inbox` і `push_subs` — лише `members` |
 | `vercel.json` | cron, заголовки sw/manifest, `outputDirectory: public` |
 | `tools/preview/` | перегляд без CDN і живої бази (`build.sh`, `fakefb.js`, `shot.cjs`) |
@@ -59,7 +60,7 @@ PWA «бюджет для двох» (пара). Один файл `public/index
 - **Платіж з телефона:** MacroDroid/Shortcuts → `api/inbox` → `normalize` (суму, магазин; зарахування → `kind:'in'`; промокоди, коди, баланс — ігнор) → `inbox/<id>` з `who` за ключем → картка «Нові з картки» власника → «Додати» (витрата) / «Додати як дохід» / «Пропустити».
 - **Нічний cron:** `api/reminders` → push (`messageFor`) + `makeBackup`.
 - **Копія/відновлення:** локальні (`pushBackup`, `restoreBackup`, `protectLocked`) і серверні (`srvBk*`); відновлення зберігає PIN-секції й `inboxKeys`.
-- **Реліз:** підняти версію в `<title>` index.html і `CACHE` у sw.js, додати переклади в i18n, `npm test`, прогін у перегляді (uk і en), коміт у робочу гілку, питання «так/ні», злиття в `main` → Vercel деплоїть сам.
+- **Реліз:** підняти версію в `<title>` index.html і `CACHE` у sw.js, додати переклади в i18n, нові класи Tailwind → `npm run css`, `npm test`, прогін у перегляді (uk і en), коміт у робочу гілку, питання «так/ні», злиття в `main` → Vercel деплоїть сам.
 
 ## 8. Перевірка
 `cd tools/preview && ./build.sh`, сервер `cd out && python3 -m http.server 8766` (інколи падає — перезапустити), Playwright-скрипти: `serviceWorkers:'block'`, `usbudget_intro=1`, `page.clock.install` для дати; перевіряти `pageerror`. Тести сервера: `npm test`.

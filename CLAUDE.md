@@ -17,6 +17,7 @@
   Теми: двигун `#usbudget-theme-engine-js` (`SKINS`, `mascotSvg`, `setThemePref`; у сховищі `usbudget_theme`: `off` / `auto` / місяць / `sk-<id>`), стилі рожевих тем — `<style id="usbudget-skins">`, форма «Глина» для всіх тем — `<style id="usbudget-clay">` (`SYM`, `coinSvg`, `applyPuffs`).
   `confirmResetToDemo` у застосунку не викликається, але потрібна `tools/preview/fakefb.js` — не видаляти.
 - `public/i18n.js` — англійська поверх сторінки: словник `D` + шаблони `P`. Новий текст інтерфейсу → додати переклад.
+- Стилі Tailwind (v6.15.1) — готовий файл `public/tw.css`, не CDN: після нових класів у index.html — `npm run css` (інакше `npm test` впаде).
 - `public/sw.js` — офлайн-кеш. При кожному релізі піднімати версію в `CACHE` і в `<title>` index.html.
 - `api/`, `lib/` — функції Vercel (нагадування, тестовий push, перевірка учасників), `tests/` — `npm test`. Ключі лише в Vercel Environment Variables, не в репозиторії.
 - Функції за версіями (конвертер v6.7, «Нові з картки» v6.8–v6.14.1, копії на сервері v6.11, «Підсумок місяця» v6.13): опис, ключі даних і тести — `docs/ARCHITECTURE.md`, розділ 10.

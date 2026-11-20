@@ -1,6 +1,6 @@
 # UsBudget — карта проєкту (щоб не перечитувати код)
 
-Версія на момент запису: v6.14.1. Номери рядків `public/index.html` змінюються — перед правкою шукати `grep -n "назва"` і читати `sed -n 'A,Bp'`.
+Версія на момент запису: v6.14.2 (точна — у `<title>` index.html і `CACHE` у sw.js). Номери рядків `public/index.html` змінюються — перед правкою шукати `grep -n "назва"` і читати `sed -n 'A,Bp'`.
 Правила роботи й підрахунки — у `CLAUDE.md`; дизайн — `DESIGN.md`; для кого — `PRODUCT.md`.
 
 ## 1. Що це
@@ -71,3 +71,9 @@ PWA «бюджет для двох» (пара). Один файл `public/index
 - Приховані блоки: у тестах `textContent`, не `innerText`.
 - Не переписувати ключі Firebase/VAPID з пам'яті — лише копіювати.
 - Картку не прибирати, якщо в ній єдина кнопка повернення (помилка v6.14.0 з «Інший телефон»).
+
+## 10. Функції за версіями (перенесено з CLAUDE.md)
+- Конвертер (v6.7): кнопка в шапці → `openConverter()`, скрипт `#usbudget-convert`; ціни з `api/rates.js` + `lib/rates.mjs` (НБУ, CoinGecko, Yahoo; все через долар), останні курси в `usbudget_rates`. Тест: `tests/rates.test.mjs`.
+- «Нові з картки» (v6.8): телефон шле платіж на `api/inbox.js` (`lib/inbox.mjs`, ключ із `settings.inboxKeys[p1|p2]`) → `shared_budget_data/inbox/<id>`; скрипт `#usbudget-inbox` показує їх на головній над «Останні записи», «Додати» створює запис із `bank: 'inbox:<id>'` (імпорт виписок такі вимикає як дублі). Налаштування — картка `#ib-setup` у «Налаштуваннях» (кнопка «Перевірити», інструкції iPhone і Android/MacroDroid, перевірка тексту через `&dry=1`). Android шле сирий `title`/`text` у параметрах посилання; розбір — `normalize`/`merchantFrom` (сума поруч із валютою, баланс і картка відкидаються, коди й промокоди пропускаються, дубль за 2 хв). Надходження (v6.10): `kind: 'in'` → рядок «Надходження», «Додати як дохід» → `personalIncomes` з `bank: 'inbox:<id>'`. Тест: `tests/inbox.test.mjs`.
+- Копії на сервері (v6.11): `lib/backup.mjs` `makeBackup` → `backups/<id>` (дерево `shared_budget_data` без `inbox`) + `backup_meta/<id>` {ts,count,reason}; 30 днів / макс. 60. Щоночі з `api/reminders.js`; `api/backup.js` (лише учасники: GET список, GET ?id, POST копія). У застосунку — блок «На сервері» в картці «Автокопії» (`renderServerBackups`, `srvBkRestore` → `fromRemote` + `protectLocked`, що зберігає `inboxKeys`). Тест: `tests/backup.test.mjs`. Ранкове сповіщення (v6.12): `messageFor` у `lib/schedule.mjs` додає рядок про `inbox` цієї людини, що чекає з учора (тест там же).
+- «Підсумок місяця» (v6.13): скрипт `#usbudget-msum`, картка `#g-msum` на головній 1–5 числа (минулий місяць через `monthlySummary`), «Зрозуміло» → `localStorage usbudget_msum`. «Нові з картки» (v6.14.1) показують лише платежі власника телефона (`usbudget_push_owner`, той самий вибір, що для нагадувань), чужі — за кнопкою «Інший телефон».

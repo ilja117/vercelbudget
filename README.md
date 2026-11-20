@@ -1,13 +1,11 @@
-# UsBudget v6.14 — розгортання на Vercel (безкоштовно)
+# UsBudget — розгортання на Vercel (безкоштовно)
 
 ## Що всередині
 - `public/` — застосунок: `index.html`, маніфест, service worker, іконки.
-- `api/reminders.js` — щоденні нагадування (запускає Vercel Cron).
-- `lib/firebase-server.mjs` — серверний доступ до бази через сервісний акаунт і перевірка входу.
+- `api/` — серверні функції: `reminders.js` (щоденні нагадування й нічна копія, запускає Vercel Cron), `inbox.js` (платежі з телефона), `backup.js` (копії на сервері), `rates.js` (курси для конвертера), `push-test.js` (тестове сповіщення).
+- `lib/` — спільна логіка для них: `firebase-server.mjs` (доступ до бази й перевірка входу), `schedule.mjs` (розклад платежів, та сама логіка, що й у застосунку), `inbox.mjs`, `backup.mjs`, `rates.mjs`.
 - `database.rules.json` — правила бази: доступ лише для учасників зі списку `members`.
-- `tests/` — тести серверної частини (`npm test`).
-- `api/push-test.js` — тестове сповіщення.
-- `lib/schedule.mjs` — розклад платежів, та сама логіка, що й у застосунку.
+- `tests/` — тести (`npm test`).
 - `vercel.json`, `package.json` — налаштування.
 - `tools/preview/` — локальний перегляд без CDN і живої бази (для розробки).
 - `CLAUDE.md`, `PRODUCT.md`, `DESIGN.md` — правила роботи, опис продукту, дизайн-система.
@@ -17,7 +15,7 @@
 ## Розгортання з нуля (вже зроблено, для відновлення)
 1. **GitHub.** Код уже в приватному репозиторії `vercelbudget`. Файл із ключами туди не додавайте.
 2. **Vercel.** На vercel.com зареєструйтеся через GitHub (Sign Up → Continue with GitHub), план Hobby. Далі Add New… → Project → Import навпроти вашого репозиторію. Framework Preset: Other. Решту Vercel візьме з `vercel.json`. Натисніть Deploy.
-3. **Ключі.** У проєкті відкрийте Settings → Environment Variables і додайте чотири змінні з файлу ключів: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_CONTACT` (ваш email), `CRON_SECRET`.
+3. **Ключі.** У проєкті відкрийте Settings → Environment Variables і додайте змінні з файлу ключів: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_CONTACT` (ваш email), `CRON_SECRET`, а також `FIREBASE_SERVICE_ACCOUNT` і `REQUIRE_AUTH=1` (див. «Вхід і захист даних», крок 5). Необов'язкові: `FIREBASE_DB_URL`, `FIREBASE_API_KEY` (без них беруться значення проєкту).
 4. **Перерозгортання.** Deployments → три крапки біля останнього розгортання → Redeploy. Без цього ключі не підхопляться.
 5. **Адреса.** Ваш сайт буде на `https://назва-проєкту.vercel.app` (видно на сторінці проєкту).
 

@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.16.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.17.0</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -2733,6 +2733,21 @@ const snapshotFlat = st => clone(flattenState(st));
     const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const sumBy = (arr, fn) => arr.reduce((s, x) => s + fn(x), 0);
 
+    // v6.16: службове особистої вкладки (свій період, PIN, категорії) — під кнопкою «Налаштувати».
+    // Увімкнений «Свій період» видно завжди, щоб було ясно, за які дати рахується.
+    const ppSetupOpen = {};
+    function applyPersonalSetup(k, rangeOn) {
+      const open = !!ppSetupOpen[k], box = document.getElementById(`pp-${k}-setup`);
+      if (!box) return;
+      box.hidden = !open && !rangeOn;
+      ['pin', 'cats-card'].forEach(id => { const el = document.getElementById(`pp-${k}-${id}`); if (el) el.hidden = !open; });
+    }
+    function togglePersonalSetup(k) {
+      ppSetupOpen[k] = !ppSetupOpen[k];
+      renderPersonalTabs();
+      if (ppSetupOpen[k]) { const el = document.getElementById(`pp-${k}-setup`); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+    }
+
     function buildPersonalShells() {
       const card = 'bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border shadow-xs';
       const inp = 'w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm';
@@ -2746,8 +2761,45 @@ const snapshotFlat = st => clone(flattenState(st));
         el.innerHTML = `
           <div id="pp-${k}-lock" class="pp-lockbox hidden"></div>
           <div id="pp-${k}-head" class="${card} flex flex-col md:flex-row md:items-center justify-between gap-4"></div>
-          <div id="pp-${k}-range" class="${card}" data-fold="0"></div>
           <div id="pp-${k}-kpi" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"></div>
+
+          <div id="pp-${k}-setup" class="space-y-4 sm:space-y-6" data-fold="0" hidden>
+          <div id="pp-${k}-range" class="${card}" data-fold="0"></div>
+          <div id="pp-${k}-pin" class="${card} flex items-center justify-between gap-3" data-fold="0"></div>
+          <div id="pp-${k}-cats-card" class="${card} space-y-4" data-fold="0">
+            <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
+              <h3 class="text-sm sm:text-base font-bold flex items-center gap-2"><span>🏷️</span> Власні категорії та ліміти</h3>
+              <form onsubmit="addPersonalCategory('${k}', event)" class="flex gap-2 w-full sm:w-auto">
+                <input type="text" id="pp-${k}-new-cat" placeholder="Нова категорія..." class="p-2.5 text-xs rounded-xl border bg-slate-50 dark:bg-slate-900 flex-1 sm:w-48">
+                <button type="submit" class="bg-slate-800 text-white px-3.5 py-2.5 rounded-xl text-xs shrink-0">+ Додати</button>
+              </form>
+            </div>
+            <div id="pp-${k}-categories-limits" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+          </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div class="${card}">
+              <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Мої витрати</h3>
+              <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-sm hidden sm:table">
+                  <thead><tr class="border-b text-slate-500"><th class="${th}">Дата</th><th class="${th}">Назва</th><th class="${th}">Категорія</th><th class="${th}">Сума</th><th class="${th} text-right">Дії</th></tr></thead>
+                  <tbody id="pp-${k}-exp-body"></tbody>
+                </table>
+                <div id="pp-${k}-exp-mob" class="space-y-2 sm:hidden"></div>
+              </div>
+            </div>
+            <div class="${card}">
+              <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Мої доходи</h3>
+              <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-sm hidden sm:table">
+                  <thead><tr class="border-b text-slate-500"><th class="${th}">Дата</th><th class="${th}">Джерело</th><th class="${th}">Сума</th><th class="${th} text-right">Дії</th></tr></thead>
+                  <tbody id="pp-${k}-inc-body"></tbody>
+                </table>
+                <div id="pp-${k}-inc-mob" class="space-y-2 sm:hidden"></div>
+              </div>
+            </div>
+          </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div class="${card} space-y-4">
@@ -2775,16 +2827,6 @@ const snapshotFlat = st => clone(flattenState(st));
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div class="${card}">
-              <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Додати власний дохід</h3>
-              <form onsubmit="addPersonalIncome('${k}', event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div><label class="${lbl}">Дата</label><input type="date" id="pp-${k}-inc-date" required value="${getTodayString()}" class="${inp}"></div>
-                <div><label class="${lbl}">Джерело</label><input type="text" id="pp-${k}-inc-source" required placeholder="Підробіток" class="${inp}"></div>
-                <div><label class="${lbl}">Сума (<span class="currency-symbol">₴</span>)</label><input type="number" id="pp-${k}-inc-amount" min="1" required placeholder="2000" class="${inp}"></div>
-                <div class="flex items-end pt-1"><button type="submit" class="${btn}">+ Додати</button></div>
-              </form>
-            </div>
-
-            <div class="${card}">
               <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Додати особисту витрату</h3>
               <form onsubmit="addPersonalExpense('${k}', event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div><label class="${lbl}">Дата</label><input type="date" id="pp-${k}-exp-date" required value="${getTodayString()}" class="${inp}"></div>
@@ -2794,43 +2836,19 @@ const snapshotFlat = st => clone(flattenState(st));
                 <div class="flex items-end pt-1"><button type="submit" class="${btn}">+ Додати</button></div>
               </form>
             </div>
-          </div>
 
-          <div class="${card} space-y-4">
-            <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
-              <h3 class="text-sm sm:text-base font-bold flex items-center gap-2"><span>🏷️</span> Власні категорії та ліміти</h3>
-              <form onsubmit="addPersonalCategory('${k}', event)" class="flex gap-2 w-full sm:w-auto">
-                <input type="text" id="pp-${k}-new-cat" placeholder="Нова категорія..." class="p-2.5 text-xs rounded-xl border bg-slate-50 dark:bg-slate-900 flex-1 sm:w-48">
-                <button type="submit" class="bg-slate-800 text-white px-3.5 py-2.5 rounded-xl text-xs shrink-0">+ Додати</button>
+            <div class="${card}">
+              <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Додати власний дохід</h3>
+              <form onsubmit="addPersonalIncome('${k}', event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div><label class="${lbl}">Дата</label><input type="date" id="pp-${k}-inc-date" required value="${getTodayString()}" class="${inp}"></div>
+                <div><label class="${lbl}">Джерело</label><input type="text" id="pp-${k}-inc-source" required placeholder="Підробіток" class="${inp}"></div>
+                <div><label class="${lbl}">Сума (<span class="currency-symbol">₴</span>)</label><input type="number" id="pp-${k}-inc-amount" min="1" required placeholder="2000" class="${inp}"></div>
+                <div class="flex items-end pt-1"><button type="submit" class="${btn}">+ Додати</button></div>
               </form>
             </div>
-            <div id="pp-${k}-categories-limits" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <div class="${card}">
-              <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Мої доходи</h3>
-              <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left text-sm hidden sm:table">
-                  <thead><tr class="border-b text-slate-500"><th class="${th}">Дата</th><th class="${th}">Джерело</th><th class="${th}">Сума</th><th class="${th} text-right">Дії</th></tr></thead>
-                  <tbody id="pp-${k}-inc-body"></tbody>
-                </table>
-                <div id="pp-${k}-inc-mob" class="space-y-2 sm:hidden"></div>
-              </div>
-            </div>
-            <div class="${card}">
-              <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Мої витрати</h3>
-              <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left text-sm hidden sm:table">
-                  <thead><tr class="border-b text-slate-500"><th class="${th}">Дата</th><th class="${th}">Назва</th><th class="${th}">Категорія</th><th class="${th}">Сума</th><th class="${th} text-right">Дії</th></tr></thead>
-                  <tbody id="pp-${k}-exp-body"></tbody>
-                </table>
-                <div id="pp-${k}-exp-mob" class="space-y-2 sm:hidden"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="${card}">
+          <div id="pp-${k}-struct" class="${card}">
             <h3 class="font-bold text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2"><span>🍰</span> Структура особистих витрат</h3>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
               <div class="relative h-56 sm:h-64"><canvas id="pp-${k}-chart"></canvas></div>
@@ -2935,15 +2953,18 @@ const snapshotFlat = st => clone(flattenState(st));
           </div>
           <div class="flex items-center gap-2 shrink-0 flex-wrap">
 
-            ${pinOf(k)
-              ? `<button onclick="lockPartner('${k}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700/60 transition">🔒 Заблокувати</button>`
-              : `<button onclick="switchTab('settings')" class="px-3 py-2 rounded-xl text-xs text-slate-500">${ICON('unlock', 14)} Без PIN</button>`}
+            ${pinOf(k) ? `<button onclick="lockPartner('${k}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700/60 transition">🔒 Заблокувати</button>` : ''}
+            <button type="button" onclick="togglePersonalSetup('${k}')" aria-expanded="${!!ppSetupOpen[k]}" aria-controls="pp-${k}-setup" class="px-3 py-2 rounded-xl text-xs font-semibold border min-h-[40px]">${ppSetupOpen[k] ? 'Готово' : 'Налаштувати'}</button>
           </div>
         `;
+        const pinBox = document.getElementById(`pp-${k}-pin`);
+        if (pinBox) pinBox.innerHTML = `<div><div class="text-sm font-semibold">PIN-захист</div><div class="text-xs text-slate-500">${pinOf(k) ? 'Увімкнено: вкладку можна заблокувати кнопкою вгорі.' : 'Не встановлено: вкладку бачить кожен, хто відкрив застосунок.'}</div></div>
+          <button type="button" onclick="switchTab('settings')" class="px-3 py-2 rounded-xl text-xs font-semibold border min-h-[40px] shrink-0">${pinOf(k) ? 'Змінити' : 'Встановити'}</button>`;
 
         const rangeBox = document.getElementById(`pp-${k}-range`);
         if (rangeBox) {
           const rr = Object.assign({ on: false, from: '', to: '' }, ((state.settings || {}).personalRange || {})[k] || {});
+          applyPersonalSetup(k, rr.on);
           const okR = personalRangeOf(k), bad = rr.on && rr.from && rr.to && rr.to < rr.from;
           const dt = iso => parseLocalDate(iso).toLocaleDateString(APP_LOCALE, { day: 'numeric', month: 'short', year: 'numeric' });
           const dInp = 'w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm';
@@ -3108,6 +3129,7 @@ const snapshotFlat = st => clone(flattenState(st));
 
         const byCat = {}; d.pe.forEach(x => { byCat[x.category] = (byCat[x.category] || 0) + x.amount; });
         const entries = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+        const structCard = document.getElementById(`pp-${k}-struct`); if (structCard) structCard.hidden = !entries.length;
         renderPersonalChart(k, entries);
         document.getElementById(`pp-${k}-cats`).innerHTML = entries.length ? entries.map(([c, v], i) => {
           const pct = d.spent > 0 ? Math.round(v / d.spent * 100) : 0;

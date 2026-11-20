@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.14.3</title>
+  <title>UsBudget — Спільний бюджет пари · v6.15.0</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -5534,7 +5534,7 @@ const snapshotFlat = st => clone(flattenState(st));
     })();
   </script>
   <script id="usbudget-inbox">
-    // «Нові з картки» (v6.8): платежі з телефона (api/inbox.js) чекають у shared_budget_data/inbox, доки їх не підтвердять.
+    // «Нові з картки» (v6.8): платежі з телефона (api/inbox.js) чекають у гілці бази inbox (до v6.15 — shared_budget_data/inbox), доки їх не підтвердять.
     (function () {
       let inbox = {}, listening = false, showAll = false, showOthers = false;
       // v6.14: кожен бачить свої платежі; «чий телефон» — той самий вибір, що й для нагадувань
@@ -5547,7 +5547,8 @@ const snapshotFlat = st => clone(flattenState(st));
       const isoOf = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
       const whenOf = ts => { const d = new Date(ts), t = pad(d.getHours()) + ':' + pad(d.getMinutes()); return isoOf(ts) === getTodayString() ? 'сьогодні ' + t : pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + ' ' + t; };
       const items = () => Object.values(inbox || {}).filter(x => x && x.id && x.amount > 0).sort((a, b) => b.ts - a.ts);
-      const ref = id => db.ref(DB_ROOT + '/inbox' + (id ? '/' + id : ''));
+      // v6.15: окрема гілка бази «inbox» — новий платіж не будить слухача всього бюджету
+      const ref = id => db.ref('inbox' + (id ? '/' + id : ''));
 
       // Підказка категорії: правила й слова імпорту виписок
       function guess(it) {
@@ -5664,6 +5665,13 @@ const snapshotFlat = st => clone(flattenState(st));
         if (listening || typeof db === 'undefined' || !db) return;
         listening = true;
         ref().on('value', s => { inbox = s.val() || {}; Object.keys(draft).forEach(k => { if (!inbox[k]) delete draft[k]; }); render(); });
+        // Одноразово переносимо платежі зі старого місця (до v6.15 — shared_budget_data/inbox); старе стираємо лише після вдалого запису
+        const old = db.ref(DB_ROOT + '/inbox');
+        old.once('value').then(s => {
+          const v = s.val();
+          if (!v || typeof v !== 'object') return;
+          return ref().update(v).then(() => { saveToCloud(); return old.remove(); });
+        }).catch(err => console.warn('inbox move:', err));
       }
       window.__inboxSet = v => { inbox = v || {}; render(); }; // для перевірок у перегляді
 

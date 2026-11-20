@@ -7,8 +7,9 @@ import { makeBackup } from '../lib/backup.mjs';
 export async function runReminders({ fetchImpl = fetch, push = webpush, now = new Date() } = {}) {
   push.setVapidDetails('mailto:' + (process.env.VAPID_CONTACT || 'usbudget@example.com'), process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
   const get = async path => { const r = await fetchImpl(await dbUrl(path, fetchImpl)); return r.ok ? r.json() : null; };
-  const [data, subs] = await Promise.all([get('shared_budget_data'), get('push_subs')]);
+  const [data, subs, inbox] = await Promise.all([get('shared_budget_data'), get('push_subs'), get('inbox')]);
   if (!data) return { sent: 0, removed: 0, reason: 'no data (перевірте FIREBASE_SERVICE_ACCOUNT)' };
+  data.inbox = { ...(data.inbox || {}), ...(inbox || {}) }; // v6.15: «Нові з картки» в окремій гілці; старе місце — до переносу застосунком
   const today = kyivToday(now);
   let sent = 0, removed = 0;
   for (const [key, s] of Object.entries(subs || {})) {

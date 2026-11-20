@@ -60,6 +60,7 @@ test('runReminders: reads the database with the service-account token', async ()
     seen.push(url);
     if (url.includes('shared_budget_data')) return json({ fixedExpenses: { a: { id: 'a', title: 'Оренда', amount: 100, frequency: 'month', startDate: '2026-01-11', scope: 'shared' } } });
     if (url.includes('push_subs')) return json({ k: { owner: 'p1', subscription: { endpoint: 'e' } } });
+    if (url.includes('/inbox.json')) return json({ i1: { id: 'i1', who: 'p1', ts: Date.parse('2026-11-09T10:00:00Z'), amount: 5 } }); // v6.15: окрема гілка
   };
   const sent = [];
   const push = { setVapidDetails() {}, sendNotification: async (s, m) => sent.push(JSON.parse(m)) };
@@ -67,4 +68,5 @@ test('runReminders: reads the database with the service-account token', async ()
   assert.ok(seen.every(u => u.includes('access_token=tok')));
   assert.equal(r.sent, 1);
   assert.match(sent[0].body, /Сьогодні: Оренда/);
+  assert.match(sent[0].body, /Нові з картки: 1 чекає/);
 });

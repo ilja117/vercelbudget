@@ -1,6 +1,6 @@
 // Приймач платежів із телефона: POST /api/inbox?k=<особистий ключ>
 // iPhone: JSON { amount, merchant, card, src }. Android (MacroDroid): параметри ?src=android&title=…&text=… (сирий текст сповіщення).
-// &dry=1 — лише показати, що розпізнано, без запису. Платіж лягає в shared_budget_data/inbox і чекає підтвердження.
+// &dry=1 — лише показати, що розпізнано, без запису. Платіж лягає в гілку бази inbox (окремо від бюджету, v6.15) і чекає підтвердження.
 import { dbUrl, adminToken } from '../lib/firebase-server.mjs';
 import { normalize, whoByKey, itemId, isDuplicate } from '../lib/inbox.mjs';
 
@@ -29,13 +29,13 @@ export async function POST(request) {
   if (it.error === 'not purchase') return Response.json({ ok: true, ignored: 'not purchase' });
   if (it.error) return Response.json({ ok: false, error: 'no amount' }, { status: dry ? 200 : 400 });
   if (dry) return Response.json({ ok: true, dry: true, item: it });
-  const cr = await fetch(await dbUrl('shared_budget_data/inbox'));
+  const cr = await fetch(await dbUrl('inbox'));
   const waiting = cr.ok ? ((await cr.json()) || {}) : {};
   if (Object.keys(waiting).length >= MAX_WAITING) return Response.json({ ok: false, error: 'inbox full' }, { status: 429 });
   const ts = Date.now();
   if (it.src !== 'test' && isDuplicate(waiting, who, it, ts)) return Response.json({ ok: true, ignored: 'duplicate' });
   const id = itemId(who, it, ts);
-  const w = await fetch(await dbUrl('shared_budget_data/inbox/' + id), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, who, ts, ...it }) });
+  const w = await fetch(await dbUrl('inbox/' + id), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, who, ts, ...it }) });
   if (!w.ok) return Response.json({ ok: false, error: 'db' }, { status: 502 });
   return Response.json({ ok: true, text: 'UsBudget: ' + it.merchant + ' ' + it.amount + (it.currency ? ' ' + it.currency : '') });
 }

@@ -8,14 +8,14 @@ const page=await ctx.newPage();page.on('pageerror',e=>errs.push(e.message));
 await page.goto('http://localhost:8766/');await page.waitForTimeout(1800);
 const res={};
 for (const [k,f,kind] of [['x1','shared:p1',''],['x2','own',''],['x3','',"in"]]) {
-  await page.evaluate(([k,kind])=>firebase.database().ref('shared_budget_data/inbox/'+k).set({id:k,who:'p1',ts:Date.now(),amount:123,merchant:'Тест '+k,kind:kind||undefined}),[k,kind]);
+  await page.evaluate(([k,kind])=>firebase.database().ref('inbox/'+k).set({id:k,who:'p1',ts:Date.now(),amount:123,merchant:'Тест '+k,kind:kind||undefined}),[k,kind]);
   await page.waitForTimeout(400);
   if(f) await page.selectOption(`#g-inbox [data-ib="${k}"] [data-ib-for]`, f);
   await page.click(`#g-inbox [data-ib="${k}"] [data-ib-ok]`); await page.waitForTimeout(500);
-  res[k]=await page.evaluate(k=>({state:[...state.expenses,...(state.personalExpenses||[]),...(state.personalIncomes||[])].some(x=>x.id==='ib_'+k), server:JSON.stringify(window.__tree).includes('ib_'+k), inboxLeft:!!(window.__tree.shared_budget_data.inbox||{})[k]}),k);
+  res[k]=await page.evaluate(k=>({state:[...state.expenses,...(state.personalExpenses||[]),...(state.personalIncomes||[])].some(x=>x.id==='ib_'+k), server:JSON.stringify(window.__tree).includes('ib_'+k), inboxLeft:!!(window.__tree.inbox||{})[k]}),k);
 }
 // «Відмінити» повертає і запис, і платіж у «Нові з картки»
-  await page.evaluate(k=>firebase.database().ref('shared_budget_data/inbox/'+k).set({id:k,who:'p1',ts:Date.now(),amount:50,merchant:'Undo'}),'x4'); await page.waitForTimeout(400);
+  await page.evaluate(k=>firebase.database().ref('inbox/'+k).set({id:k,who:'p1',ts:Date.now(),amount:50,merchant:'Undo'}),'x4'); await page.waitForTimeout(400);
   await page.click('#g-inbox [data-ib="x4"] [data-ib-ok]'); await page.waitForTimeout(300); await page.click('#undo-toast button'); await page.waitForTimeout(500);
-  res.undo=await page.evaluate(()=>({state:state.expenses.some(x=>x.id==='ib_x4'), server:JSON.stringify(window.__tree).includes('ib_x4'), back:!!(window.__tree.shared_budget_data.inbox||{}).x4}));
+  res.undo=await page.evaluate(()=>({state:state.expenses.some(x=>x.id==='ib_x4'), server:JSON.stringify(window.__tree).includes('ib_x4'), back:!!(window.__tree.inbox||{}).x4}));
   console.log(JSON.stringify(res),'errors',errs);await b.close()})();

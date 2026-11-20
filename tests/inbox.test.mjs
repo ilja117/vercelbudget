@@ -48,7 +48,7 @@ test('приймач: ключ → запис у inbox; чужий ключ → 
   const { generateKeyPairSync } = await import('node:crypto');
   const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
   process.env.FIREBASE_SERVICE_ACCOUNT = JSON.stringify({ client_email: 't@t', private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }) });
-  const db = { 'shared_budget_data/settings/inboxKeys': { p1: 'K'.repeat(32), p2: 'L'.repeat(32) }, 'shared_budget_data/inbox': null };
+  const db = { 'shared_budget_data/settings/inboxKeys': { p1: 'K'.repeat(32), p2: 'L'.repeat(32) }, 'inbox': null };
   const puts = [];
   globalThis.fetch = async (url, o = {}) => {
     if (url.startsWith('https://oauth2')) return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }));
@@ -61,7 +61,7 @@ test('приймач: ключ → запис у inbox; чужий ключ → 
   let r = await POST(req('L'.repeat(32), { amount: '₴482,00', merchant: 'Сільпо', src: 'iphone' }));
   assert.equal(r.status, 200);
   assert.equal(puts.length, 1);
-  assert.match(puts[0][0], /^shared_budget_data\/inbox\/[0-9a-f]{16}$/);
+  assert.match(puts[0][0], /^inbox\/[0-9a-f]{16}$/);
   assert.equal(puts[0][1].who, 'p2');
   assert.equal(puts[0][1].amount, 482);
   r = await POST(req('Z'.repeat(32), { amount: 5 }));
@@ -98,12 +98,12 @@ test('приймач Android: параметри з посилання, dry, д�
   const { generateKeyPairSync } = await import('node:crypto');
   const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
   process.env.FIREBASE_SERVICE_ACCOUNT = JSON.stringify({ client_email: 't@t', private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }) });
-  const db = { 'shared_budget_data/settings/inboxKeys': { p1: 'K'.repeat(32) }, 'shared_budget_data/inbox': {} };
+  const db = { 'shared_budget_data/settings/inboxKeys': { p1: 'K'.repeat(32) }, 'inbox': {} };
   const puts = [];
   globalThis.fetch = async (url, o = {}) => {
     if (url.startsWith('https://oauth2')) return new Response(JSON.stringify({ access_token: 'tok', expires_in: 3600 }));
     const path = new URL(url).pathname.slice(1).replace(/\.json$/, '');
-    if (o.method === 'PUT') { const v = JSON.parse(o.body); puts.push(v); db['shared_budget_data/inbox'][v.id] = v; return new Response('{}'); }
+    if (o.method === 'PUT') { const v = JSON.parse(o.body); puts.push(v); db['inbox'][v.id] = v; return new Response('{}'); }
     return new Response(JSON.stringify(db[path] ?? null));
   };
   const { POST } = await import('../api/inbox.js?android');

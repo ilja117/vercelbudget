@@ -12,6 +12,10 @@
       ".read": "auth != null && root.child('members').child(auth.uid).val() === true",
       ".write": "auth != null && root.child('members').child(auth.uid).val() === true"
     },
+    "inbox": {
+      ".read": "auth != null && root.child('members').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('members').child(auth.uid).val() === true"
+    },
     "push_subs": {
       ".read": "auth != null && root.child('members').child(auth.uid).val() === true",
       ".write": "auth != null && root.child('members').child(auth.uid).val() === true"

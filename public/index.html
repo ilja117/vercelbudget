@@ -2779,7 +2779,7 @@ const snapshotFlat = st => clone(flattenState(st));
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <div class="${card}">
+            <div class="${card}" data-fold="0">
               <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Мої витрати</h3>
               <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left text-sm hidden sm:table">
@@ -2789,7 +2789,7 @@ const snapshotFlat = st => clone(flattenState(st));
                 <div id="pp-${k}-exp-mob" class="space-y-2 sm:hidden"></div>
               </div>
             </div>
-            <div class="${card}">
+            <div class="${card}" data-fold="0">
               <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Мої доходи</h3>
               <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left text-sm hidden sm:table">
@@ -5994,6 +5994,32 @@ const snapshotFlat = st => clone(flattenState(st));
         };
         row.parentElement.after(b);
       };
+      // Довгі списки: видно 5 останніх, решта — за кнопкою «Показати всі (N)» (стан тримається між перемальовуваннями)
+      const CLIP = 5, clipOpen = {};
+      const CLIP_IDS = ['expenses-mobile-list', 'expenses-table-body'].concat(...['p1', 'p2'].map(k => ['exp-mob', 'exp-body', 'inc-mob', 'inc-body'].map(x => `pp-${k}-${x}`)));
+      function clipLists() {
+        CLIP_IDS.forEach(id => {
+          const el = document.getElementById(id); if (!el) return;
+          const rows = [...el.children], open = !!clipOpen[id], extra = rows.length - CLIP;
+          rows.forEach((r, i) => { r.style.display = !open && i >= CLIP ? 'none' : ''; });
+          const anchor = el.tagName === 'TBODY' ? el.closest('table') : el;
+          let b = document.getElementById('clip-' + id);
+          if (extra <= 0) { if (b) b.remove(); return; }
+          if (!b) {
+            b = document.createElement('button'); b.type = 'button'; b.id = 'clip-' + id;
+            b.className = 'w-full mt-3 py-2.5 rounded-xl border text-sm font-semibold min-h-[44px]';
+            b.onclick = () => { clipOpen[id] = !clipOpen[id]; clipLists(); };
+            anchor.after(b);
+          }
+          b.textContent = open ? 'Згорнути' : `Показати всі (${rows.length})`;
+        });
+      }
+      const prevRenderAll = renderAll;
+      renderAll = function () { const r = prevRenderAll.apply(this, arguments); try { clipLists(); } catch (e) {} return r; };
+      const prevPersonal = renderPersonalTabs;
+      renderPersonalTabs = function () { const r = prevPersonal.apply(this, arguments); try { clipLists(); } catch (e) {} return r; };
+      document.addEventListener('DOMContentLoaded', () => setTimeout(clipLists, 0));
+
       // Вибір місяця нічого не змінює в налаштуваннях — ховаємо його там
       const prevSwitch = switchTab;
       switchTab = function (t) {

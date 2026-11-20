@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.15.1</title>
+  <title>UsBudget — Спільний бюджет пари · v6.15.2</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -1746,6 +1746,7 @@ const snapshotFlat = st => clone(flattenState(st));
           updateSyncBadge(true);
           return;
         }
+        try { sessionStorage.removeItem('usbudget_denied_retry'); } catch (e) {}
         const legacy = !(val.meta && val.meta.schema >= 2);
         state = fromRemote(val);
         lastSynced = snapshotFlat(state);
@@ -1845,9 +1846,22 @@ const snapshotFlat = st => clone(flattenState(st));
       }, 'Вийти', true);
     }
 
-    function showAccessDenied() {
+    // v6.15.2: спершу оновлюємо вхід і пробуємо ще раз (раз за сесію), далі — пояснення з причиною
+    async function showAccessDenied() {
       const u = authApi() && authApi().currentUser;
-      showModal('Немає доступу до бази', 'Цей акаунт ще не додано до списку дозволених. У Firebase Console → Realtime Database → Data створіть запис members/' + (u ? u.uid : '<UID>') + ' зі значенням true.');
+      const notListed = () => showModal('Немає доступу до бази', 'Цей акаунт ще не додано до списку дозволених. У Firebase Console → Realtime Database → Data створіть запис members/' + (u ? u.uid : '<UID>') + ' зі значенням true.');
+      if (!u) return notListed();
+      const code = e => String((e && (e.code || e.message)) || e);
+      try { await u.getIdToken(true); }
+      catch (e) { return showModal('Немає доступу до бази', 'Не вдалося оновити вхід (' + code(e) + '). Перевірте інтернет і відкрийте застосунок ще раз.'); }
+      let retried = false;
+      try { retried = sessionStorage.getItem('usbudget_denied_retry') === '1'; sessionStorage.setItem('usbudget_denied_retry', '1'); } catch (e) {}
+      if (!retried) { location.reload(); return; }
+      let member;
+      try { member = (await db.ref('members/' + u.uid).once('value')).val(); }
+      catch (e) { return showModal('Немає доступу до бази', 'База не прийняла вхід (' + code(e) + '). Закрийте застосунок повністю й відкрийте знову.'); }
+      if (member !== true) return notListed();
+      showModal('Немає доступу до бази', 'Акаунт є у списку дозволених, але бюджет не відкривається. Перевірте правила бази (Rules) — вони мають збігатися з database.rules.json.');
     }
 
     async function authHeader() {

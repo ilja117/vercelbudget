@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.14.2</title>
+  <title>UsBudget — Спільний бюджет пари · v6.14.3</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -54,7 +54,7 @@
   </style>
 
   <!-- UsBudget v4.3: двигун тем та святкові банери -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Comfortaa:wght@600;700&family=Rubik:wght@600;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Rubik:wght@600;800&display=swap">
   <style id="usbudget-graphic">
     /* UsBudget v4.3 · графічний стиль. Токени: база → місяці → свята → темна тема */
     :root {
@@ -98,10 +98,10 @@
     }
 
     /* Основа */
-    body[class] { background: var(--g-page) !important; color: var(--g-ink); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif !important; }
-    h1, h2, h3, .g-display { font-family: 'Oswald', 'Inter', sans-serif !important; letter-spacing: -0.01em; }
+    body[class] { background: var(--g-page) !important; color: var(--g-ink); font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif !important; }
+    h1, h2, h3, .g-display { font-family: 'Rubik', 'Nunito', sans-serif !important; letter-spacing: -0.01em; }
     h3 { font-weight: 700 !important; }
-    [class*="bg-clip-text"] { background: none !important; -webkit-text-fill-color: currentColor !important; color: var(--g-ink) !important; font-family: 'Oswald', sans-serif !important; }
+    [class*="bg-clip-text"] { background: none !important; -webkit-text-fill-color: currentColor !important; color: var(--g-ink) !important; font-family: 'Rubik', sans-serif !important; }
     :is(.bg-white, [class~="dark:bg-slate-800/80"], [class~="dark:bg-slate-800"]):not(input):not(select):not(textarea) { background-color: var(--g-card) !important; }
     :is(.bg-white, [class~="dark:bg-slate-800/80"], [class~="dark:bg-slate-800"])[class~="rounded-2xl"] { border-radius: 22px !important; box-shadow: none !important; border-color: transparent !important; }
     :is(.bg-slate-50, [class~="dark:bg-slate-900/40"], [class~="dark:bg-slate-900/50"], [class~="dark:bg-slate-900"]):not(body):not(input):not(select):not(textarea) { background-color: var(--g-soft) !important; }
@@ -122,13 +122,13 @@
 
     /* Навігація */
     header[class].sticky { background: var(--g-shell) !important; background-color: var(--g-shell) !important; color: var(--g-on-shell); border-bottom: 2px solid var(--g-tag-line) !important; box-shadow: none !important; }
-    .g-brand { margin: 0; color: var(--g-on-shell); font-family: 'Oswald', sans-serif !important; font-weight: 700; text-transform: uppercase; font-size: 22px !important; letter-spacing: .01em; }
+    .g-brand { margin: 0; color: var(--g-on-shell); font-family: 'Rubik', sans-serif !important; font-weight: 700; text-transform: uppercase; font-size: 22px !important; letter-spacing: .01em; }
     header[class].sticky button { background: color-mix(in srgb, var(--g-on-shell) 10%, transparent) !important; color: var(--g-on-shell) !important; }
     header #app-logo, header #app-subtitle, header #app-subtitle + * { display: none !important; }
     header p:has(#app-subtitle) { display: none; }
     header button { background: color-mix(in srgb, var(--g-on-shell) 10%, transparent) !important; color: var(--g-on-shell) !important; }
     #app-logo { background: transparent !important; box-shadow: none !important; }
-    .tab-btn { border-radius: 999px !important; font-family: 'Oswald', sans-serif !important; font-size: 12px !important; font-weight: 600 !important; gap: 8px; }
+    .tab-btn { border-radius: 999px !important; font-family: 'Rubik', sans-serif !important; font-size: 12px !important; font-weight: 600 !important; gap: 8px; }
     .tab-btn.bg-pink-500 { background: var(--g-pop) !important; color: #111111 !important; }
     .tab-btn:not(.bg-pink-500):hover { background: var(--g-card) !important; }
     div[class*="bg-white/95"] { background: var(--g-nav) !important; border: 0 !important; border-radius: 999px !important; left: 12px !important; right: 12px !important; bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important; width: auto !important; padding: 6px !important; box-shadow: 0 12px 30px rgba(0,0,0,.28) !important; }
@@ -158,8 +158,8 @@
 
     /* Компоненти графічного стилю */
     .g-ic { display: inline-block; vertical-align: -0.2em; flex-shrink: 0; }
-    .g-mono { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font: 700 11px/1 'Oswald', sans-serif; flex-shrink: 0; }
-    .g-num { font-family: 'Oswald', sans-serif; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .g-mono { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font: 700 11px/1 'Rubik', sans-serif; flex-shrink: 0; }
+    .g-num { font-family: 'Rubik', sans-serif; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
     .g-hero { position: relative; overflow: hidden; background: var(--g-hero); color: var(--g-on-hero); border-radius: 24px; padding: 20px; }
     .g-hero > *:not(.g-motif) { position: relative; }
     .g-motif { position: absolute; right: -16px; top: -16px; width: 160px; height: 160px; pointer-events: none; }
@@ -176,7 +176,7 @@
 
     /* v4.3.2: аватари, налаштування, анімації */
     #settings-partners-form > .grid > div { background: transparent !important; border-color: transparent !important; }
-    #settings-partners-form .uppercase { color: var(--g-ink) !important; font-family: 'Oswald', sans-serif; font-size: 11px !important; letter-spacing: .02em; }
+    #settings-partners-form .uppercase { color: var(--g-ink) !important; font-family: 'Rubik', sans-serif; font-size: 11px !important; letter-spacing: .02em; }
     .g-switch { position: relative; display: inline-block; width: 52px; height: 32px; flex-shrink: 0; }
     .g-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
     .g-switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--g-soft); border: 2px solid var(--g-muted); transition: background-color .2s, border-color .2s; }
@@ -221,7 +221,7 @@
     h2 { font-size: 20px !important; line-height: 1.25 !important; }
     h3 { font-size: 16px !important; line-height: 1.3 !important; }
     @media (max-width: 640px) { h3 { font-size: 15px !important; } }
-    #period-label { font-family: 'Oswald', sans-serif; font-size: 14px !important; font-weight: 700; }
+    #period-label { font-family: 'Rubik', sans-serif; font-size: 14px !important; font-weight: 700; }
     .g-sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--g-muted); padding: 0 4px; cursor: default; user-select: none; }
     .g-sync i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .overflow-x-auto td, .overflow-x-auto th { white-space: nowrap; }
@@ -231,22 +231,22 @@
       table.g-rtable tr { padding: 10px 0; border-bottom: 1px solid var(--g-line); }
       table.g-rtable td { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0 !important; text-align: right; border: 0 !important; white-space: normal; }
       table.g-rtable td::before { content: attr(data-label); color: var(--g-muted); text-align: left; font-weight: 500; }
-      table.g-rtable td:first-child { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 13px; padding-bottom: 6px !important; }
+      table.g-rtable td:first-child { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 13px; padding-bottom: 6px !important; }
       table.g-rtable td:first-child::before { content: none; }
     }
 
     /* ===== v5 «Цінник»: навігація, підрозділи, цінник ===== */
-    .g-num { font-family: 'Oswald', sans-serif !important; font-weight: 600 !important; letter-spacing: 0 !important; font-variant-numeric: tabular-nums; }
+    .g-num { font-family: 'Rubik', sans-serif !important; font-weight: 600 !important; letter-spacing: 0 !important; font-variant-numeric: tabular-nums; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--g-muted) !important; }
     :focus-visible { outline: 3px solid var(--g-ink); outline-offset: 2px; }
     .g-dnav { gap: 6px; border-bottom: 2px solid var(--g-tag-line); padding-bottom: 12px; }
-    .g-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 12px; font: 600 15px/1 'Inter', sans-serif; color: var(--g-muted); text-decoration: none; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
+    .g-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 12px; font: 600 15px/1 'Nunito', sans-serif; color: var(--g-muted); text-decoration: none; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
     .g-tab[aria-current="page"] { background: var(--g-pop); color: #111111; }
     #g-mnav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--g-nav); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px)); }
     #g-mnav-add { align-self: center; justify-self: center; width: 52px; height: 52px; border-radius: 16px; border: 2px solid #111111; background: var(--g-pop); color: #111111; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 160ms var(--g-ease); }
     #g-mnav-add:active { transform: scale(0.97); }
     @media (max-width: 639px) { #g-fab { display: none !important; } }
-    .g-mtab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; border-radius: 12px; font: 600 11px/1.1 'Inter', sans-serif; color: var(--g-nav-text); text-decoration: none; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
+    .g-mtab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; border-radius: 12px; font: 600 11px/1.1 'Nunito', sans-serif; color: var(--g-nav-text); text-decoration: none; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
     .g-mtab[aria-current="page"] { background: var(--g-pop); color: #111111; }
     #g-mnav :focus-visible { outline-color: var(--g-pop); }
     @media (min-width: 640px) { #g-mnav { display: none; } }
@@ -254,7 +254,7 @@
     @media (hover: hover) and (pointer: fine) { .g-tab:not([aria-current]):hover { background: var(--g-card); color: var(--g-ink); } }
     #g-subnav { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
     #g-subnav.hidden { display: none; }
-    .g-sub { flex-shrink: 0; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--g-tag-line); background: transparent; color: var(--g-ink); font: 600 14px/1 'Inter', sans-serif; cursor: pointer; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
+    .g-sub { flex-shrink: 0; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--g-tag-line); background: transparent; color: var(--g-ink); font: 600 14px/1 'Nunito', sans-serif; cursor: pointer; transition: background-color 150ms ease, color 150ms ease, transform 160ms var(--g-ease); }
     .g-sub[aria-pressed="true"], .g-sub[aria-selected="true"] { background: var(--g-ink); color: var(--g-page); }
     /* Головна сума — білий цінник із дірочкою */
     .g-hero { background: var(--g-card) !important; color: var(--g-ink) !important; border: 2px solid var(--g-tag-line); border-radius: 14px !important; padding: 18px 18px 18px 46px !important; }
@@ -299,7 +299,7 @@
     .g-kpi-line b { color: var(--g-ink); font-size: 16px; margin-left: 4px; }
     .g-hero-sub { margin: 6px 0 0; font-size: 14px; color: var(--g-muted); }
     .g-sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 8px; }
-    .g-sec-head h2 { margin: 0; font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .02em; }
+    .g-sec-head h2 { margin: 0; font-family: 'Rubik', sans-serif; text-transform: uppercase; letter-spacing: .02em; }
     .g-link { min-height: 44px; padding: 0 4px; border: 0; background: none; font-weight: 600; font-size: 14px; color: var(--g-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
     .g-ltags { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
     .g-ltag { border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; color: #111111; min-width: 0; }
@@ -331,7 +331,7 @@
     .g-fold-head:active { background-color: rgba(127,127,127,.08); }
     @media (prefers-reduced-motion: reduce) { .g-fold-head::after { transition: none; } .g-fold-anim-in > *, .g-fold-anim-out > * { animation: none !important; transition: none !important; } }
     .g-more summary { min-height: 44px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; font-weight: 600; cursor: pointer; }
-    #qa-amount { font-family: 'Oswald', sans-serif; font-size: 32px !important; font-weight: 600; }
+    #qa-amount { font-family: 'Rubik', sans-serif; font-size: 32px !important; font-weight: 600; }
     input[type=number] { -moz-appearance: textfield; } input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     @media (prefers-reduced-motion: reduce) {
       html:not(.g-motion) *, html:not(.g-motion) *::before, html:not(.g-motion) *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
@@ -341,7 +341,7 @@
   <script src="i18n.js"></script>
   <style id="usbudget-skins">
     /* v6.0: рожеві теми «Зайчик», «Кошеня», «Цукерка». Діють лише з html[data-skin]; решта тем не зачіпається */
-    html[data-skin] { --g-skin-font: 'Nunito', 'Inter', system-ui, sans-serif; --g-skin-display: 'Comfortaa', 'Nunito', sans-serif; --g-line-w: 2px; }
+    html[data-skin] { --g-skin-font: 'Nunito', system-ui, sans-serif; --g-skin-display: 'Rubik', 'Nunito', sans-serif; --g-line-w: 2px; }
     html[data-skin="bunny"] { --g-page: #FFF0F5; --g-card: #FFFFFF; --g-soft: #FFE4EE; --g-line: #F5C3D6; --g-ink: #4A1F33; --g-muted: #86465F; --g-input: #FFFFFF;
       --g-hero: #FFFFFF; --g-pop: #FFB8D1; --g-shell: #FFC9DC; --g-on-shell: #4A1F33; --g-on-hero: #4A1F33; --g-btn: #4A1F33; --g-btn-text: #FFD3E3; --g-accent-text: #B2335F;
       --g-nav: #5A2540; --g-nav-text: #FFD9E6; --g-month: #B2335F; --g-tag-line: #4A1F33; --g-orn: #F3B4CC; }
@@ -399,7 +399,7 @@
   <style id="usbudget-clay">
     /* v6.3 «Глина»: пухка об’ємна форма для всіх тем (місяці й тварини). Палітри не чіпає — лише форма, шрифт, візерунок і рух. */
     html.g-seasons {
-      --g-skin-font: 'Nunito', 'Inter', system-ui, sans-serif; --g-skin-display: 'Rubik', 'Nunito', system-ui, sans-serif;
+      --g-skin-font: 'Nunito', system-ui, sans-serif; --g-skin-display: 'Rubik', 'Nunito', system-ui, sans-serif;
       --g-clay: 0 12px 20px -10px color-mix(in srgb, var(--g-nav) 50%, transparent), inset 0 -8px 12px -4px rgba(0,0,0,.11), inset 0 8px 10px -2px rgba(255,255,255,.7);
       --g-clay-sm: 0 6px 10px -5px color-mix(in srgb, var(--g-nav) 45%, transparent), inset 0 -4px 6px -2px rgba(0,0,0,.12), inset 0 4px 5px -1px rgba(255,255,255,.65); }
     html.dark.g-seasons {
@@ -2923,7 +2923,7 @@ const snapshotFlat = st => clone(flattenState(st));
 
         head.innerHTML = `
           <div class="flex items-center gap-3.5">
-            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shrink-0" style="background:${color};color:${onColor(color)};font-family:Unbounded,sans-serif;font-weight:800">${avatarInner(isP1 ? 'p1' : 'p2', 28)}</div>
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shrink-0" style="background:${color};color:${onColor(color)};font-family:Rubik,sans-serif;font-weight:800">${avatarInner(isP1 ? 'p1' : 'p2', 28)}</div>
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <h2 class="text-base sm:text-xl font-bold text-slate-900 dark:text-white">${name}</h2>
@@ -4559,13 +4559,13 @@ const snapshotFlat = st => clone(flattenState(st));
     }
     function themeChartConfig(cfg) {
       const t = chartTokens(), o = cfg.options = cfg.options || {}, pl = o.plugins = o.plugins || {};
-      const font = (size, weight, family) => ({ family: family || "'Inter', system-ui, sans-serif", size, weight });
+      const font = (size, weight, family) => ({ family: family || "'Nunito', system-ui, sans-serif", size, weight });
       const round = cfg.type === 'doughnut' || cfg.type === 'pie';
       pl.legend = Object.assign({}, pl.legend);
       pl.legend.labels = Object.assign({}, pl.legend.labels, { color: t.muted, font: font(12, '600'), usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: 14 });
       const userCb = (pl.tooltip && pl.tooltip.callbacks) || {};
       pl.tooltip = Object.assign({}, pl.tooltip, {
-        backgroundColor: t.pop, titleColor: '#111111', bodyColor: '#111111', titleFont: font(12, '700', "'Oswald', sans-serif"), bodyFont: font(13, '600'),
+        backgroundColor: t.pop, titleColor: '#111111', bodyColor: '#111111', titleFont: font(12, '700', "'Rubik', sans-serif"), bodyFont: font(13, '600'),
         padding: 12, cornerRadius: 14, caretSize: 6, displayColors: true, usePointStyle: true, boxPadding: 6, borderWidth: 0,
         callbacks: Object.assign({ label: ctx => { const v = typeof ctx.parsed === 'number' ? ctx.parsed : (ctx.parsed && ctx.parsed.y); return ' ' + (round ? ctx.label : (ctx.dataset.label || ctx.label || '')) + ': ' + fmtMoney(v || 0); } }, userCb)
       });
@@ -4587,7 +4587,7 @@ const snapshotFlat = st => clone(flattenState(st));
     (function installChartTheme() {
       if (!window.Chart || window.Chart.__gThemed) return;
       const Orig = window.Chart;
-      try { Orig.defaults.font.family = "'Inter', system-ui, sans-serif"; } catch (e) {}
+      try { Orig.defaults.font.family = "'Nunito', system-ui, sans-serif"; } catch (e) {}
       window.Chart = new Proxy(Orig, { construct(T, args) { try { if (args[1]) themeChartConfig(args[1]); } catch (e) {} return Reflect.construct(T, args); } });
       try { Orig.__gThemed = true; } catch (e) {}
     })();

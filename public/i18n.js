@@ -67,7 +67,7 @@
     'Бюджет місяця': 'Monthly budget', 'Перевитрата бюджету': 'Over budget by', 'Внесено цього місяця:': 'Put in this month:', 'витрачено:': 'spent:', 'Запишіть внесок на картку — з нього складається бюджет місяця.': 'Record a contribution to the card — it makes up the monthly budget.',
     // імпорт з банку (v5.5)
     'Імпорт з банку': 'Bank import', 'Виписка CSV або XLSX: перевірте й оберіть, що додати в бюджет.': 'A CSV or XLSX statement: review it and pick what goes into the budget.',
-    'Завантажити виписку': 'Upload statement', 'Закрити': 'Close', 'Чия картка у виписці': 'Whose card is this statement for', 'Файл виписки (CSV або XLSX)': 'Statement file (CSV or XLSX)',
+    'Завантажити виписку': 'Upload statement', 'Виписка': 'Statement', 'Імпорт з банку: виписка CSV або XLSX': 'Bank import: CSV or XLSX statement', 'Закрити': 'Close', 'Чия картка у виписці': 'Whose card is this statement for', 'Файл виписки (CSV або XLSX)': 'Statement file (CSV or XLSX)',
     'Монобанк, ПриватБанк та інші виписки з колонками «Дата» і «Сума». Файл читається на цьому пристрої.': 'Monobank, PrivatBank and other statements with Date and Amount columns. The file is read on this device.',
     'Запамʼятати мої зміни як правила': 'Remember my changes as rules', 'Оберіть файл': 'Choose a file', 'Нічого не вибрано': 'Nothing selected', 'Частини більші за суму покупки': 'Parts exceed the purchase amount',
     'Розділити': 'Split', 'Спільне': 'Shared', 'Моє': 'Mine', '— не враховувати': '— leave out', 'Прибрати частину': 'Remove part', 'Сума частини': 'Part amount', 'Категорія частини': 'Part category',

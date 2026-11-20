@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.18.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.19.0</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -2033,7 +2033,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const curr = getCurrency(), list = (state.settlements || []).slice().reverse();
       box.innerHTML = list.length ? list.map(x => `
         <div class="flex items-center justify-between gap-3 py-2.5 border-b border-slate-100 dark:border-slate-800/60 text-sm">
-          <div><div class="font-medium">${esc(slotName(x.from))} → ${esc(slotName(x.to))}</div><div class="text-xs text-slate-500">${esc(x.date)} · ${esc(String(x.periodKey).split(':')[1] || '')}</div></div>
+          <div><div class="font-medium">${esc(slotName(x.from))} → ${esc(slotName(x.to))}</div><div class="text-xs text-slate-500">${dayLabel(x.date)} · ${esc(String(x.periodKey).split(':')[1] || '')}</div></div>
           <div class="flex items-center gap-3"><span class="font-semibold">${x.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
             <button type="button" onclick="deleteSettlement('${x.id}')" class="text-rose-500 text-xs font-medium min-h-[36px] px-2">Скасувати</button></div>
         </div>`).join('') : '<p class="text-center text-slate-400 text-xs py-3">Підтверджених розрахунків ще немає</p>';
@@ -2645,11 +2645,11 @@ const snapshotFlat = st => clone(flattenState(st));
 
       const incHtml = listInc.length ? listInc.map(i => `
         <tr class="border-b border-slate-100 dark:border-slate-800/60">
-          <td class="py-3 text-xs text-slate-500">${i.date || '—'}</td>
+          <td class="py-3 text-xs text-slate-500">${dayLabel(i.date) || '—'}</td>
           <td class="py-3 font-medium">${formatPartnerBadge(i.partner)}</td>
           <td class="py-3">${esc(i.source)}</td>
           <td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td>
-          <td class="py-3 text-right whitespace-nowrap"><button onclick="openEdit('income', '${i.id}')" class="text-pink-600 text-xs font-medium mr-3">Редагувати</button><button onclick="deleteIncome('${i.id}')" class="text-rose-500 text-xs">Видалити</button></td>
+          <td class="py-3 text-right whitespace-nowrap"><button onclick="openEdit('income', '${i.id}')" class="text-pink-600 text-xs font-medium mr-3">Редагувати</button></td>
         </tr>
       `).join('') : `<tr><td colspan="5" class="py-4 text-center text-slate-400 text-xs">Немає записів за період</td></tr>`;
       if (incTable) incTable.innerHTML = incHtml;
@@ -2660,13 +2660,13 @@ const snapshotFlat = st => clone(flattenState(st));
             <div>
               <div class="flex items-center gap-2 mb-1">
                 ${formatPartnerBadge(i.partner)}
-                <span class="text-[10px] text-slate-400">${i.date || ''}</span>
+                <span class="text-xs text-slate-400">${dayLabel(i.date)}</span>
               </div>
               <span class="font-bold text-sm text-slate-900 dark:text-white">${esc(i.source)}</span>
             </div>
             <div class="text-right">
               <span class="font-bold text-emerald-600 text-sm block">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
-              <span class="block mt-1"><button onclick="openEdit('income', '${i.id}')" class="text-pink-600 text-[11px] font-medium mr-3">Редагувати</button><button onclick="deleteIncome('${i.id}')" class="text-rose-500 text-[11px]">Видалити</button></span>
+              <span class="block mt-1"><button onclick="openEdit('income', '${i.id}')" class="text-pink-600 text-[11px] font-medium mr-3">Редагувати</button></span>
             </div>
           </div>
         `).join('') : `<p class="text-center text-slate-400 text-xs py-4">Немає доходів за період</p>`;
@@ -2678,13 +2678,13 @@ const snapshotFlat = st => clone(flattenState(st));
 
       const expHtml = listExp.length ? listExp.map(e => `
         <tr class="border-b border-slate-100 dark:border-slate-800/60">
-          <td class="py-3 text-xs text-slate-500">${e.date || '—'}</td>
+          <td class="py-3 text-xs text-slate-500">${dayLabel(e.date) || '—'}</td>
           <td class="py-3 font-medium">${esc(e.title)}</td>
           <td class="py-3"><span class="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-700">${esc(e.category)}</span></td>
           <td class="py-3">${formatPartnerBadge(e.payer)}</td>
           <td class="py-3 text-xs text-slate-500">${getSplitName(e.split)}</td>
           <td class="py-3 font-semibold text-rose-600">-${e.amount.toLocaleString(APP_LOCALE)} ${curr}</td>
-          <td class="py-3 text-right whitespace-nowrap"><button onclick="openEdit('expense', '${e.id}')" class="text-pink-600 text-xs font-medium mr-3">Редагувати</button><button onclick="deleteExpense('${e.id}')" class="text-rose-500 text-xs">Видалити</button></td>
+          <td class="py-3 text-right whitespace-nowrap"><button onclick="openEdit('expense', '${e.id}')" class="text-pink-600 text-xs font-medium mr-3">Редагувати</button></td>
         </tr>
       `).join('') : `<tr><td colspan="7" class="py-4 text-center text-slate-400 text-xs">Немає записів за період</td></tr>`;
       if (expTable) expTable.innerHTML = expHtml;
@@ -2699,12 +2699,12 @@ const snapshotFlat = st => clone(flattenState(st));
               </div>
               <div class="text-right">
                 <span class="font-bold text-rose-600 text-sm block">-${e.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
-                <span class="text-[10px] text-slate-400">${e.date || ''}</span>
+                <span class="text-xs text-slate-400">${dayLabel(e.date)}</span>
               </div>
             </div>
             <div class="flex justify-between items-center pt-2 border-t border-slate-200/60 dark:border-slate-800 text-xs">
               <span class="text-slate-500">Платник: ${formatPartnerBadge(e.payer)} (${getSplitName(e.split)})</span>
-              <span class="flex gap-3"><button onclick="openEdit('expense', '${e.id}')" class="text-pink-600 font-medium">Редагувати</button><button onclick="deleteExpense('${e.id}')" class="text-rose-500 font-medium">Видалити</button></span>
+              <span class="flex gap-3"><button onclick="openEdit('expense', '${e.id}')" class="text-pink-600 font-medium">Редагувати</button></span>
             </div>
           </div>
         `).join('') : `<p class="text-center text-slate-400 text-xs py-4">Немає витрат за період</p>`;
@@ -2779,7 +2779,7 @@ const snapshotFlat = st => clone(flattenState(st));
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <div class="${card}">
+            <div class="${card}" data-fold="0">
               <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Мої витрати</h3>
               <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left text-sm hidden sm:table">
@@ -2789,7 +2789,7 @@ const snapshotFlat = st => clone(flattenState(st));
                 <div id="pp-${k}-exp-mob" class="space-y-2 sm:hidden"></div>
               </div>
             </div>
-            <div class="${card}">
+            <div class="${card}" data-fold="0">
               <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4">Мої доходи</h3>
               <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left text-sm hidden sm:table">
@@ -3094,22 +3094,22 @@ const snapshotFlat = st => clone(flattenState(st));
           if (allCats.includes(cur)) sel.value = cur;
         }
 
-        const sharedRows = d.mode === 'integrated' ? d.shared.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${i.date || '—'}</td><td class="py-3">${esc(i.source)} <span class="text-[10px] text-slate-400">спільний</span></td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td><td></td></tr>`) : [];
-        const ownRows = d.pi.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${i.date || '—'}</td><td class="py-3">${esc(i.source)}</td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td><td class="text-right"><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalIncomes', '${i.id}')" class="text-rose-500 text-xs">Видалити</button></td></tr>`);
+        const sharedRows = d.mode === 'integrated' ? d.shared.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${dayLabel(i.date) || '—'}</td><td class="py-3">${esc(i.source)} <span class="text-[10px] text-slate-400">спільний</span></td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td><td></td></tr>`) : [];
+        const ownRows = d.pi.map(i => `<tr class="${rowCls}"><td class="py-3 text-xs text-slate-500">${dayLabel(i.date) || '—'}</td><td class="py-3">${esc(i.source)}</td><td class="py-3 font-semibold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</td><td class="text-right"><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button></td></tr>`);
         const allInc = sharedRows.concat(ownRows);
 
         document.getElementById(`pp-${k}-inc-body`).innerHTML = allInc.length ? allInc.join('') : emptyMsg;
-        document.getElementById(`pp-${k}-inc-mob`).innerHTML = allInc.length ? (d.mode === 'integrated' ? d.shared.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-[10px] text-slate-400">${i.date || ''} (спільний)</span></div><span class="font-bold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span></div>`).join('') : '') + d.pi.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-[10px] text-slate-400">${i.date || ''}</span></div><div class="text-right"><span class="font-bold text-emerald-600 block">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalIncomes', '${i.id}')" class="text-rose-500 text-[10px]">Видалити</button></div></div>`).join('') : emptyMsg;
+        document.getElementById(`pp-${k}-inc-mob`).innerHTML = allInc.length ? (d.mode === 'integrated' ? d.shared.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-xs text-slate-400">${dayLabel(i.date)} (спільний)</span></div><span class="font-bold text-emerald-600">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span></div>`).join('') : '') + d.pi.map(i => `<div class="p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center text-xs"><div><span class="font-bold block">${esc(i.source)}</span><span class="text-xs text-slate-400">${dayLabel(i.date)}</span></div><div class="text-right"><span class="font-bold text-emerald-600 block">+${i.amount.toLocaleString(APP_LOCALE)} ${curr}</span><button onclick="openEdit('pincome', '${i.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button></div></div>`).join('') : emptyMsg;
 
         const pe = applyListFilter(listFilters.pexp[k], d.pe);
         toolbarSummary('pexp:' + k, pe, d.pe, curr);
         const allExp = pe.map(x => `
           <tr class="${rowCls}">
-            <td class="py-3 text-xs text-slate-500">${x.date || '—'}</td>
+            <td class="py-3 text-xs text-slate-500">${dayLabel(x.date) || '—'}</td>
             <td class="py-3 font-medium">${esc(x.title)}</td>
             <td class="py-3"><span class="px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-slate-700">${esc(x.category)}</span></td>
             <td class="py-3 font-semibold text-rose-600">-${x.amount.toLocaleString(APP_LOCALE)} ${curr}</td>
-            <td class="py-3 text-right"><button onclick="openEdit('pexpense', '${x.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalExpenses', '${x.id}')" class="text-rose-500 text-xs">Видалити</button></td>
+            <td class="py-3 text-right"><button onclick="openEdit('pexpense', '${x.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button></td>
           </tr>`);
         document.getElementById(`pp-${k}-exp-body`).innerHTML = allExp.length ? allExp.join('') : emptyMsg;
 
@@ -3118,11 +3118,11 @@ const snapshotFlat = st => clone(flattenState(st));
             <div>
               <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-slate-700 font-semibold">${esc(x.category)}</span>
               <span class="font-bold block mt-1">${esc(x.title)}</span>
-              <span class="text-[10px] text-slate-400">${x.date || ''}</span>
+              <span class="text-xs text-slate-400">${dayLabel(x.date)}</span>
             </div>
             <div class="text-right">
               <span class="font-bold text-rose-600 block">-${x.amount.toLocaleString(APP_LOCALE)} ${curr}</span>
-              <button onclick="openEdit('pexpense', '${x.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button><button onclick="deletePersonal('personalExpenses', '${x.id}')" class="text-rose-500 text-[10px] mt-1">Видалити</button>
+              <button onclick="openEdit('pexpense', '${x.id}', '${k}')" class="text-pink-600 text-xs font-medium mr-2">Редагувати</button>
             </div>
           </div>
         `).join('') : emptyMsg;
@@ -3230,6 +3230,12 @@ const snapshotFlat = st => clone(flattenState(st));
     const FREQ = { week: 'Щотижня', month: 'Щомісяця', quarter: 'Щокварталу', year: 'Щороку' };
 
     function toLocalISO(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    // v6.19: дата в списках як на головній — «20 лис»; інший рік — «20.11.2025»
+    function dayLabel(iso) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+      if (!m) return iso ? esc(String(iso)) : '';
+      return m[1] === String(new Date().getFullYear()) ? Number(m[3]) + ' ' + ['січ', 'лют', 'бер', 'кві', 'тра', 'чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'][Number(m[2]) - 1] : m[3] + '.' + m[2] + '.' + m[1];
+    }
     function parseLocalDate(str) { const p = String(str).split('-').map(Number); return new Date(p[0], (p[1] || 1) - 1, p[2] || 1, 12); }
 
     function dateInPeriod() {
@@ -3586,12 +3592,12 @@ const snapshotFlat = st => clone(flattenState(st));
       box.innerHTML = list.length ? list.map(c => `
         <div class="flex items-center justify-between gap-3 p-3 rounded-xl border bg-slate-50 dark:bg-slate-900/40 text-sm">
           <div class="min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">${formatPartnerBadge(c.from)}<span class="text-[11px] text-slate-400">${esc(c.date || '')}</span></div>
+            <div class="flex items-center gap-2 flex-wrap">${formatPartnerBadge(c.from)}<span class="text-[11px] text-slate-400">${dayLabel(c.date)}</span></div>
             ${c.note ? `<div class="text-xs text-slate-500 mt-1 truncate">${esc(c.note)}</div>` : ''}
           </div>
           <div class="text-right shrink-0">
             <div class="font-bold text-emerald-600">+${c.amount.toLocaleString(APP_LOCALE)} ${curr}</div>
-            <div class="mt-1 text-xs"><button onclick="openEdit('contribution', '${c.id}')" class="text-pink-600 font-medium mr-3">Редагувати</button><button onclick="deleteContribution('${c.id}')" class="text-rose-500">Видалити</button></div>
+            <div class="mt-1 text-xs"><button onclick="openEdit('contribution', '${c.id}')" class="text-pink-600 font-medium mr-3">Редагувати</button></div>
           </div>
         </div>`).join('') : '<p class="text-center text-slate-400 text-xs py-4">Внесків за цей місяць немає</p>';
     }
@@ -4374,7 +4380,7 @@ const snapshotFlat = st => clone(flattenState(st));
       host.innerHTML = `
         <div class="g-hero">
           <div class="g-hero-label">${esc(heroLabel)}</div>
-          <div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${fmtMoney(heroSum)}</div>
+          ${budget ? `<div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${fmtMoney(heroSum)}</div>` : `<div style="font-size:24px;font-weight:800;line-height:1.2;margin-top:6px">Внеску ще немає</div><button type="button" class="g-btn-sm" style="margin-top:10px" onclick="window.openSimple ? openSimple('put') : openQuickAdd()">Записати внесок</button>`}
           ${cardLine}
           <p style="margin:8px 0 0;font-size:15px;line-height:1.45;max-width:34rem">${sentence}</p>
         </div>
@@ -5551,6 +5557,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const renderAllV58 = renderAll;
       renderAll = function () { renderAllV58(); homeLayout(); arm(); };
       homeLayout(); arm();
+      window.openSimple = openSimple; // для кнопки «Записати внесок» на головній (v6.19)
     })();
   </script>
   <script id="usbudget-inbox">
@@ -5962,6 +5969,65 @@ const snapshotFlat = st => clone(flattenState(st));
       });
       function save() { try { localStorage.setItem(PAIR, JSON.stringify({ from: S.from, to: S.to })); } catch (e) {} }
       window.openConverter = open;
+    })();
+  </script>
+  <script id="usbudget-tidy">
+    // v6.19: «Видалити» — лише у вікні «Редагувати» і з підтвердженням (раніше стирало одним дотиком у списку)
+    (function () {
+      const DEL = {
+        income: id => deleteIncome(id),
+        expense: id => deleteExpense(id),
+        pincome: id => deletePersonal('personalIncomes', id),
+        pexpense: id => deletePersonal('personalExpenses', id),
+        contribution: id => deleteContribution(id)
+      };
+      const prevEdit = openEdit;
+      openEdit = function (kind, id, owner) {
+        prevEdit.apply(this, arguments);
+        const m = document.getElementById('edit-modal'); if (!m || !DEL[kind]) return;
+        const row = m.querySelector('#edit-cancel'); if (!row) return;
+        const b = document.createElement('button');
+        b.type = 'button'; b.id = 'edit-delete'; b.className = 'w-full py-3 rounded-xl text-sm font-semibold text-rose-600 min-h-[44px]'; b.textContent = 'Видалити запис';
+        b.onclick = () => {
+          if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'Точно видалити? Натисніть ще раз'; b.classList.add('border', 'border-rose-300'); return; }
+          closeEdit(); DEL[kind](id);
+        };
+        row.parentElement.after(b);
+      };
+      // Довгі списки: видно 5 останніх, решта — за кнопкою «Показати всі (N)» (стан тримається між перемальовуваннями)
+      const CLIP = 5, clipOpen = {};
+      const CLIP_IDS = ['expenses-mobile-list', 'expenses-table-body'].concat(...['p1', 'p2'].map(k => ['exp-mob', 'exp-body', 'inc-mob', 'inc-body'].map(x => `pp-${k}-${x}`)));
+      function clipLists() {
+        CLIP_IDS.forEach(id => {
+          const el = document.getElementById(id); if (!el) return;
+          const rows = [...el.children], open = !!clipOpen[id], extra = rows.length - CLIP;
+          rows.forEach((r, i) => { r.style.display = !open && i >= CLIP ? 'none' : ''; });
+          const anchor = el.tagName === 'TBODY' ? el.closest('table') : el;
+          let b = document.getElementById('clip-' + id);
+          if (extra <= 0) { if (b) b.remove(); return; }
+          if (!b) {
+            b = document.createElement('button'); b.type = 'button'; b.id = 'clip-' + id;
+            b.className = 'w-full mt-3 py-2.5 rounded-xl border text-sm font-semibold min-h-[44px]';
+            b.onclick = () => { clipOpen[id] = !clipOpen[id]; clipLists(); };
+            anchor.after(b);
+          }
+          b.textContent = open ? 'Згорнути' : `Показати всі (${rows.length})`;
+        });
+      }
+      const prevRenderAll = renderAll;
+      renderAll = function () { const r = prevRenderAll.apply(this, arguments); try { clipLists(); } catch (e) {} return r; };
+      const prevPersonal = renderPersonalTabs;
+      renderPersonalTabs = function () { const r = prevPersonal.apply(this, arguments); try { clipLists(); } catch (e) {} return r; };
+      document.addEventListener('DOMContentLoaded', () => setTimeout(clipLists, 0));
+
+      // Вибір місяця нічого не змінює в налаштуваннях — ховаємо його там
+      const prevSwitch = switchTab;
+      switchTab = function (t) {
+        const r = prevSwitch.apply(this, arguments);
+        const bar = document.getElementById('period-btn-month'), box = bar && bar.closest('.rounded-2xl');
+        if (box) box.style.display = t === 'settings' ? 'none' : '';
+        return r;
+      };
     })();
   </script>
   <script id="usbudget-settings-order">

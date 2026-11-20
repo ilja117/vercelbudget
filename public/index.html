@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.14.1</title>
+  <title>UsBudget — Спільний бюджет пари · v6.14.2</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -5623,7 +5623,7 @@ const snapshotFlat = st => clone(flattenState(st));
         }
         const after = flattenState(state), touched = {};
         Object.keys(Object.assign({}, before, after)).forEach(k => { if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) touched[k] = before[k]; });
-        drop(id, it); saveToCloud(); renderAll();
+        saveToCloud(); drop(id, it); renderAll(); // спершу зберегти: видалення з inbox одразу будить слухача всієї бази, і він затер би незбережений запис
         showUndo(touched, 'Додано: ' + it.merchant);
         restoreOnUndo(id, it);
       }

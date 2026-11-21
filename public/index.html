@@ -5580,10 +5580,11 @@ const snapshotFlat = st => clone(flattenState(st));
       // Підказка категорії: правила й слова імпорту виписок
       function guess(it) {
         const rule = (typeof impRules === 'function' ? impRules() : []).find(r => r.k === impKey(it.merchant));
-        const forW = rule && (rule.for === 'shared' || rule.for === it.who) ? rule.for : 'shared';
+        // Новий магазин — «Особисте»; далі — як вибрали минулого разу (правило спільне з імпортом виписок)
+        const forW = rule && (rule.for === 'shared' || rule.for === it.who) ? rule.for : it.who;
         const list = forW === 'shared' ? (state.settings.categories || []) : (((state.personalCategories || {})[forW] || []).concat(['Інше']));
         const g = rule && rule.cat ? rule.cat : impGuess({ title: it.merchant, mcc: '', bcat: '' });
-        return { cat: impCatName(g, list), for: forW === 'shared' ? 'shared:' + it.who : 'own' };
+        return { cat: impCatName(g, list), for: forW === 'shared' ? (rule.pay === 'card' ? 'shared:card' : 'shared:' + it.who) : 'own' };
       }
       const catsFor = (it, f) => f === 'own' ? (((state.personalCategories || {})[it.who] || []).concat(['Інше'])) : (state.settings.categories || []);
       const sel = (attr, opts, cur, label) => `<select ${attr} aria-label="${e(label)}" class="p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm min-h-[40px] max-w-full">${opts.map(o => `<option value="${e(o[0])}"${o[0] === cur ? ' selected' : ''}>${e(o[1])}</option>`).join('')}</select>`;
@@ -5648,6 +5649,10 @@ const snapshotFlat = st => clone(flattenState(st));
           const rec = { id: 'ib_' + id, date: isoOf(it.ts), title: it.merchant, amount, category: d.cat, bank: 'inbox:' + id };
           if (d.for === 'own') (state.personalExpenses = state.personalExpenses || []).push(Object.assign(rec, { owner: it.who, fromCard: false }));
           else state.expenses.push(Object.assign(rec, { payer: d.for === 'shared:card' ? 'card' : it.who }));
+          // Запам'ятати вибір для цього магазину
+          const k = impKey(it.merchant), rules = (state.settings.importRules || []).slice(), j = rules.findIndex(x => x.k === k);
+          const r = Object.assign({}, rules[j] || {}, { k, skip: false, cat: d.cat, for: d.for === 'own' ? it.who : 'shared', pay: d.for === 'shared:card' ? 'card' : it.who });
+          if (k) { if (j >= 0) rules[j] = r; else rules.push(r); state.settings.importRules = rules; }
         }
         const after = flattenState(state), touched = {};
         Object.keys(Object.assign({}, before, after)).forEach(k => { if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) touched[k] = before[k]; });

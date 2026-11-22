@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>/* v6.19.2: iPhone не наближає сторінку при дотику до поля (щипок пальцями працює далі) */if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) document.querySelector('meta[name=viewport]').content += ', maximum-scale=1';</script>
+  <style>html { touch-action: manipulation; } /* без наближення подвійним дотиком */</style>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#111111">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -11,7 +13,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.19.1</title>
+  <title>UsBudget — Спільний бюджет пари · v6.19.2</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>

@@ -13,7 +13,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.19.2</title>
+  <title>UsBudget — Спільний бюджет пари · v6.20.0</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -258,6 +258,7 @@
     }
     .g-icbtn { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 0; background: transparent; color: var(--g-ink); }
     .g-hero-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+    .g-hero-label.g-over { display: inline-flex; align-items: center; gap: 6px; background: var(--g-bad); color: var(--g-ink); font-weight: 800; padding: 6px 12px; border-radius: 999px; } /* v6.20: перевитрата помітна */
     .g-ins-bar { display: flex; gap: 3px; height: 14px; border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
     .g-ins-bar span { min-width: 4px; }
     .g-ins-list { list-style: none; margin: 0; padding: 0; }
@@ -1489,6 +1490,16 @@ const snapshotFlat = st => clone(flattenState(st));
     // Витрати зі спільної картки (і особисте, куплене з неї) лягають на обох у пропорції їхніх внесків на картку
     // (гроші, що були на старті, — за частками). Гроші, що ще лежать на картці, боргу не створюють.
     // Далі: мінус особисте з картки, плюс прямі перекази між партнерами
+    // v6.20: особисте, оплачене партнером зі своїх, — як позика: рахується як переказ від платника власнику
+    function v4Lent(st) {
+      return (st.personalExpenses || []).filter(e => !e.fromCard && (e.paidBy === 'p1' || e.paidBy === 'p2') && e.paidBy !== e.owner).map(e => ({ date: e.date, paidOn: e.paidOn, from: e.paidBy, to: e.owner, amount: e.amount }));
+    }
+    // Особистий запис: з картки, зі своїх або оплачений партнером (paidBy)
+    function persRec(rec, owner, payer) {
+      if (payer === 'card') return Object.assign(rec, { owner, fromCard: true, title: rec.title + ' (з картки)' });
+      if ((payer === 'p1' || payer === 'p2') && payer !== owner) return Object.assign(rec, { owner, fromCard: false, paidBy: payer, title: rec.title + ' (платив(ла) ' + nameOf(payer) + ')' });
+      return Object.assign(rec, { owner, fromCard: false });
+    }
     function v4Balance(st) {
       const inRange = v4Includer(st), set = st.settings || {};
       const pct1 = clampPct(set.p1Pct) / 100, pct = { p1: pct1, p2: 1 - pct1 };
@@ -1501,7 +1512,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const f = { p1: c.p1 + pct.p1 * start, p2: c.p2 + pct.p2 * start }, F = f.p1 + f.p2;
       const out = cardShared + pers.p1 + pers.p2, put = {};
       ['p1', 'p2'].forEach(k => { put[k] = own[k] + out * (F > 0 ? f[k] / F : pct[k]) - pers[k]; });
-      (st.settlements || []).filter(inRange).forEach(t => { if (t.from in put) put[t.from] += t.amount; if (t.to in put) put[t.to] -= t.amount; });
+      (st.settlements || []).concat(v4Lent(st)).filter(inRange).forEach(t => { if (t.from in put) put[t.from] += t.amount; if (t.to in put) put[t.to] -= t.amount; });
       const T = put.p1 + put.p2;
       return { put, T, pct1, diff1: put.p1 - pct1 * T };
     }
@@ -1669,7 +1680,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const inM = x => monthKeyOf(x.date) === key;
       const sum = (arr, f) => (arr || []).filter(x => inM(x) && f(x)).reduce((s, x) => s + x.amount, 0);
       const income = sum(st.personalIncomes, x => x.owner === k);
-      const toShared = sum(st.contributions, x => x.from === k) + sum(st.expenses, x => x.payer === k) + sum(st.settlements, x => x.from === k) - sum(st.settlements, x => x.to === k);
+      const toShared = sum(st.contributions, x => x.from === k) + sum(st.expenses, x => x.payer === k) + sum((st.settlements || []).concat(v4Lent(st)), x => x.from === k) - sum((st.settlements || []).concat(v4Lent(st)), x => x.to === k);
       const spent = sum(st.personalExpenses, x => x.owner === k && !x.fromCard && x.kind !== 'savings');
       const saved = sum(st.personalExpenses, x => x.owner === k && x.kind === 'savings');
       const kept = income - toShared - spent;
@@ -3567,8 +3578,7 @@ const snapshotFlat = st => clone(flattenState(st));
       if (forWhom === 'shared') {
         state.expenses.push(Object.assign(rec, { payer }));
       } else {
-        if (payer !== 'card' && payer !== forWhom) { showModal('Увага', 'Особисту покупку оплачує картка або сам власник.'); return; }
-        (state.personalExpenses = state.personalExpenses || []).push(Object.assign(rec, { owner: forWhom, fromCard: payer === 'card', title: rec.title + (payer === 'card' ? ' (з картки)' : '') }));
+        (state.personalExpenses = state.personalExpenses || []).push(persRec(rec, forWhom, payer));
       }
       saveToCloud(); renderAll();
       e.target.reset();
@@ -3730,7 +3740,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const pi = mine(state.personalIncomes), pe = mine(state.personalExpenses);
       const contrib = sumBy(per((state.contributions || []).filter(c => c.from === k)), c => c.amount);
       const sharedPaid = sumBy(per(state.expenses.filter(e => e.payer === k)), e => e.amount);
-      const tr = per(state.settlements || []);
+      const tr = per((state.settlements || []).concat(v4Lent(state)));
       const transfers = sumBy(tr.filter(t => t.from === k), t => t.amount) - sumBy(tr.filter(t => t.to === k), t => t.amount);
       const income = sumBy(pi, x => x.amount);
       const spentOwn = sumBy(pe.filter(x => !x.fromCard && x.kind !== 'savings'), x => x.amount);
@@ -4381,8 +4391,8 @@ const snapshotFlat = st => clone(flattenState(st));
           <p class="g-hero-sub">На спільній картці: <b>${fmtMoney(v4Card(state))}</b></p>`;
       host.innerHTML = `
         <div class="g-hero">
-          <div class="g-hero-label">${esc(heroLabel)}</div>
-          ${budget ? `<div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${fmtMoney(heroSum)}</div>` : `<div style="font-size:24px;font-weight:800;line-height:1.2;margin-top:6px">Внеску ще немає</div><button type="button" class="g-btn-sm" style="margin-top:10px" onclick="window.openSimple ? openSimple('put') : openQuickAdd()">Записати внесок</button>`}
+          ${budget && left < 0 ? `<div class="g-hero-label g-over">${ICON('alert', 16)}<span>${esc(heroLabel)}</span></div>` : `<div class="g-hero-label">${esc(heroLabel)}</div>`}
+          ${budget ? `<div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${left < 0 ? '−' : ''}${fmtMoney(heroSum)}</div>${left < 0 ? `<p class="g-hero-sub" style="font-weight:700">Витратили на ${fmtMoney(heroSum)} більше, ніж внесли на картку.</p>` : ''}` : `<div style="font-size:24px;font-weight:800;line-height:1.2;margin-top:6px">Внеску ще немає</div><button type="button" class="g-btn-sm" style="margin-top:10px" onclick="window.openSimple ? openSimple('put') : openQuickAdd()">Записати внесок</button>`}
           ${cardLine}
           <p style="margin:8px 0 0;font-size:15px;line-height:1.45;max-width:34rem">${sentence}</p>
         </div>
@@ -4805,11 +4815,10 @@ const snapshotFlat = st => clone(flattenState(st));
         const v = id => m.querySelector('#' + id).value, err = t => { m.querySelector('#qa-err').textContent = t; };
         const amount = Number(v('qa-amount')), payer = v('qa-payer'), forWhom = v('qa-for'), cat = v('qa-cat');
         if (!(amount > 0) || amount > 1e9) return err('Вкажіть суму.');
-        if (forWhom !== 'shared' && payer !== 'card' && payer !== forWhom) return err('Особисту покупку оплачує картка або сам власник.');
         const before = clone(flattenState(state));
         const rec = { id: Date.now().toString(), date: getTodayString(), title: v('qa-title').trim() || cat || 'Витрата', amount, category: cat };
         if (forWhom === 'shared') state.expenses.push(Object.assign(rec, { payer }));
-        else (state.personalExpenses = state.personalExpenses || []).push(Object.assign(rec, { owner: forWhom, fromCard: payer === 'card', title: rec.title + (payer === 'card' ? ' (з картки)' : '') }));
+        else (state.personalExpenses = state.personalExpenses || []).push(persRec(rec, forWhom, payer));
         try { localStorage.setItem('usbudget_qa_cat', cat); } catch (e) {}
         const after = flattenState(state), touched = {};
         Object.keys(Object.assign({}, before, after)).forEach(k => { if (JSON.stringify(before[k]) !== JSON.stringify(after[k])) touched[k] = before[k]; });
@@ -5475,6 +5484,7 @@ const snapshotFlat = st => clone(flattenState(st));
           const b = v4Balance(state), s = v4Settle(b), pct = k => (k === 'p1' ? b.pct1 : 1 - b.pct1);
           title = 'Хто кому винен';
           body = names.map(k => row('Заплачено: ' + nameOf(k), fmtMoney(b.put[k])) + sub('Частка ' + Math.round(pct(k) * 100) + '%', fmtMoney(b.T * pct(k)))).join('')
+            + names.map(k => { const v = sumOf(v4Lent(state).filter(v4Includer(state)).filter(t => t.from === k)); return v ? row('Особисте за партнера: ' + nameOf(k) + ' → ' + nameOf(k === 'p1' ? 'p2' : 'p1'), fmtMoney(v)) : ''; }).join('')
             + row(s.debtor ? 'Борг' : 'Результат', s.debtor ? nameOf(s.debtor) + ' → ' + nameOf(s.creditor) + ' · ' + fmtMoney(s.toPartner) : 'Ви квити', 'text-base');
           note = 'Заплачено = спільне, оплачене зі своєї картки, + ваша доля витрат зі спільної картки (за внесками на неї) − особисте, куплене зі спільної. Витрати діляться за частками, різниця й дає борг. Гроші, що ще лежать на картці, борг не створюють.';
         } else return;
@@ -5583,12 +5593,14 @@ const snapshotFlat = st => clone(flattenState(st));
       function guess(it) {
         const rule = (typeof impRules === 'function' ? impRules() : []).find(r => r.k === impKey(it.merchant));
         // Новий магазин — «Особисте»; далі — як вибрали минулого разу (правило спільне з імпортом виписок)
-        const forW = rule && (rule.for === 'shared' || rule.for === it.who) ? rule.for : it.who;
+        const partner = it.who === 'p1' ? 'p2' : 'p1';
+        const forW = rule && (rule.for === 'shared' || rule.for === it.who || rule.for === partner) ? rule.for : it.who;
         const list = forW === 'shared' ? (state.settings.categories || []) : (((state.personalCategories || {})[forW] || []).concat(['Інше']));
         const g = rule && rule.cat ? rule.cat : impGuess({ title: it.merchant, mcc: '', bcat: '' });
-        return { cat: impCatName(g, list), for: forW === 'shared' ? (rule.pay === 'card' ? 'shared:card' : 'shared:' + it.who) : 'own' };
+        return { cat: impCatName(g, list), for: forW === 'shared' ? (rule.pay === 'card' ? 'shared:card' : 'shared:' + it.who) : forW === partner ? 'partner' : 'own' };
       }
-      const catsFor = (it, f) => f === 'own' ? (((state.personalCategories || {})[it.who] || []).concat(['Інше'])) : (state.settings.categories || []);
+      const ownerOf = (it, f) => f === 'partner' ? (it.who === 'p1' ? 'p2' : 'p1') : it.who;
+      const catsFor = (it, f) => f === 'own' || f === 'partner' ? (((state.personalCategories || {})[ownerOf(it, f)] || []).concat(['Інше'])) : (state.settings.categories || []);
       const sel = (attr, opts, cur, label) => `<select ${attr} aria-label="${e(label)}" class="p-2 rounded-lg border bg-slate-50 dark:bg-slate-900 text-sm min-h-[40px] max-w-full">${opts.map(o => `<option value="${e(o[0])}"${o[0] === cur ? ' selected' : ''}>${e(o[1])}</option>`).join('')}</select>`;
       const draft = {};
 
@@ -5596,7 +5608,7 @@ const snapshotFlat = st => clone(flattenState(st));
         if (it.kind === 'in') return inRowHtml(it);
         const d = draft[it.id] = draft[it.id] || Object.assign({ amount: it.amount }, guess(it));
         const foreign = it.currency && it.currency !== appCode();
-        const forOpts = [['shared:' + it.who, 'Спільне · платив(ла) ' + nameOf(it.who)], ['shared:card', 'Спільне · зі спільної картки'], ['own', 'Особисте · ' + nameOf(it.who)]];
+        const forOpts = [['shared:' + it.who, 'Спільне · платив(ла) ' + nameOf(it.who)], ['shared:card', 'Спільне · зі спільної картки'], ['own', 'Особисте · ' + nameOf(it.who)], ['partner', 'Особисте · ' + nameOf(ownerOf(it, 'partner')) + ' (платив(ла) ' + nameOf(it.who) + ')']];
         return `<div class="py-3 border-t" data-ib="${e(it.id)}">
           <div class="flex items-baseline gap-3"><div class="flex-1 min-w-0"><div class="font-semibold truncate">${e(it.merchant)}</div>
             <div class="text-xs text-slate-500">${e(whenOf(it.ts))} · ${e(nameOf(it.who))}${it.card ? ' · ' + e(it.card) : ''}${foreign ? ' · ' + e(it.amount + ' ' + it.currency) + ' — перевірте суму' : ''}</div>${it.raw ? `<div class="text-xs text-slate-500 truncate" title="${e(it.raw)}">${e(it.raw)}</div>` : ''}</div>
@@ -5649,11 +5661,11 @@ const snapshotFlat = st => clone(flattenState(st));
         if (it.kind === 'in') (state.personalIncomes = state.personalIncomes || []).push({ id: 'ib_' + id, owner: d.owner, date: isoOf(it.ts), source: it.merchant, amount, bank: 'inbox:' + id });
         else {
           const rec = { id: 'ib_' + id, date: isoOf(it.ts), title: it.merchant, amount, category: d.cat, bank: 'inbox:' + id };
-          if (d.for === 'own') (state.personalExpenses = state.personalExpenses || []).push(Object.assign(rec, { owner: it.who, fromCard: false }));
+          if (d.for === 'own' || d.for === 'partner') (state.personalExpenses = state.personalExpenses || []).push(persRec(rec, ownerOf(it, d.for), it.who));
           else state.expenses.push(Object.assign(rec, { payer: d.for === 'shared:card' ? 'card' : it.who }));
           // Запам'ятати вибір для цього магазину
           const k = impKey(it.merchant), rules = (state.settings.importRules || []).slice(), j = rules.findIndex(x => x.k === k);
-          const r = Object.assign({}, rules[j] || {}, { k, skip: false, cat: d.cat, for: d.for === 'own' ? it.who : 'shared', pay: d.for === 'shared:card' ? 'card' : it.who });
+          const r = Object.assign({}, rules[j] || {}, { k, skip: false, cat: d.cat, for: d.for === 'own' || d.for === 'partner' ? ownerOf(it, d.for) : 'shared', pay: d.for === 'shared:card' ? 'card' : it.who });
           if (k) { if (j >= 0) rules[j] = r; else rules.push(r); state.settings.importRules = rules; }
         }
         const after = flattenState(state), touched = {};

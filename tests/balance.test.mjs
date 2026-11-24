@@ -7,6 +7,7 @@ const src = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8
 const grab = re => { const m = src.match(re); assert.ok(m, String(re)); return m[0]; };
 const code = [
   grab(/const clampPct = .*\n/),
+  grab(/function v4Lent\(st\) \{[\s\S]*?\n    \}\n/),
   grab(/function v4Balance\(st\) \{[\s\S]*?\n    \}\n/),
   grab(/function v4Settle\(b\) \{[\s\S]*?\n    \}\n/),
   grab(/function v4Includer\(st\) \{[\s\S]*?\n    \}\n/),
@@ -49,4 +50,15 @@ test('кінцева частка і перекази', () => {
 test('сума заплаченого дорівнює спільним витратам, початок до облікової дати ігнорується', () => {
   const b = v4Balance(base({ contributions: [ct('p1', 300), ct('p2', 100)], expenses: [ex('card', 200), ex('p2', 50), { date: '2025-12-01', payer: 'p1', amount: 999 }], settings: { modelStart: '2026-01-01', p1Pct: 50, cardStart: 100 } }));
   assert.ok(Math.abs(b.T - 250) < 1e-9);
+});
+
+test('особисте, оплачене партнером зі своїх, — борг власника платнику', () => {
+  const pe = (owner, paidBy, amount) => ({ date: '2026-02-03', owner, paidBy, amount, fromCard: false });
+  let s = v4Settle(v4Balance(base({ personalExpenses: [pe('p2', 'p1', 300)] })));
+  assert.equal(s.debtor, 'p2'); assert.equal(s.creditor, 'p1'); assert.equal(s.toPartner, 300);
+  s = v4Settle(v4Balance(base({ personalExpenses: [pe('p2', 'p1', 300), pe('p1', 'p2', 100)] })));
+  assert.equal(s.debtor, 'p2'); assert.equal(s.toPartner, 200);
+  // своє зі своїх боргу не дає; повернення боргу закриває
+  assert.equal(v4Settle(v4Balance(base({ personalExpenses: [pe('p1', 'p1', 500)] }))).debtor, null);
+  assert.equal(v4Settle(v4Balance(base({ personalExpenses: [pe('p2', 'p1', 300)], settlements: [{ date: '2026-02-04', from: 'p2', to: 'p1', amount: 300 }] }))).debtor, null);
 });

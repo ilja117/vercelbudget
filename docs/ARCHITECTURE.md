@@ -4,7 +4,7 @@
 Правила роботи й підрахунки — у `CLAUDE.md`; дизайн — `DESIGN.md`; для кого — `PRODUCT.md`.
 
 ## 1. Що це
-PWA «бюджет для двох» (пара). Один файл `public/index.html` (~5900 рядків, Chart.js і Firebase з CDN; стилі Tailwind зібрані заздалегідь у `public/tw.css`), англійська поверх нього — `public/i18n.js`, офлайн — `public/sw.js`. Дані — Firebase Realtime DB, функції — Vercel (`api/`, `lib/`). Сайт: usbudget-groshi.vercel.app. Репозиторій: ilja117/vercelbudget.
+PWA «бюджет для двох» (пара). Один файл `public/index.html` (~6300 рядків, Chart.js і Firebase з CDN; стилі Tailwind зібрані заздалегідь у `public/tw.css`), англійська поверх нього — `public/i18n.js`, офлайн — `public/sw.js`. Дані — Firebase Realtime DB, функції — Vercel (`api/`, `lib/`). Сайт: usbudget-groshi.vercel.app. Репозиторій: ilja117/vercelbudget.
 
 ## 2. Файли
 | Файл | Для чого |
@@ -27,7 +27,7 @@ PWA «бюджет для двох» (пара). Один файл `public/index
 | `tests/*.test.mjs` | `npm test` (30 тестів: balance, inbox, backup, rates, server, css) |
 | `database.rules.json` | правила Firebase: усе закрито; `shared_budget_data`, `inbox` і `push_subs` — лише `members` |
 | `vercel.json` | cron, заголовки sw/manifest, `outputDirectory: public` |
-| `tools/preview/` | перегляд без CDN і живої бази (`build.sh`, `fakefb.js`, `shot.cjs`) |
+| `tools/preview/` | перегляд без CDN і живої бази (`build.sh`, `fakefb.js`, `shot.cjs`; «жива» заглушка `livefb.js` + сценарій `inbox-accept.cjs` — перевірка синхронізації) |
 
 ## 3. Дані (Firebase `shared_budget_data`)
 Масиви-колекції (`COLL`): `incomes, expenses, fixedExpenses, goals, personalIncomes, personalExpenses, settlements, contributions`.

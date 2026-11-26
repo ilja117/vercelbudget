@@ -12,7 +12,7 @@
 
 ## Структура
 - Повна карта проєкту (файли, дані, скрипти, ключі, потоки, пастки) — `docs/ARCHITECTURE.md`: читати її першою замість коду; після зміни структури оновлювати.
-- `public/index.html` — весь застосунок (~5900 рядків; версія — у `<title>`). НЕ читати цілком: шукати `grep -n` і читати `sed -n 'A,Bp'`.
+- `public/index.html` — весь застосунок (~6300 рядків; версія — у `<title>`). НЕ читати цілком: шукати `grep -n` і читати `sed -n 'A,Bp'`.
   Код шарами v3→v5: `renderAll`/`switchTab` перевизначаються обгортками; нова логіка — в останніх скриптах: `#usbudget-nav-v5` (навігація, обгортки `renderAllV5`, `switchTabV5`), `#usbudget-import` (імпорт виписок), `#usbudget-fold` (згортання блоків), `#usbudget-simple` («+» → «Що сталося?», «Звідки це число?», розкладка головної, знайомство `openIntro`), `#usbudget-fx` (v6.21: заставка з талісманом теми (v6.21.2), святкування, настрій талісмана, термометри лімітів, свайп — опис у ARCHITECTURE).
   Теми: двигун `#usbudget-theme-engine-js` (`SKINS`, `mascotSvg`, `setThemePref`; у сховищі `usbudget_theme`: `off` / `auto` / місяць / `sk-<id>`), стилі рожевих тем — `<style id="usbudget-skins">`, форма «Глина» для всіх тем — `<style id="usbudget-clay">` (`SYM`, `coinSvg`, `applyPuffs`).
   `confirmResetToDemo` у застосунку не викликається, але потрібна `tools/preview/fakefb.js` — не видаляти.
@@ -48,7 +48,7 @@
 
 ## Перевірка без CDN і живої бази
 `tools/preview/build.sh` (перший раз — `cd tools/preview && npm i`), сервер на :8766, `node tools/preview/shot.cjs [tab…]`.
-Теми в перегляді: `SKIN=sk-hamster node tools/preview/shot.cjs dashboard` (також `sk-bunny|sk-cat|sk-candy|sk-mochi`, `DARK=1`). Шрифти Nunito і Comfortaa підтягує `build.sh`.
+Теми в перегляді: `SKIN=sk-hamster node tools/preview/shot.cjs dashboard` (також `sk-bunny|sk-cat|sk-candy|sk-mochi`, `DARK=1`). Шрифти Nunito і Rubik підтягує `build.sh`.
 Firebase у перегляді — заглушка `fakefb.js` (демо-дані завантажуються самі; знайомство вимкнено ключем `usbudget_intro`). Скріншоти дивитись вибірково: вони дорогі.
 Бібліотеку xlsx у перегляді підставляти через Playwright (`page.route`, контекст із `serviceWorkers: 'block'`). Для великих чисток — порівнювати `innerText` усіх вкладок до/після.
 

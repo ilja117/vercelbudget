@@ -1,5 +1,5 @@
 // UsBudget service worker: робота без інтернету та сповіщення
-const CACHE = 'usbudget-v6.20.0';
+const CACHE = 'usbudget-v6.21.0';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/badge-96.png', './i18n.js', './tw.css'];
 
 self.addEventListener('install', e => {

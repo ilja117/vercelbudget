@@ -13,7 +13,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.21.1</title>
+  <title>UsBudget — Спільний бюджет пари · v6.21.2</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -6148,15 +6148,28 @@ const snapshotFlat = st => clone(flattenState(st));
         const FACE = r => `${EYE(18)}${EYE(30, r)}<circle cx="13.5" cy="29" r="3" fill="#FF7A66" opacity=".55"/><circle cx="34.5" cy="29" r="3" fill="#FF7A66" opacity=".55"/><path d="M20 30q4 4.5 8 0" stroke="#2A1E17" stroke-width="2" fill="none" stroke-linecap="round"/>`;
         const BODY = f => `<circle cx="24" cy="25" r="20" fill="${f}" stroke="#E0A800" stroke-width="3"/><circle cx="24" cy="25" r="14.5" fill="none" stroke="#E0A800" stroke-width="1.5" stroke-dasharray="2 3" opacity=".7"/>`;
         const HL = '<path d="M13 14a14 14 0 0 1 9-5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".7"/>';
-        const half = (side, f) => `<svg viewBox="0 0 48 48" width="100%" height="100%" overflow="visible"><defs><clipPath id="g-sp-${side}"><rect x="${side === 'l' ? -2 : 24}" y="0" width="26" height="48"/></clipPath></defs><g clip-path="url(#g-sp-${side})">${BODY(f)}${FACE()}${side === 'l' ? HL : ''}</g><line x1="24" y1="5" x2="24" y2="45" stroke="#E0A800" stroke-width="2.6"/></svg>`;
-        const full = (wink, shine) => `<svg viewBox="0 0 48 48" width="100%" height="100%" overflow="visible"><defs><clipPath id="g-sp-c"><circle cx="24" cy="25" r="18.5"/></clipPath></defs>${BODY('#FFD43B')}${FACE(wink)}${HL}<g clip-path="url(#g-sp-c)"><rect x="${-30 + shine * 70}" y="-10" width="8" height="70" fill="#fff" opacity=".55" transform="rotate(25 24 25)"/></g></svg>`;
-        const STAR = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#FFC21A" d="M12 0c1 7 5 11 12 12-7 1-11 5-12 12-1-7-5-11-12-12 7-1 11-5 12-12z"/></svg>';
+        // v6.21.2: талісман поточної теми (тваринка або монетка місяця) з --g-hero-mascot; без теми — проста монетка
+        const mm = (getComputedStyle(document.documentElement).getPropertyValue('--g-hero-mascot') || '').match(/^\s*url\("data:image\/svg\+xml,(.*)"\)\s*$/);
+        const raw = mm ? decodeURIComponent(mm[1]) : '';
+        const inner = raw ? raw.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '') : '';
+        const isCoin = !inner || inner.indexOf('M20 30q4 4.5 8 0') >= 0;
+        const ACC = inner && document.documentElement.getAttribute('data-season') !== 'plain' ? 'var(--g-nav, #FFC21A)' : '#FFC21A', INK = '#4A1F33';
+        const wink = m => isCoin ? m.replace('<ellipse cx="30" cy="23" rx="2.2" ry="3" fill="#2A1E17"/>', EYE(30, true))
+          : m.replace(/<circle cx="30\.6" cy="27" r="2\.5"[^>]*\/>/, `<path d="M28 27.4q2.6 2 5.2 0" stroke="${INK}" stroke-width="2" fill="none" stroke-linecap="round"/>`).replace(/<circle cx="31\.5" cy="26\.\d+" r="\.9"[^>]*\/>/, '');
+        const mascot = side => !inner ? BODY(side === 'r' ? '#FFB84D' : '#FFD43B') + FACE() + (side === 'r' ? '' : HL)
+          : side !== 'r' ? inner : isCoin ? inner.replace(/#FFD43B/g, '#FFB84D') : inner.replace(/fill="#fff" stroke=/g, 'fill="#FFE3EC" stroke=');
+        const seam = isCoin ? '<line x1="24" y1="5" x2="24" y2="45" stroke="#E0A800" stroke-width="2.6"/>' : `<line x1="24" y1="13.5" x2="24" y2="44.5" stroke="${INK}" stroke-width="2.2"/>`;
+        const half = side => `<svg viewBox="0 0 48 48" width="100%" height="100%" overflow="visible"><defs><clipPath id="g-sp-${side}"><rect x="${side === 'l' ? -30 : 24}" y="-30" width="54" height="108"/></clipPath></defs><g clip-path="url(#g-sp-${side})">${mascot(side)}</g>${seam}</svg>`;
+        const shineClip = isCoin ? '<circle cx="24" cy="25" r="18.5"/>' : '<ellipse cx="24" cy="29" rx="17.5" ry="14"/>';
+        const full = (w, shine) => { const m = inner || (BODY('#FFD43B') + FACE() + HL);
+          return `<svg viewBox="0 0 48 48" width="100%" height="100%" overflow="visible"><defs><clipPath id="g-sp-c">${shineClip}</clipPath></defs>${w ? wink(m) : m}<g clip-path="url(#g-sp-c)"><rect x="${-30 + shine * 70}" y="-10" width="8" height="70" fill="#fff" opacity=".55" transform="rotate(25 24 25)"/></g></svg>`; };
+        const STAR = `<svg viewBox="0 0 24 24" width="100%" height="100%"><path style="fill:${ACC}" d="M12 0c1 7 5 11 12 12-7 1-11 5-12 12-1-7-5-11-12-12 7-1 11-5 12-12z"/></svg>`;
         const S = 112, W = 'UsBudget';
         const el = document.createElement('div'); el.id = 'g-splash'; el.setAttribute('aria-hidden', 'true');
         el.innerHTML = `<div class="g-sp-sh" style="width:104px;height:16px;border-radius:50%;background:rgba(42,30,23,.16)"></div>
-          <div class="g-sp-ring" style="width:${S}px;height:${S}px;border-radius:50%;border:5px solid #FFD43B"></div>
+          <div class="g-sp-ring" style="width:${S}px;height:${S}px;border-radius:50%;border:5px solid ${ACC}"></div>
           ${[0, 1, 2, 3, 4, 5].map(i => `<div class="g-sp-st" style="width:16px;height:16px">${STAR}</div>`).join('')}
-          <div class="g-sp-l" style="width:${S}px;height:${S}px">${half('l', '#FFD43B')}</div><div class="g-sp-r" style="width:${S}px;height:${S}px">${half('r', '#FFB84D')}</div>
+          <div class="g-sp-l" style="width:${S}px;height:${S}px">${half('l')}</div><div class="g-sp-r" style="width:${S}px;height:${S}px">${half('r')}</div>
           <div class="g-sp-f" style="width:${S}px;height:${S}px;transform-origin:50% 100%"></div>
           <div class="g-sp-h" style="width:30px;height:30px">${HEART.replace('<svg ', '<svg width="100%" height="100%" ')}</div>
           <div class="g-sp-w">${W.split('').map(c => `<span>${c}</span>`).join('')}</div><div class="g-sp-s">спільний бюджет для двох</div>`;
@@ -6174,8 +6187,8 @@ const snapshotFlat = st => clone(flattenState(st));
           const k = seg(t, .05, J), off = (1 - eio(k)) * Math.min(150, innerWidth * .36), hy = -30 * Math.abs(Math.sin(Math.PI * 2 * k)) * (1 - k * .4), tilt = (1 - k) * 18 + Math.sin(Math.PI * 4 * k) * 6 * (1 - k);
           tf(q('.g-sp-l'), x0 - off, y0 + hy, 1, 1, -tilt); tf(q('.g-sp-r'), x0 + off, y0 + hy, 1, 1, tilt);
           q('.g-sp-l').style.opacity = q('.g-sp-r').style.opacity = t < J ? 1 : 0;
-          const f = q('.g-sp-f'), im = seg(t, J, J + .35), sq = Math.sin(Math.PI * im) * (1 - im) * .5, wink = t > 1.3 && t < 1.55, sh = seg(t, J + .12, J + .55);
-          const key = (t >= J) + '|' + wink + '|' + sh.toFixed(2); if (key !== lastFace) { f.innerHTML = full(wink, sh); lastFace = key; }
+          const f = q('.g-sp-f'), im = seg(t, J, J + .35), sq = Math.sin(Math.PI * im) * (1 - im) * .5, wk = t > 1.3 && t < 1.55, sh = seg(t, J + .12, J + .55);
+          const key = (t >= J) + '|' + wk + '|' + sh.toFixed(2); if (key !== lastFace) { f.innerHTML = full(wk, sh); lastFace = key; }
           tf(f, x0, y0, 1 + sq, 1 - sq * .8); f.style.opacity = t >= J ? 1 : 0;
           const shd = q('.g-sp-sh'); tf(shd, CX - 52, CY + S / 2 - 4, 1 + hy / 120, 1);
           const rk = seg(t, J, J + .55), rg = q('.g-sp-ring'); tf(rg, x0, y0, .9 + rk * 1.2); rg.style.opacity = rk > 0 && rk < 1 ? .8 * (1 - rk) : 0;

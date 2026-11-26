@@ -13,7 +13,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.21.3</title>
+  <title>UsBudget — Спільний бюджет пари · v6.22.0</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -653,7 +653,7 @@
     <div id="holiday-banner-container"></div>
 
     <!-- Глобальний селектор періоду -->
-    <div class="bg-white dark:bg-slate-800/80 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div id="g-period" class="bg-white dark:bg-slate-800/80 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
       <div class="hidden">
         <button onclick="setPeriodType('month')" id="period-btn-month" class="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-xl text-xs font-semibold transition bg-pink-500 text-white shadow-sm min-h-[40px]">Календарний місяць</button>
         <button onclick="setPeriodType('week')" id="period-btn-week" class="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-xl text-xs font-semibold transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 min-h-[40px]">Тиждень</button>
@@ -5981,9 +5981,10 @@ const snapshotFlat = st => clone(flattenState(st));
         row.parentElement.after(b);
       };
       // Довгі списки: видно 5 останніх, решта — за кнопкою «Показати всі (N)» (стан тримається між перемальовуваннями)
-      const CLIP = 5, clipOpen = {};
+      const CLIP_M = 5, clipOpen = {}; let CLIP = CLIP_M; // v6.22: на комп'ютері видно 20 рядків
       const CLIP_IDS = ['expenses-mobile-list', 'expenses-table-body'].concat(...['p1', 'p2'].map(k => ['exp-mob', 'exp-body', 'inc-mob', 'inc-body'].map(x => `pp-${k}-${x}`)));
       function clipLists() {
+        CLIP = matchMedia('(min-width: 1024px)').matches ? 20 : CLIP_M;
         CLIP_IDS.forEach(id => {
           const el = document.getElementById(id); if (!el) return;
           const rows = [...el.children], open = !!clipOpen[id], extra = rows.length - CLIP;
@@ -6282,6 +6283,86 @@ const snapshotFlat = st => clone(flattenState(st));
       document.addEventListener('pointerup', release, { passive: true });
       document.addEventListener('pointercancel', () => { if (drag && drag.on) { drag.el.classList.add('g-fx-spring'); drag.el.style.transform = ''; } drag = null; }, { passive: true });
       window.__fx = { coinRain, burst, confetti }; // для перевірок у перегляді
+    })();
+  </script>
+  <style id="usbudget-desk-css">
+    /* v6.22: комп'ютер (≥1024px) — бічна панель з усіма розділами, вужчий вміст, головна у дві колонки */
+    #g-side { display: none; }
+    @media (min-width: 1024px) {
+      body { padding-left: 248px; }
+      #g-side { display: flex; flex-direction: column; gap: 4px; position: fixed; z-index: 35; left: 0; top: 0; bottom: 0; width: 248px; padding: 20px 14px; overflow-y: auto; background: var(--g-card); color: var(--g-ink); box-shadow: var(--g-clay-sm, 0 0 0 1px var(--g-line)); border-radius: 0 32px 32px 0; }
+      header > div > div:first-child, .g-dnav, #g-subnav, #g-fab { display: none !important; }
+      header > div { justify-content: flex-end !important; }
+      header > div, main { max-width: 1120px !important; }
+      #g-period { display: flex; width: max-content; flex-direction: row; padding: 6px; }
+      #tab-dashboard:not(.hidden) { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+      #tab-dashboard:not(.hidden) > * { margin: 0 !important; }
+      #tab-dashboard > #g-hero { grid-column: 1; }
+      #tab-dashboard > #g-recent { grid-column: 2; grid-row: span 2; }
+      #tab-dashboard > :not(#g-hero):not(#g-recent):not(.sr-only) { grid-column: 1 / -1; }
+      tbody tr.g-row-edit { cursor: pointer; }
+      tbody tr.g-row-edit:hover { background: var(--g-soft); }
+    }
+    .g-side-brand { display: flex; align-items: center; gap: 10px; padding: 2px 8px 14px; font: 800 22px/1 Rubik, Nunito, sans-serif; }
+    .g-side-brand .g-side-logo { width: 40px; height: 40px; display: grid; place-items: center; }
+    .g-side-add { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-bottom: 14px; border: 0; border-radius: 24px; background: var(--g-pop); color: #111111; font: 700 15px/1 Nunito, sans-serif; cursor: pointer; box-shadow: var(--g-clay-sm, none); }
+    .g-side-add kbd { font: 700 12px/1 Nunito, sans-serif; padding: 3px 6px; border-radius: 6px; background: rgba(255,255,255,.55); }
+    .g-side-cap { margin: 14px 12px 4px; font: 700 12px/1 Nunito, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--g-muted); }
+    .g-side-a { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 18px; background: none; color: var(--g-muted); font: 600 15px/1 Nunito, sans-serif; text-align: left; cursor: pointer; }
+    .g-side-a:hover { background: var(--g-soft); color: var(--g-ink); }
+    .g-side-a[aria-current="page"] { background: var(--g-pop); color: #111111; box-shadow: var(--g-clay-sm, none); }
+    .g-side-dot { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 800 11px/1 Nunito, sans-serif; flex: none; }
+    .g-side-bottom { margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; }
+    @media (prefers-reduced-motion: no-preference) { html.g-motion .g-side-a, html.g-motion .g-side-add { transition: background-color .15s, color .15s, transform .12s; } html.g-motion .g-side-add:active { transform: scale(.97); } }
+  </style>
+  <script id="usbudget-desk">
+    // v6.22: бічна панель на комп'ютері, клавіша N — новий запис, клік по рядку таблиці — редагування
+    (function () {
+      const ITEMS = [['dashboard', 'home', 'Головна'], ['expenses', 'receipt', 'Витрати'], ['incomes', 'card', 'На картку'], ['settlement', 'scale', 'Борги'], ['fixed', 'repeat', 'Регулярні'], ['goals', 'target', 'Цілі'], ['analytics', 'chart', 'Аналітика']];
+      const btn = (t, ic, label) => `<button type="button" class="g-side-a" data-side="${t}" onclick="switchTab('${t}')">${ic}<span>${esc(label)}</span></button>`;
+      const dot = (c, n) => `<span class="g-side-dot" style="background:${esc(c)}" aria-hidden="true">${esc((n || '?').charAt(0).toUpperCase())}</span>`;
+      function build() {
+        let el = document.getElementById('g-side');
+        if (!el) { el = document.createElement('nav'); el.id = 'g-side'; el.setAttribute('aria-label', 'Розділи'); document.body.prepend(el); }
+        const logo = document.getElementById('app-logo');
+        el.innerHTML = `<div class="g-side-brand"><span class="g-side-logo" aria-hidden="true">${logo ? logo.innerHTML : ''}</span>UsBudget</div>
+          <button type="button" class="g-side-add" onclick="openQuickAdd()" title="Клавіша N"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Додати запис</span><kbd aria-hidden="true">N</kbd></button>
+          ${ITEMS.map(([t, ic, l]) => btn(t, ICON(ic, 20), l)).join('')}
+          <div class="g-side-cap">Особисте</div>
+          ${btn('p1', dot(getPartner1Color(), getPartner1Name()), getPartner1Name())}
+          ${btn('p2', dot(getPartner2Color(), getPartner2Name()), getPartner2Name())}
+          <div class="g-side-bottom">${btn('settings', ICON('settings', 20), 'Налаштування')}</div>`;
+        mark();
+      }
+      function mark() {
+        const cur = typeof activeTabId !== 'undefined' ? activeTabId : 'dashboard';
+        document.querySelectorAll('#g-side [data-side]').forEach(b => { if (b.dataset.side === cur) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+      }
+      // Рядки таблиць: клік будь-де по рядку відкриває редагування (кнопка «Редагувати» лишається)
+      function rows() {
+        document.querySelectorAll('tbody tr').forEach(tr => { if (tr.querySelector('button[onclick^="openEdit"]')) tr.classList.add('g-row-edit'); });
+      }
+      document.addEventListener('click', e => {
+        const tr = e.target.closest && e.target.closest('tr.g-row-edit');
+        if (!tr || e.target.closest('button, a, input, select, label') || !matchMedia('(min-width: 1024px)').matches) return;
+        const b = tr.querySelector('button[onclick^="openEdit"]'); if (b) b.click();
+      });
+      // N (і «т» в українській розкладці — та сама клавіша) — новий запис
+      document.addEventListener('keydown', e => {
+        if (e.code !== 'KeyN' || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+        const a = document.activeElement;
+        if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return;
+        if ([...document.querySelectorAll('[aria-modal="true"], .fixed.inset-0')].some(d => d.offsetWidth > 0 && getComputedStyle(d).pointerEvents !== 'none')) return; // відкрите вікно
+        e.preventDefault(); openQuickAdd();
+        setTimeout(() => { const f = document.querySelector('#edit-modal button'); if (f) f.focus(); }, 60); // далі — Tab/Enter
+      });
+      const prevTab = switchTab;
+      switchTab = function () { const r = prevTab.apply(this, arguments); try { mark(); } catch (e) {} return r; };
+      const prevAll = renderAll;
+      renderAll = function () { const r = prevAll.apply(this, arguments); try { build(); rows(); } catch (e) {} return r; };
+      const prevPers = renderPersonalTabs;
+      renderPersonalTabs = function () { const r = prevPers.apply(this, arguments); try { rows(); } catch (e) {} return r; };
+      document.addEventListener('DOMContentLoaded', () => setTimeout(() => { try { build(); rows(); } catch (e) {} }, 0));
     })();
   </script>
 </body>

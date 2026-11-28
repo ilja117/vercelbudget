@@ -38,6 +38,7 @@
 - Баланс і картка (`v4Balance`, `v4Card`) — накопичувально, записи з `date` або `paidOn` ≥ `settings.modelStart` («Облік з»).
 - Особистий бюджет (`personalOf`): за вибраний місяць або, якщо увімкнено «Свій період», з/до дат із `settings.personalRange[p1|p2] = {on, from, to}` (`filterPersonal`). Спільне цим не зачіпається.
 - «Регулярні»: особисті операції (усе зі `scope` p1/p2, крім внесків на картку) видно лише з `settings.showPersonalRec`; у вкладках партнерів — завжди.
+- Місяць бюджету (v6.23) — від дня `settings.monthStartDay` (без значення — 6): «Листопад» = 6.11–5.12; усе місячне — через `getPeriodRange`/`monthKeyOf`, календарний перегляд — `usbudget_calview`.
 - Імпорт: поле `bank` на записі — захист від дублів; правила в `settings.importRules` (масив).
 
 ## Дизайн (коротко, деталі в DESIGN.md)

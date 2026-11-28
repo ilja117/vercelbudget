@@ -31,7 +31,7 @@ PWA «бюджет для двох» (пара). Один файл `public/index
 
 ## 3. Дані (Firebase `shared_budget_data`)
 Масиви-колекції (`COLL`): `incomes, expenses, fixedExpenses, goals, personalIncomes, personalExpenses, settlements, contributions`.
-По власниках (`OWNER_COLL`): `personalGoals, personalFixed`. Об'єкти (`BLOB_OWNER`): `personalCategories, personalCategoryLimits, personalModes`. Окремо: `settings` (там `inboxKeys{p1,p2}`, `modelStart`, `personalRange`, `importRules`, `showPersonalRec`, імена/кольори партнерів), `inbox/<id>` — з v6.15 у корені бази, поза `shared_budget_data` (платежі з телефона), `backups/<id>` + `backup_meta/<id>` (копії), `push_subs`, `members/<uid>=true`.
+По власниках (`OWNER_COLL`): `personalGoals, personalFixed`. Об'єкти (`BLOB_OWNER`): `personalCategories, personalCategoryLimits, personalModes`. Окремо: `settings` (там `inboxKeys{p1,p2}`, `modelStart`, `monthStartDay`, `personalRange`, `importRules`, `showPersonalRec`, імена/кольори партнерів), `inbox/<id>` — з v6.15 у корені бази, поза `shared_budget_data` (платежі з телефона), `backups/<id>` + `backup_meta/<id>` (копії), `push_subs`, `members/<uid>=true`.
 Клієнт: `state` (≈1223), `fromRemote` ↔ `toTree`, зміни — `flattenState` + `diffFlat` → `saveToCloud` (≈1877). Ключі Firebase кодуються `encKey/decKey`. Локальний кеш `usbudget_state`.
 Записи мають `id`, `date`, `amount`; витрата: `title, category, payer, split, scope` (`shared|p1|p2`), `bank` (захист від дублів імпорту: `inbox:<id>` або id із виписки).
 
@@ -53,7 +53,7 @@ PWA «бюджет для двох» (пара). Один файл `public/index
 Стилі: `#usbudget-graphic` (токени `--g-*`), `#usbudget-skins` (рожеві теми), `#usbudget-clay` (форма «Глина»).
 
 ## 5. Ключі localStorage
-`usbudget_state` (кеш даних), `usbudget_backups` (копії на пристрої), `usbudget_theme`, `usbudget_push_owner` (чий це телефон: p1/p2), `usbudget_push_key`, `usbudget_local_remind`, `usbudget_msum` (місяць, де «Зрозуміло»), `usbudget_rates`, `usbudget_motion`, `usbudget_intro`, `usbudget_lang`, `usbudget_qa_cat/qa_who`, `usbudget_home_more`, `usbudget_banner_dismissed`, `usbudget_base`.
+`usbudget_state` (кеш даних), `usbudget_backups` (копії на пристрої), `usbudget_theme`, `usbudget_push_owner` (чий це телефон: p1/p2), `usbudget_push_key`, `usbudget_local_remind`, `usbudget_msum` (місяць, де «Зрозуміло»), `usbudget_rates`, `usbudget_motion`, `usbudget_intro`, `usbudget_lang`, `usbudget_qa_cat/qa_who`, `usbudget_home_more`, `usbudget_banner_dismissed`, `usbudget_base`, `usbudget_calview` (`'1'` — дивитись календарний місяць замість «від зарплати»).
 
 ## 6. Змінні Vercel (лише там, не в репозиторії)
 `FIREBASE_SERVICE_ACCOUNT` (JSON), `FIREBASE_DB_URL`, `FIREBASE_API_KEY`, `REQUIRE_AUTH`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_CONTACT`, `CRON_SECRET`. Публічний VAPID у `index.html` (`VAPID_PUBLIC`) — пара з приватним. Змінні діють після Redeploy.
@@ -88,3 +88,4 @@ PWA «бюджет для двох» (пара). Один файл `public/index
 - Вкладка «Моє» (v6.17): порядок — шапка (ім'я, «Заблокувати» якщо є PIN, «Налаштувати»), «Вільний залишок», Мої витрати, Мої доходи, Цілі, Регулярні, форми додавання, структура (лише коли є витрати, `pp-<k>-struct`). Службове — у `pp-<k>-setup` (`data-fold="0"`): «Свій період» (`pp-<k>-range`), PIN (`pp-<k>-pin`), категорії й ліміти (`pp-<k>-cats-card`); відкривається кнопкою (`togglePersonalSetup`, стан `ppSetupOpen`, `applyPersonalSetup`). Увімкнений «Свій період» видно завжди.
 - Налаштування (v6.18): групи з заголовками, стара шапка `set-couple` прихована; «Налаштування» прибрано з кнопок «Ще» (шестерня в шапці тепер і на комп'ютері); кнопку «Аналітика» з налаштувань прибрано (є в «Ще»); «Резервне копіювання» → «Копія у файл», стоїть поруч з «Автокопії».
 - Дрібниці (v6.19): дати в списках — `dayLabel(iso)` («20 лис», інший рік — «05.03.2025»); головна без внеску — «Внеску ще немає» і кнопка «Записати внесок» (`openSimple('put')`, тепер `window.openSimple`).
+- Місяць від зарплати (v6.23): `settings.monthStartDay` (1–28, без значення — 6; поле в «Фінансових параметрах»). `getPeriodRange` (місяць = D-те … D−1 наступного, назва — за місяцем початку, `periodKey` = `YYYY-MM` початку), `monthKeyOf`/`monthFrom`/`monthEnd` (аналітика, експорт, «Підсумок місяця» — перші 5 днів періоду) — усе через `monthStartDay()`. Кнопка `#period-range` під назвою місяця (`toggleCalView`) — календарний місяць на цьому пристрої (`usbudget_calview`). «Свій період» в особистому має перевагу; борг і картка — накопичувально, не зачіпаються.

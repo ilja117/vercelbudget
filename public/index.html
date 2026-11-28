@@ -13,7 +13,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.22.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.23.0</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -660,7 +660,10 @@
       </div>
       <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
         <button onclick="shiftPeriod(-1)" class="w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition" title="Попередній місяць" aria-label="Попередній місяць"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
-        <span id="period-label" class="text-sm font-bold text-slate-900 dark:text-white min-w-[150px] text-center">Лютий 2026</span>
+        <div class="flex flex-col items-center min-w-[150px]">
+          <span id="period-label" class="text-sm font-bold text-slate-900 dark:text-white text-center">Лютий 2026</span>
+          <button type="button" id="period-range" onclick="toggleCalView()" class="text-[12px] text-slate-500 dark:text-slate-400 underline decoration-dotted underline-offset-2 leading-tight" style="display:none"></button>
+        </div>
         <button onclick="shiftPeriod(1)" class="w-11 h-11 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition" title="Наступний місяць" aria-label="Наступний місяць"><svg class="g-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
       </div>
     </div>
@@ -1058,6 +1061,11 @@
                 <label class="block text-xs font-medium mb-1.5">Рахувати борги з дати</label>
                 <input type="date" id="settings-model-start" class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm">
               </div>
+              <div>
+                <label class="block text-xs font-medium mb-1.5" for="settings-month-start">Місяць бюджету починається з дня</label>
+                <input type="number" id="settings-month-start" min="1" max="28" step="1" inputmode="numeric" class="w-full p-3 sm:p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-900 text-sm">
+                <p class="text-[12px] text-slate-500 mt-1">Наприклад, 6: «Листопад» — це 6 листопада – 5 грудня. 1 — звичайний календарний місяць.</p>
+              </div>
           </div>
           <div class="flex justify-end">
             <button type="submit" class="w-full sm:w-auto bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 sm:py-2.5 px-6 rounded-xl text-sm transition min-h-[48px] sm:min-h-[40px]">💾 Зберегти параметри</button>
@@ -1238,15 +1246,28 @@
 
     function getTodayString() { return toLocalISO(new Date()); }
 
+    // v6.23: місяць бюджету від зарплати — settings.monthStartDay (1–28, без значення — 6).
+    // «Листопад» = 6.11–5.12. На цьому пристрої можна дивитись календарний місяць (usbudget_calview = '1').
+    function budgetStartDay() {
+      const v = state && state.settings && state.settings.monthStartDay, d = v == null || v === '' ? 6 : Math.round(Number(v));
+      return d >= 2 && d <= 28 ? d : 1;
+    }
+    function calView() { try { return localStorage.getItem('usbudget_calview') === '1'; } catch (e) { return false; } }
+    function monthStartDay() { return calView() ? 1 : budgetStartDay(); }
+    function toggleCalView() {
+      try { if (calView()) localStorage.removeItem('usbudget_calview'); else localStorage.setItem('usbudget_calview', '1'); } catch (e) {}
+      currentPeriod.offset = 0; updatePeriodUI(); renderAll();
+    }
+
     function getPeriodRange() {
       const now = new Date();
       let start, end, label, periodKey;
 
       if (currentPeriod.type === 'month') {
-        const y = now.getFullYear();
-        const m = now.getMonth() + currentPeriod.offset;
-        start = new Date(y, m, 1);
-        end = new Date(y, m + 1, 0, 23, 59, 59);
+        const D = monthStartDay(), y = now.getFullYear();
+        const m = now.getMonth() + currentPeriod.offset - (now.getDate() < D ? 1 : 0);
+        start = new Date(y, m, D);
+        end = new Date(y, m + 1, D - 1, 23, 59, 59);
         periodKey = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`;
         label = start.toLocaleDateString(APP_LOCALE, { month: 'long', year: 'numeric' });
         label = label.charAt(0).toUpperCase() + label.slice(1);
@@ -1634,13 +1655,20 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
 // --- v4.3: аналітика й експорт (чисті функції) ---
-    const monthKeyOf = iso => String(iso || '').slice(0, 7);
+    // Ключ місяця бюджету для дати: якщо місяць починається з дня D, то 1..D-1 число — ще попередній місяць
+    const monthKeyOf = iso => {
+      const s = String(iso || ''), D = monthStartDay();
+      if (D === 1 || s.length < 10 || Number(s.slice(8, 10)) >= D) return s.slice(0, 7);
+      const d = new Date(Number(s.slice(0, 4)), Number(s.slice(5, 7)) - 2, 1);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    };
     function monthKeys(lastKey, n) {
       const p = lastKey.split('-').map(Number), out = [];
       for (let i = n - 1; i >= 0; i--) { const d = new Date(p[0], p[1] - 1 - i, 1); out.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); }
       return out;
     }
-    const monthEnd = key => { const p = key.split('-').map(Number); return key + '-' + String(new Date(p[0], p[1], 0).getDate()).padStart(2, '0'); };
+    const monthFrom = key => key + '-' + String(monthStartDay()).padStart(2, '0');
+    const monthEnd = key => { const p = key.split('-').map(Number), D = monthStartDay(); return D === 1 ? key + '-' + String(new Date(p[0], p[1], 0).getDate()).padStart(2, '0') : toLocalISO(new Date(p[0], p[1], D - 1)); };
 
     // Підсумки за місяцями: внески партнерів, спільні витрати, відкладене, баланс картки на кінець місяця
     function monthlySummary(st, keys) {
@@ -3539,8 +3567,16 @@ const snapshotFlat = st => clone(flattenState(st));
     }
 
     function updatePeriodUI() {
-      const lbl = document.getElementById('period-label');
-      if (lbl) lbl.innerText = getPeriodRange().label;
+      const lbl = document.getElementById('period-label'), r = getPeriodRange();
+      if (lbl) lbl.innerText = r.label;
+      const chip = document.getElementById('period-range');
+      if (!chip) return;
+      const on = currentPeriod.type === 'month' && budgetStartDay() > 1;
+      chip.style.display = on ? '' : 'none';
+      if (!on) return;
+      const o = { day: 'numeric', month: 'short' }, cal = calView();
+      chip.textContent = (cal ? 'Календарний: ' : 'З зарплати: ') + r.start.toLocaleDateString(APP_LOCALE, o) + ' – ' + r.end.toLocaleDateString(APP_LOCALE, o);
+      chip.title = cal ? 'Показати від дня зарплати' : 'Показати календарний місяць';
     }
 
     function getSplitName() { const p = getPct1(); return `${p}/${100 - p}`; }
@@ -3736,6 +3772,7 @@ const snapshotFlat = st => clone(flattenState(st));
       put('settings-p1-pct', getPct1());
       put('settings-card-start', state.settings.cardStart || 0);
       put('settings-model-start', state.settings.modelStart || '');
+      put('settings-month-start', budgetStartDay());
       const l1 = document.getElementById('pct-label-p1');
       if (l1) l1.textContent = `Частка ${getPartner1Name()}, %`;
       const v2 = document.getElementById('pct-view-p2');
@@ -3749,7 +3786,8 @@ const snapshotFlat = st => clone(flattenState(st));
       state.settings.p1Pct = clampPct(v('settings-p1-pct'));
       state.settings.cardStart = parseFloat(v('settings-card-start')) || 0;
       if (v('settings-model-start')) state.settings.modelStart = v('settings-model-start');
-      saveToCloud(); renderAll();
+      if (v('settings-month-start')) state.settings.monthStartDay = Math.min(28, Math.max(1, Math.round(Number(v('settings-month-start'))) || 1));
+      saveToCloud(); updatePeriodUI(); renderAll();
       showModal('Збережено', 'Фінансові параметри оновлено.');
     }
 
@@ -4086,7 +4124,7 @@ const snapshotFlat = st => clone(flattenState(st));
     // --- експорт ---
     function exportRange() {
       const v = (document.getElementById('ex-period') || {}).value || 'month', { from, to, key } = monthRange();
-      if (v === 'prev') { const pk = monthKeys(key, 2)[0]; return { from: pk + '-01', to: monthEnd(pk), label: mLabelLong(pk), months: [pk] }; }
+      if (v === 'prev') { const pk = monthKeys(key, 2)[0]; return { from: monthFrom(pk), to: monthEnd(pk), label: mLabelLong(pk), months: [pk] }; }
       if (v === 'year') { const y = key.slice(0, 4); return { from: y + '-01-01', to: y + '-12-31', label: y + ' рік', months: monthKeys(y + '-12', 12) }; }
       if (v === 'all') {
         const dates = ['contributions', 'expenses', 'personalIncomes', 'personalExpenses', 'settlements'].reduce((a, c) => a.concat((state[c] || []).map(x => x.date).filter(Boolean)), []).sort();
@@ -5789,9 +5827,10 @@ const snapshotFlat = st => clone(flattenState(st));
 
       function render() {
         const old = document.getElementById('g-msum'), today = getTodayString();
-        const [prevKey, key] = monthKeys(today.slice(0, 7), 3).slice(0, 2), pi = Number(prevKey.slice(5, 7)) - 1, ki = Number(key.slice(5, 7)) - 1;
+        const [prevKey, key] = monthKeys(monthKeyOf(today), 3).slice(0, 2), pi = Number(prevKey.slice(5, 7)) - 1, ki = Number(key.slice(5, 7)) - 1;
         const ms = monthlySummary(state, [prevKey, key]), prev = ms[0], m = ms[1];
-        const show = Number(today.slice(8, 10)) <= 5 && seen() !== key && (m.shared > 0 || m.contrib.p1 + m.contrib.p2 > 0);
+        const day = Math.round((parseLocalDate(today) - parseLocalDate(monthFrom(monthKeyOf(today)))) / 864e5) + 1;
+        const show = day <= 5 && seen() !== key && (m.shared > 0 || m.contrib.p1 + m.contrib.p2 > 0);
         const recent = document.getElementById('g-recent');
         if (!show || !recent) { if (old) old.remove(); return; }
         let box = old;
@@ -5813,7 +5852,7 @@ const snapshotFlat = st => clone(flattenState(st));
       document.addEventListener('click', ev => {
         if (!ev.target.closest('#g-msum')) return;
         if (ev.target.closest('[data-msum-more]')) switchTab('analytics');
-        else if (ev.target.closest('[data-msum-ok]')) { try { localStorage.setItem(SEEN, monthKeys(getTodayString().slice(0, 7), 2)[0]); } catch (err) {} render(); }
+        else if (ev.target.closest('[data-msum-ok]')) { try { localStorage.setItem(SEEN, monthKeys(monthKeyOf(getTodayString()), 2)[0]); } catch (err) {} render(); }
       });
       const prevRender = renderAll;
       renderAll = function () { prevRender(); render(); };

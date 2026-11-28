@@ -13,7 +13,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.24.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.25.0</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -287,6 +287,8 @@
     .g-hero-lim { display: inline-block; margin: 10px 0 2px; padding: 7px 12px; border-radius: 14px; font-size: 14px; font-weight: 700; color: var(--g-ink); }
     .g-hero-lim-ok { background: #C6F06A; }
     .g-hero-lim-bad { background: #FF7A66; }
+    .g-hero-stale { display: flex; align-items: flex-start; gap: 6px; margin: 8px 0 0; font-size: 13px; font-weight: 700; color: var(--g-ink); max-width: 34rem; }
+    .g-hero-stale svg { flex: none; margin-top: 1px; }
     .g-sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 8px; }
     .g-sec-head h2 { margin: 0; font-family: 'Rubik', sans-serif; text-transform: uppercase; letter-spacing: .02em; }
     .g-link { min-height: 44px; padding: 0 4px; border: 0; background: none; font-weight: 600; font-size: 14px; color: var(--g-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -1570,6 +1572,31 @@ const snapshotFlat = st => clone(flattenState(st));
       const startD = new Date(r.start); startD.setDate(startD.getDate() - 1);
       const carry = v4CardUntil(state, toLocalISO(startD));
       return { card, carry, month: Math.round((card - carry) * 100) / 100, from };
+    }
+    // v6.25: остання дата запису, пов'язаного з партнером (записи не знають автора — беремо платника, власника, `by`)
+    function lastRecordOf(st, k) {
+      let last = '';
+      const see = d => { if (d && d > last) last = d; };
+      (st.expenses || []).forEach(e => { if (e.payer === k || e.by === k) see(e.date); });
+      (st.contributions || []).forEach(c => { if (c.from === k) see(c.date); });
+      (st.settlements || []).forEach(t => { if (t.from === k) see(t.date); });
+      (st.personalExpenses || []).forEach(e => { if (e.owner === k || e.paidBy === k) see(e.date); });
+      (st.personalIncomes || []).forEach(e => { if (e.owner === k) see(e.date); });
+      return last;
+    }
+    const STALE_DAYS = 5;
+    // Хто вніс запис: власник цього телефона, якщо його вибрано («Чий це телефон»)
+    function byMe() { try { const o = localStorage.getItem('usbudget_push_owner'); return o === 'p1' || o === 'p2' ? { by: o } : {}; } catch (e) { return {}; } }
+    function staleNote() {
+      const today = getTodayString(), r = getPeriodRange();
+      if (today < toLocalISO(r.start) || today > toLocalISO(r.end)) return '';
+      const dn = n => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? 'день' : a >= 2 && a <= 4 && (b < 12 || b > 14) ? 'дні' : 'днів'; };
+      return ['p1', 'p2'].map(k => {
+        const last = lastRecordOf(state, k);
+        const days = last ? Math.round((parseLocalDate(today) - parseLocalDate(last)) / 864e5) : null;
+        if (last && days < STALE_DAYS) return '';
+        return `<p class="g-hero-stale">${ICON('alert', 16)}<span>${last ? `${esc(nameOf(k))} нічого не записував(ла) ${days} ${dn(days)} — залишок і ліміти можуть бути неточні.` : `${esc(nameOf(k))} ще нічого не записував(ла) — залишок і ліміти можуть бути неточні.`}</span></p>`;
+      }).join('');
     }
 
     // Назва для пошуку: у тестах і до старту сторінки повертає значення як є
@@ -3627,7 +3654,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const payer = v('exp-payer') || 'card', forWhom = v('exp-split') || 'shared';
       const rec = { id: Date.now().toString(), date: v('exp-date') || getTodayString(), title: v('exp-title').trim(), amount: parseFloat(v('exp-amount')) || 0, category: v('exp-category') };
       if (forWhom === 'shared') {
-        state.expenses.push(Object.assign(rec, { payer }));
+        state.expenses.push(Object.assign(rec, { payer }, byMe()));
       } else {
         (state.personalExpenses = state.personalExpenses || []).push(persRec(rec, forWhom, payer));
       }
@@ -4413,7 +4440,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const hm = heroMoney(), card = hm.card, has = budget || card || hm.carry;
       const heroLabel = !has ? 'Бюджет місяця' : card >= 0 ? 'Можна ще витратити' : 'Картка в мінусі';
       const seg = hm.carry >= 0 && hm.month >= 0 && card > 0
-        ? `<div class="g-hero-split" aria-hidden="true"><span style="flex:${hm.month} 1 0;background:var(--g-ink)"></span><span style="flex:${hm.carry} 1 0;background:color-mix(in srgb, var(--g-ink) 28%, transparent)"></span></div>` : '';
+        ? `<div class="g-hero-split" aria-hidden="true">${hm.month > 0 ? `<span style="flex:${hm.month} 1 0;background:var(--g-ink)"></span>` : ''}${hm.carry > 0 ? `<span style="flex:${hm.carry} 1 0;background:color-mix(in srgb, var(--g-ink) 28%, transparent)"></span>` : ''}</div>` : '';
       const legend = `<p class="g-hero-sub g-hero-legend"><span><i style="background:var(--g-ink)"></i>з цього місяця:</span> <b>${hm.month < 0 ? '−' : ''}${fmtMoney(Math.abs(hm.month))}</b> · <span><i style="background:color-mix(in srgb, var(--g-ink) 28%, transparent)"></i>залишок з минулих:</span> <b>${hm.carry < 0 ? '−' : ''}${fmtMoney(Math.abs(hm.carry))}</b></p>`;
       const limits = state.settings.categoryLimits || {}, spentCat = {};
       filterByPeriod(state.expenses).filter(x => x.kind !== 'savings').forEach(x => { spentCat[x.category] = (spentCat[x.category] || 0) + x.amount; });
@@ -4425,7 +4452,7 @@ const snapshotFlat = st => clone(flattenState(st));
       host.innerHTML = `
         <div class="g-hero">
           ${has && card < 0 ? `<div class="g-hero-label g-over">${ICON('alert', 16)}<span>${esc(heroLabel)}</span></div>` : `<div class="g-hero-label">${esc(heroLabel)}</div>`}
-          ${has ? `<div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${card < 0 ? '−' : ''}${fmtMoney(Math.abs(card))}</div>${seg}${legend}${limLine}` : ''}
+          ${has ? `<div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${card < 0 ? '−' : ''}${fmtMoney(Math.abs(card))}</div>${seg}${legend}${limLine}${staleNote()}` : ''}
           ${budget ? '' : `<div style="font-size:24px;font-weight:800;line-height:1.2;margin-top:6px">Внеску ще немає</div><button type="button" class="g-btn-sm" style="margin-top:10px" onclick="window.openSimple ? openSimple('put') : openQuickAdd()">Записати внесок</button>`}
           ${cardLine}
           <p style="margin:8px 0 0;font-size:15px;line-height:1.45;max-width:34rem">${sentence}</p>
@@ -4852,7 +4879,7 @@ const snapshotFlat = st => clone(flattenState(st));
         if (!(amount > 0) || amount > 1e9) return err('Вкажіть суму.');
         const before = clone(flattenState(state));
         const rec = { id: Date.now().toString(), date: getTodayString(), title: v('qa-title').trim() || cat || 'Витрата', amount, category: cat };
-        if (forWhom === 'shared') state.expenses.push(Object.assign(rec, { payer }));
+        if (forWhom === 'shared') state.expenses.push(Object.assign(rec, { payer }, byMe()));
         else (state.personalExpenses = state.personalExpenses || []).push(persRec(rec, forWhom, payer));
         try { localStorage.setItem('usbudget_qa_cat', cat); } catch (e) {}
         const after = flattenState(state), touched = {};
@@ -5703,7 +5730,7 @@ const snapshotFlat = st => clone(flattenState(st));
         else {
           const rec = { id: 'ib_' + id, date: isoOf(it.ts), title: it.merchant, amount, category: d.cat, bank: 'inbox:' + id };
           if (d.for === 'own' || d.for === 'partner') (state.personalExpenses = state.personalExpenses || []).push(persRec(rec, ownerOf(it, d.for), it.who));
-          else state.expenses.push(Object.assign(rec, { payer: d.for === 'shared:card' ? 'card' : it.who }));
+          else state.expenses.push(Object.assign(rec, { payer: d.for === 'shared:card' ? 'card' : it.who }, it.who === 'p1' || it.who === 'p2' ? { by: it.who } : {}));
           // Запам'ятати вибір для цього магазину
           const k = impKey(it.merchant), rules = (state.settings.importRules || []).slice(), j = rules.findIndex(x => x.k === k);
           const r = Object.assign({}, rules[j] || {}, { k, skip: false, cat: d.cat, for: d.for === 'own' || d.for === 'partner' ? ownerOf(it, d.for) : 'shared', pay: d.for === 'shared:card' ? 'card' : it.who });

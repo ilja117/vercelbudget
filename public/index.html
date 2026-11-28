@@ -13,7 +13,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.23.2</title>
+  <title>UsBudget — Спільний бюджет пари · v6.24.0</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -281,6 +281,12 @@
     .g-kpi-line { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 2px 4px; font-size: 14px; color: var(--g-muted); }
     .g-kpi-line b { color: var(--g-ink); font-size: 16px; margin-left: 4px; }
     .g-hero-sub { margin: 6px 0 0; font-size: 14px; color: var(--g-muted); }
+    .g-hero-split { display: flex; gap: 3px; height: 12px; margin: 10px 0 2px; max-width: 34rem; }
+    .g-hero-split span { display: block; min-width: 6px; border-radius: 99px; }
+    .g-hero-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+    .g-hero-lim { display: inline-block; margin: 10px 0 2px; padding: 7px 12px; border-radius: 14px; font-size: 14px; font-weight: 700; color: var(--g-ink); }
+    .g-hero-lim-ok { background: #C6F06A; }
+    .g-hero-lim-bad { background: #FF7A66; }
     .g-sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 2px 8px; }
     .g-sec-head h2 { margin: 0; font-family: 'Rubik', sans-serif; text-transform: uppercase; letter-spacing: .02em; }
     .g-link { min-height: 44px; padding: 0 4px; border: 0; background: none; font-weight: 600; font-size: 14px; color: var(--g-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -858,7 +864,7 @@
     <section id="tab-settlement" class="tab-content hidden space-y-4 sm:space-y-6">
       <details class="g-more bg-white dark:bg-slate-800/80 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
         <summary>Як записувати, щоб не плутатись</summary>
-        <p class="text-sm text-slate-600 dark:text-slate-300 pt-2">Натисніть <b>«+»</b> і виберіть, що сталося. Три головні числа: <b>Можна ще витратити</b> — скинули на картку цього місяця мінус усі спільні витрати; <b>Лишилось на картці</b> — гроші, які мають лежати на картці; <b>Хто кому винен</b> — різниця між тим, що вклав кожен, і вашими частками. Під кожним числом є «Звідки це число?».</p>
+        <p class="text-sm text-slate-600 dark:text-slate-300 pt-2">Натисніть <b>«+»</b> і виберіть, що сталося. Три головні числа: <b>Можна ще витратити</b> — гроші на спільній картці: залишок з минулих місяців плюс внески цього місяця мінус витрати з картки; <b>Лишилось на картці</b> — гроші, які мають лежати на картці; <b>Хто кому винен</b> — різниця між тим, що вклав кожен, і вашими частками. Під кожним числом є «Звідки це число?».</p>
         <ul class="text-sm mt-2">
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Скинули гроші на спільну картку</b><span class="text-slate-600 dark:text-slate-300">«+» → «Скинули на спільну картку». З цього складається бюджет місяця.</span></li>
             <li class="py-2.5 border-t border-slate-100 dark:border-slate-700/60"><b class="block">Заплатили спільною карткою за спільне</b><span class="text-slate-600 dark:text-slate-300">«+» → «Витратили гроші», хто платив: «Спільна картка». Зменшує бюджет і гроші на картці. Платять за це ті, хто скинув на картку, у пропорції внесків.</span></li>
@@ -1550,6 +1556,20 @@ const snapshotFlat = st => clone(flattenState(st));
       (st.expenses || []).filter(inRange).forEach(e => { if (e.payer === 'card') bal -= e.amount; });
       (st.personalExpenses || []).filter(inRange).forEach(e => { if (e.fromCard) bal -= e.amount; });
       return Math.round(bal * 100) / 100;
+    }
+    // v6.24: гроші на картці на кінець дня iso (записи з датою ≤ iso)
+    function v4CardUntil(st, iso) {
+      const upTo = x => (x.date || '') <= iso;
+      return v4Card(Object.assign({}, st, { contributions: (st.contributions || []).filter(upTo), expenses: (st.expenses || []).filter(upTo), personalExpenses: (st.personalExpenses || []).filter(upTo) }));
+    }
+    // Головне число (варіант А): скільки є на картці — залишок на початок періоду + цей період
+    function heroMoney() {
+      const r = getPeriodRange(), from = toLocalISO(r.start), to = toLocalISO(r.end), today = getTodayString();
+      const cur = today >= from && today <= to;
+      const card = cur ? v4Card(state) : v4CardUntil(state, to);
+      const startD = new Date(r.start); startD.setDate(startD.getDate() - 1);
+      const carry = v4CardUntil(state, toLocalISO(startD));
+      return { card, carry, month: Math.round((card - carry) * 100) / 100, from };
     }
 
     // Назва для пошуку: у тестах і до старту сторінки повертає значення як є
@@ -4389,14 +4409,24 @@ const snapshotFlat = st => clone(flattenState(st));
       // v5.6: бюджет місяця = внески на картку за місяць; витрати — усі спільні (з картки й зі своїх) плюс особисті з картки
       const sum = (a, f) => a.reduce((t, x) => t + (Number(x.amount) || 0), 0);
       const budget = sum(filterByPeriod(state.contributions || [])), spentAll = sum(filterByPeriod(state.expenses)) + sum(filterByPeriod(state.personalExpenses || []).filter(e => e.fromCard));
-      const left = budget - spentAll;
-      const heroLabel = !budget ? 'Бюджет місяця' : left >= 0 ? 'Можна ще витратити' : 'Перевитрата бюджету', heroSum = budget ? Math.abs(left) : 0;
-      const cardLine = `<p class="g-hero-sub">${budget ? `<span>Внесено цього місяця:</span> <b>${fmtMoney(budget)}</b> · <span>витрачено:</span> <b>${fmtMoney(spentAll)}</b>` : '<span>Запишіть внесок на картку — з нього складається бюджет місяця.</span>'}</p>
-          <p class="g-hero-sub">На спільній картці: <b>${fmtMoney(v4Card(state))}</b></p>`;
+      // v6.24 (варіант А): велике число — гроші на картці; смужка — залишок з минулих + цей місяць; рядок — чи вистачає на ліміти
+      const hm = heroMoney(), card = hm.card, has = budget || card || hm.carry;
+      const heroLabel = !has ? 'Бюджет місяця' : card >= 0 ? 'Можна ще витратити' : 'Картка в мінусі';
+      const seg = hm.carry >= 0 && hm.month >= 0 && card > 0
+        ? `<div class="g-hero-split" aria-hidden="true"><span style="flex:${hm.month} 1 0;background:var(--g-ink)"></span><span style="flex:${hm.carry} 1 0;background:color-mix(in srgb, var(--g-ink) 28%, transparent)"></span></div>` : '';
+      const legend = `<p class="g-hero-sub g-hero-legend"><span><i style="background:var(--g-ink)"></i>з цього місяця:</span> <b>${hm.month < 0 ? '−' : ''}${fmtMoney(Math.abs(hm.month))}</b> · <span><i style="background:color-mix(in srgb, var(--g-ink) 28%, transparent)"></i>залишок з минулих:</span> <b>${hm.carry < 0 ? '−' : ''}${fmtMoney(Math.abs(hm.carry))}</b></p>`;
+      const limits = state.settings.categoryLimits || {}, spentCat = {};
+      filterByPeriod(state.expenses).filter(x => x.kind !== 'savings').forEach(x => { spentCat[x.category] = (spentCat[x.category] || 0) + x.amount; });
+      const limLeft = Object.keys(limits).filter(c => Number(limits[c]) > 0).reduce((t, c) => t + Math.max(0, Number(limits[c]) - (spentCat[c] || 0)), 0);
+      const limLine = !limLeft ? '' : card >= limLeft
+        ? `<p class="g-hero-lim g-hero-lim-ok">За лімітами лишилось ${fmtMoney(limLeft)} — грошей вистачає</p>`
+        : `<p class="g-hero-lim g-hero-lim-bad">За лімітами лишилось ${fmtMoney(limLeft)} — бракує ${fmtMoney(limLeft - Math.max(0, card))}</p>`;
+      const cardLine = `<p class="g-hero-sub">${budget ? `<span>Внесено цього місяця:</span> <b>${fmtMoney(budget)}</b> · <span>витрачено:</span> <b>${fmtMoney(spentAll)}</b>` : '<span>Запишіть внесок на картку — з нього складається бюджет місяця.</span>'}</p>`;
       host.innerHTML = `
         <div class="g-hero">
-          ${budget && left < 0 ? `<div class="g-hero-label g-over">${ICON('alert', 16)}<span>${esc(heroLabel)}</span></div>` : `<div class="g-hero-label">${esc(heroLabel)}</div>`}
-          ${budget ? `<div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${left < 0 ? '−' : ''}${fmtMoney(heroSum)}</div>${left < 0 ? `<p class="g-hero-sub" style="font-weight:700">Витратили на ${fmtMoney(heroSum)} більше, ніж внесли на картку.</p>` : ''}` : `<div style="font-size:24px;font-weight:800;line-height:1.2;margin-top:6px">Внеску ще немає</div><button type="button" class="g-btn-sm" style="margin-top:10px" onclick="window.openSimple ? openSimple('put') : openQuickAdd()">Записати внесок</button>`}
+          ${has && card < 0 ? `<div class="g-hero-label g-over">${ICON('alert', 16)}<span>${esc(heroLabel)}</span></div>` : `<div class="g-hero-label">${esc(heroLabel)}</div>`}
+          ${has ? `<div class="g-num" style="font-size:52px;line-height:1.05;margin-top:4px">${card < 0 ? '−' : ''}${fmtMoney(Math.abs(card))}</div>${seg}${legend}${limLine}` : ''}
+          ${budget ? '' : `<div style="font-size:24px;font-weight:800;line-height:1.2;margin-top:6px">Внеску ще немає</div><button type="button" class="g-btn-sm" style="margin-top:10px" onclick="window.openSimple ? openSimple('put') : openQuickAdd()">Записати внесок</button>`}
           ${cardLine}
           <p style="margin:8px 0 0;font-size:15px;line-height:1.45;max-width:34rem">${sentence}</p>
         </div>
@@ -5463,14 +5493,20 @@ const snapshotFlat = st => clone(flattenState(st));
         let title = '', body = '', note = '';
         if (kind === 'left') {
           const budget = sumOf(per), spent = sumOf(ex) + sumOf(pe);
+          const hm = heroMoney(), fromCard = by(ex, 'card', 'payer') + sumOf(pe);
           title = 'Можна ще витратити';
-          body = row('Скинули на картку цього місяця', fmtMoney(budget)) + names.map(k => sub(nameOf(k), fmtMoney(by(per, k, 'from')))).join('')
+          body = row('Було на картці на початку місяця (' + parseLocalDate(hm.from).toLocaleDateString(APP_LOCALE, { day: 'numeric', month: 'short' }) + ')', fmtMoney(hm.carry))
+            + row('Скинули на картку цього місяця', '+ ' + fmtMoney(budget)) + names.map(k => sub(nameOf(k), fmtMoney(by(per, k, 'from')))).join('')
+            + row('Витратили зі спільної картки', '− ' + fmtMoney(fromCard))
+            + row(hm.card >= 0 ? 'Є на картці зараз' : 'Картка в мінусі', fmtMoney(Math.abs(hm.card)), 'text-base')
+            + '<div class="pt-3 text-xs text-slate-500">Підсумок місяця</div>'
+            + row('Скинули на картку цього місяця', fmtMoney(budget)) + names.map(k => sub(nameOf(k), fmtMoney(by(per, k, 'from')))).join('')
             + row('Витратили разом', '− ' + fmtMoney(spent))
             + sub('Зі спільної картки', fmtMoney(by(ex, 'card', 'payer')))
             + names.map(k => sub('Зі своєї картки: ' + nameOf(k), fmtMoney(by(ex, k, 'payer')))).join('')
             + (sumOf(pe) ? sub('Особисте, куплене зі спільної картки', fmtMoney(sumOf(pe))) : '')
             + row(budget - spent >= 0 ? 'Залишилось' : 'Перевитрата', fmtMoney(Math.abs(budget - spent)), 'text-base');
-          note = 'Це рахунок за місяць. Скільки грошей лежить на самій картці, показує інше число — «Лишилось на картці».';
+          note = 'Велике число — гроші на спільній картці разом із залишком з минулих місяців. Витрати зі своїх карток гроші з неї не забирають — їх ураховує борг.';
         } else if (kind === 'income') {
           title = 'Скинули на картку';
           body = names.map(k => row(nameOf(k), fmtMoney(by(per, k, 'from')))).join('') + row('Разом за місяць', fmtMoney(sumOf(per.filter(c => names.indexOf(c.from) >= 0))), 'text-base');
@@ -5534,7 +5570,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const INTRO = [
         { ic: 'home', h: 'Спільний бюджет для двох', t: 'Тут видно, скільки ще можна витратити цього місяця і хто кому винен. Усе записується разом, а рахунок за вас веде застосунок.' },
         { ic: 'receipt', h: 'Як додати запис', t: 'Натисніть «+» і виберіть, що сталося: витратили гроші, скинули на спільну картку, повернули борг чи отримали гроші. Далі кілька полів, і готово.' },
-        { ic: 'scale', h: 'Що означають числа', t: 'Можна ще витратити — бюджет цього місяця. Лишилось на картці — гроші на спільній картці. Хто кому винен — різниця за частками. Під кожним числом є «Звідки це число?».' }
+        { ic: 'scale', h: 'Що означають числа', t: 'Можна ще витратити — гроші на спільній картці разом із залишком з минулих місяців. Лишилось на картці — гроші на спільній картці. Хто кому винен — різниця за частками. Під кожним числом є «Звідки це число?».' }
       ];
       window.openIntro = function (i) {
         i = i || 0;
@@ -6234,7 +6270,7 @@ const snapshotFlat = st => clone(flattenState(st));
       const acted = () => Date.now() - lastAct < 8000;
 
       const sum = a => (a || []).reduce((t, x) => t + (Number(x.amount) || 0), 0);
-      const heroVal = () => { const b = sum(filterByPeriod(state.contributions || [])); return { b, left: b - sum(filterByPeriod(state.expenses || [])) - sum(filterByPeriod(state.personalExpenses || []).filter(e => e.fromCard)) }; };
+      const heroVal = () => { const b = sum(filterByPeriod(state.contributions || [])), m = heroMoney(); return { b: b || m.card || m.carry, left: m.card }; };
       const reached = () => (state.goals || []).filter(g => g.target > 0 && g.current >= g.target).map(g => String(g.id));
       let prev = null, fills = {}, countRaf = 0;
 

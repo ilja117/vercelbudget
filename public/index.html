@@ -13,7 +13,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="UsBudget">
-  <title>UsBudget — Спільний бюджет пари · v6.23.0</title>
+  <title>UsBudget — Спільний бюджет пари · v6.23.1</title>
 
   <!-- Chart.js для інтерактивних графіків -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -4936,7 +4936,7 @@ const snapshotFlat = st => clone(flattenState(st));
         : '<p class="text-sm text-slate-500">Спільних витрат за цей період ще немає.</p>';
       // Темп: лише для поточного місяця
       const { start, end } = getPeriodRange(), now = new Date(), cur = now >= start && now <= end && currentPeriod.type === 'month';
-      const days = end.getDate(), day = cur ? now.getDate() : days, perDay = day ? total / day : 0, forecast = Math.round(perDay * days);
+      const days = Math.round((end - start) / 864e5), day = cur ? Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - start) / 864e5) + 1 : days, perDay = day ? total / day : 0, forecast = Math.round(perDay * days);
       const limits = state.settings.categoryLimits || {}, limTotal = Object.keys(limits).reduce((a, c) => a + (Number(limits[c]) || 0), 0);
       const over = limTotal && forecast > limTotal;
       const pace = `
